@@ -1,0 +1,505 @@
+---
+- name: Render live tiering dashboard locally
+  hosts: hypervisors
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../../vars/global/cgroup_tiering.yml
+  vars:
+    stakkr_dashboard_root: >-
+      {{ playbook_dir ~ '/../../generated/dashboard' }}
+  tasks:
+    - name: Query current systemd scope units
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - list-units
+          - --type=scope
+          - --all
+          - --no-pager
+      register: stakkr_dashboard_systemctl_scope_units
+      changed_when: false
+
+    - name: Resolve live VM scope names from current systemd output
+      ansible.builtin.set_fact:
+        stakkr_dashboard_vm_scope_names: >-
+          {{
+            stakkr_dashboard_vm_scope_names | default({}) | combine(
+              {
+                vm_name: (
+                  (
+                    stakkr_dashboard_systemctl_scope_units.stdout_lines
+                    | select('search', vm_name)
+                    | list
+                    | first
+                    | default('')
+                  ).split() | first | default('<unresolved>')
+                )
+              }
+            )
+          }}
+      loop: "{{ cgroup_tiering.managed_vm_names }}"
+      loop_control:
+        loop_var: vm_name
+        label: "{{ vm_name }}"
+
+    - name: Read current AllowedCPUs and CPUWeight for resolved scopes
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - show
+          - "{{ stakkr_dashboard_vm_scope_names[vm_name] }}"
+          - -p
+          - AllowedCPUs
+          - -p
+          - CPUWeight
+      register: stakkr_dashboard_scope_properties
+      changed_when: false
+      failed_when: false
+      loop: "{{ cgroup_tiering.managed_vm_names }}"
+      loop_control:
+        loop_var: vm_name
+        label: "{{ vm_name }}"
+      when: stakkr_dashboard_vm_scope_names.get(vm_name, '') != '<unresolved>'
+
+    - name: Build per-scope dashboard state
+      ansible.builtin.set_fact:
+        stakkr_dashboard_scope_state: >-
+          {{
+            stakkr_dashboard_scope_state | default({}) | combine(
+              {
+                (item.vm_name | default(item.item)): {
+                  'scope': stakkr_dashboard_vm_scope_names.get((item.vm_name | default(item.item)), '<unresolved>'),
+                  'allowed_cpus': (
+                    (
+                      item.stdout_lines
+                      | select('search', '^AllowedCPUs=')
+                      | list
+                      | first
+                      | default('AllowedCPUs=<unknown>')
+                    ).split('=', 1)[1]
+                  ),
+                  'cpu_weight': (
+                    (
+                      item.stdout_lines
+                      | select('search', '^CPUWeight=')
+                      | list
+                      | first
+                      | default('CPUWeight=<unknown>')
+                    ).split('=', 1)[1]
+                  )
+                }
+              }
+            )
+          }}
+      loop: "{{ stakkr_dashboard_scope_properties.results | default([]) }}"
+      loop_control:
+        label: "{{ item.vm_name | default(item.item | default('<unknown>')) }}"
+
+    - name: Show current vCPU pinning for each managed VM
+      ansible.builtin.command:
+        argv:
+          - virsh
+          - vcpupin
+          - "{{ clock_frequency_tiering.vm_policies[item].domain | default(item) }}"
+      loop: "{{ clock_frequency_tiering.managed_vm_names }}"
+      loop_control:
+        label: "{{ item }}"
+      register: stakkr_dashboard_vcpupin_status
+      changed_when: false
+
+    - name: Show current emulator pinning for each managed VM
+      ansible.builtin.command:
+        argv:
+          - virsh
+          - emulatorpin
+          - "{{ clock_frequency_tiering.vm_policies[item].domain | default(item) }}"
+      loop: "{{ clock_frequency_tiering.managed_vm_names }}"
+      loop_control:
+        label: "{{ item }}"
+      register: stakkr_dashboard_emulatorpin_status
+      changed_when: false
+
+    - name: Build per-VM pinning dashboard state
+      ansible.builtin.set_fact:
+        stakkr_dashboard_vm_state: >-
+          {{
+            stakkr_dashboard_vm_state | default({}) | combine(
+              {
+                item.item: {
+                  'domain': clock_frequency_tiering.vm_policies[item.item].domain | default(item.item),
+                  'target_vcpu_cpuset': clock_frequency_tiering.vm_policies[item.item].vcpu_cpuset,
+                  'target_emulator_cpuset': clock_frequency_tiering.vm_policies[item.item].emulator_cpuset,
+                  'target_scaling_max_freq_khz': clock_frequency_tiering.vm_policies[item.item].scaling_max_freq_khz,
+                  'vcpupin_stdout_lines': item.stdout_lines,
+                  'live_vcpu_cpuset_summary': (
+                    (
+                      item.stdout_lines[2:]
+                      if (item.stdout_lines | length) > 2
+                      else []
+                    )
+                    | map('split')
+                    | map('last')
+                    | unique
+                    | list
+                  )
+                }
+              }
+            )
+          }}
+      loop: "{{ stakkr_dashboard_vcpupin_status.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Add emulator pinning to per-VM dashboard state
+      ansible.builtin.set_fact:
+        stakkr_dashboard_vm_state: >-
+          {{
+            stakkr_dashboard_vm_state | combine(
+              {
+                item.item: (
+                  stakkr_dashboard_vm_state[item.item]
+                  | combine(
+                    {
+                      'emulatorpin_stdout_lines': item.stdout_lines
+                      ,
+                      'live_emulator_cpuset_summary': (
+                        (
+                          item.stdout_lines[2:]
+                          if (item.stdout_lines | length) > 2
+                          else []
+                        )
+                        | map('split', ': ')
+                        | map('last')
+                        | unique
+                        | list
+                      )
+                    }
+                  )
+                )
+              }
+            )
+          }}
+      loop: "{{ stakkr_dashboard_emulatorpin_status.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Read current per-CPU frequency state
+      ansible.builtin.shell: |
+        set -euo pipefail
+
+        expand_cpuset() {
+          local token start end cpu
+          IFS=',' read -ra tokens <<< "$1"
+          for token in "${tokens[@]}"; do
+            if [[ "$token" == *-* ]]; then
+              start="${token%-*}"
+              end="${token#*-}"
+              for ((cpu=start; cpu<=end; cpu++)); do
+                printf '%s\n' "$cpu"
+              done
+            else
+              printf '%s\n' "$token"
+            fi
+          done
+        }
+
+        while read -r cpu; do
+          printf '%s,%s,%s\n' \
+            "$cpu" \
+            "$(<"/sys/devices/system/cpu/cpu${cpu}/cpufreq/{{ clock_frequency_tiering.cpufreq_interface }}")" \
+            "$(<"/sys/devices/system/cpu/cpu${cpu}/cpufreq/cpuinfo_max_freq")"
+        done < <(expand_cpuset "{{ cgroup_tiering.host_all_cpus }}")
+      args:
+        executable: /bin/bash
+      register: stakkr_dashboard_cpufreq_state
+      changed_when: false
+
+    - name: Build per-CPU dashboard state
+      ansible.builtin.set_fact:
+        stakkr_dashboard_cpu_state: >-
+          {{
+            stakkr_dashboard_cpu_state | default([]) + [
+              {
+                'cpu': (fields[0] | int),
+                'current_khz': (fields[1] | int),
+                'hardware_max_khz': (fields[2] | int)
+              }
+            ]
+          }}
+      vars:
+        fields: "{{ item.split(',') }}"
+      loop: "{{ stakkr_dashboard_cpufreq_state.stdout_lines }}"
+
+    - name: Expand housekeeping cpuset
+      ansible.builtin.shell: |
+        set -euo pipefail
+        IFS=',' read -ra tokens <<< "{{ cgroup_tiering.housekeeping_cpus }}"
+        for token in "${tokens[@]}"; do
+          if [[ "$token" == *-* ]]; then
+            start="${token%-*}"
+            end="${token#*-}"
+            for ((cpu=start; cpu<=end; cpu++)); do
+              printf '%s\n' "$cpu"
+            done
+          else
+            printf '%s\n' "$token"
+          fi
+        done
+      args:
+        executable: /bin/bash
+      register: stakkr_dashboard_housekeeping_cpus
+      changed_when: false
+
+    - name: Initialize CPU lane map
+      ansible.builtin.set_fact:
+        stakkr_dashboard_cpu_lane_map: {}
+
+    - name: Mark housekeeping CPUs in the lane map
+      ansible.builtin.set_fact:
+        stakkr_dashboard_cpu_lane_map: >-
+          {{
+            stakkr_dashboard_cpu_lane_map | combine(
+              {
+                (item | int): {
+                  'role_class': 'host',
+                  'label': 'Host',
+                  'cap_label': '--'
+                }
+              }
+            )
+          }}
+      loop: "{{ stakkr_dashboard_housekeeping_cpus.stdout_lines }}"
+
+    - name: Expand per-VM cpusets for the lane map
+      ansible.builtin.shell: |
+        set -euo pipefail
+        IFS=',' read -ra tokens <<< "{{ item.value.vcpu_cpuset }}"
+        for token in "${tokens[@]}"; do
+          if [[ "$token" == *-* ]]; then
+            start="${token%-*}"
+            end="${token#*-}"
+            for ((cpu=start; cpu<=end; cpu++)); do
+              printf '%s\n' "$cpu"
+            done
+          else
+            printf '%s\n' "$token"
+          fi
+        done
+      args:
+        executable: /bin/bash
+      loop: "{{ clock_frequency_tiering.vm_policies | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+      register: stakkr_dashboard_vm_cpuset_expansions
+      changed_when: false
+
+    - name: Normalize expanded worker CPU lanes
+      ansible.builtin.set_fact:
+        stakkr_dashboard_vm_cpu_pairs: >-
+          {{
+            stakkr_dashboard_vm_cpu_pairs | default([]) + [
+              {
+                'vm_name': item.0.item.key,
+                'cpu': (item.1 | int)
+              }
+            ]
+          }}
+      loop: "{{ stakkr_dashboard_vm_cpuset_expansions.results | subelements('stdout_lines') }}"
+      loop_control:
+        label: "{{ item.0.item.key }}:{{ item.1 }}"
+
+    - name: Mark worker CPUs in the lane map
+      ansible.builtin.set_fact:
+        stakkr_dashboard_cpu_lane_map: >-
+          {{
+            stakkr_dashboard_cpu_lane_map | combine(
+              {
+                (item.cpu | int): cpu_lane_profiles[item.vm_name]
+              }
+            )
+          }}
+      vars:
+        cpu_lane_profiles:
+          kvm-worker-01:
+            role_class: w1
+            label: W1
+            cap_label: 3 GHz
+          kvm-worker-02:
+            role_class: w2
+            label: W2
+            cap_label: 2 GHz
+          kvm-worker-03:
+            role_class: w3
+            label: W3
+            cap_label: 1 GHz
+      loop: "{{ stakkr_dashboard_vm_cpu_pairs | default([]) }}"
+      loop_control:
+        label: "{{ item.vm_name }}:{{ item.cpu }}"
+
+    - name: Detect whether clock-tiering layout is live
+      ansible.builtin.set_fact:
+        stakkr_dashboard_clock_mode_live: >-
+          {{
+            (
+              cgroup_tiering.managed_vm_names
+              | map('extract', stakkr_dashboard_vm_state)
+              | map(attribute='live_emulator_cpuset_summary')
+              | unique
+              | list
+            ) == [[cgroup_tiering.qemu_emulatorpin_cpus]]
+            and
+            (
+              clock_frequency_tiering.vm_policies['kvm-worker-01'].vcpu_cpuset in
+              stakkr_dashboard_vm_state['kvm-worker-01'].live_vcpu_cpuset_summary
+            )
+            and
+            (
+              clock_frequency_tiering.vm_policies['kvm-worker-02'].vcpu_cpuset in
+              stakkr_dashboard_vm_state['kvm-worker-02'].live_vcpu_cpuset_summary
+            )
+            and
+            (
+              clock_frequency_tiering.vm_policies['kvm-worker-03'].vcpu_cpuset in
+              stakkr_dashboard_vm_state['kvm-worker-03'].live_vcpu_cpuset_summary
+            )
+          }}
+
+    - name: Detect whether shared-pool cgroup layout is live
+      ansible.builtin.set_fact:
+        stakkr_dashboard_shared_pool_mode_live: >-
+          {{
+            (
+              cgroup_tiering.managed_vm_names
+              | map('extract', stakkr_dashboard_vm_state)
+              | map(attribute='live_emulator_cpuset_summary')
+              | unique
+              | list
+            ) == [[cgroup_tiering.qemu_emulatorpin_cpus]]
+            and
+            (
+              cgroup_tiering.guest_shared_cpus in
+              stakkr_dashboard_vm_state['kvm-worker-01'].live_vcpu_cpuset_summary
+            )
+            and
+            (
+              cgroup_tiering.guest_shared_cpus in
+              stakkr_dashboard_vm_state['kvm-worker-02'].live_vcpu_cpuset_summary
+            )
+            and
+            (
+              cgroup_tiering.guest_shared_cpus in
+              stakkr_dashboard_vm_state['kvm-worker-03'].live_vcpu_cpuset_summary
+            )
+          }}
+
+    - name: Set dashboard mode label
+      ansible.builtin.set_fact:
+        stakkr_dashboard_mode: >-
+          {%- if stakkr_dashboard_clock_mode_live | bool -%}
+          clock-tiering
+          {%- elif stakkr_dashboard_shared_pool_mode_live | bool -%}
+          shared-pool
+          {%- else -%}
+          mixed
+          {%- endif -%}
+
+    - name: Detect whether stock layout is live
+      ansible.builtin.set_fact:
+        stakkr_dashboard_stock_mode_live: >-
+          {{
+            (
+              cgroup_tiering.managed_vm_names
+              | map('extract', stakkr_dashboard_vm_state)
+              | map(attribute='live_vcpu_cpuset_summary')
+              | map('first')
+              | unique
+              | list
+            ) == [clock_frequency_tiering.default_stock_cpuset]
+            and
+            (
+              cgroup_tiering.managed_vm_names
+              | map('extract', stakkr_dashboard_vm_state)
+              | map(attribute='live_emulator_cpuset_summary')
+              | map('first')
+              | unique
+              | list
+            ) == [clock_frequency_tiering.default_stock_cpuset]
+            and
+            (
+              cgroup_tiering.managed_vm_names
+              | map('extract', stakkr_dashboard_scope_state)
+              | map(attribute='allowed_cpus')
+              | unique
+              | list
+            ) == ['']
+            and
+            (
+              cgroup_tiering.managed_vm_names
+              | map('extract', stakkr_dashboard_scope_state)
+              | map(attribute='cpu_weight')
+              | unique
+              | list
+            ) == ['[not set]']
+          }}
+
+    - name: Set dashboard state summary
+      ansible.builtin.set_fact:
+        stakkr_dashboard_state_label: >-
+          {%- if stakkr_dashboard_clock_mode_live | bool -%}
+          Clock-tiering
+          {%- elif stakkr_dashboard_shared_pool_mode_live | bool -%}
+          Shared execution pool
+          {%- elif stakkr_dashboard_stock_mode_live | bool -%}
+          Stock
+          {%- else -%}
+          Mixed
+          {%- endif -%}
+        stakkr_dashboard_state_note: >-
+          {%- if stakkr_dashboard_clock_mode_live | bool -%}
+          Dedicated worker lanes and per-lane frequency caps are live.
+          {%- elif stakkr_dashboard_shared_pool_mode_live | bool -%}
+          Guest vCPUs share CPUs {{ cgroup_tiering.guest_shared_cpus }}, emulator threads stay on {{ cgroup_tiering.qemu_emulatorpin_cpus }}, and Gold/Silver/Bronze weights are live.
+          {%- elif stakkr_dashboard_stock_mode_live | bool -%}
+          No shared execution pool placement, contention weighting, or clock-lane controls are active.
+          {%- else -%}
+          Some controls are active, but the host does not match stock, shared execution pool, or clock-tiering exactly.
+          {%- endif -%}
+
+    - name: Ensure local dashboard directory exists
+      ansible.builtin.file:
+        path: "{{ stakkr_dashboard_root }}"
+        state: directory
+        mode: "0755"
+      delegate_to: localhost
+      become: false
+
+    - name: Render dashboard state JSON locally
+      ansible.builtin.copy:
+        dest: "{{ stakkr_dashboard_root }}/live-state.json"
+        mode: "0644"
+        content: |
+          {{
+            {
+              'generated_utc': lookup('pipe', 'date -u +%Y-%m-%dT%H:%M:%SZ'),
+              'host': {
+                'all_cpus': cgroup_tiering.host_all_cpus,
+                'housekeeping_cpus': cgroup_tiering.housekeeping_cpus,
+                'guest_shared_cpus': cgroup_tiering.guest_shared_cpus
+              },
+              'mode': stakkr_dashboard_mode,
+              'state_label': stakkr_dashboard_state_label,
+              'state_note': stakkr_dashboard_state_note,
+              'scope_state': stakkr_dashboard_scope_state | default({}),
+              'vm_state': stakkr_dashboard_vm_state | default({}),
+              'cpu_state': stakkr_dashboard_cpu_state | default([])
+            } | to_nice_json
+          }}
+      delegate_to: localhost
+      become: false
+
+    - name: Show dashboard location
+      ansible.builtin.debug:
+        msg:
+          - "Dashboard app: {{ playbook_dir }}/../../dashboard/index.html"
+          - "Dashboard JSON: {{ stakkr_dashboard_root }}/live-state.json"

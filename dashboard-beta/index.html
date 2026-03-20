@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Stakkr Dashboard Beta</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand__title">Stakkr Dashboard Beta</div>
+        <div class="brand__sub">host resource management • terminal vibe • alternate UI</div>
+      </div>
+      <div class="topbar__right">
+        <div class="pill" id="statePill">loading</div>
+        <div class="pill pill--dim" id="generatedPill">snapshot</div>
+      </div>
+    </header>
+
+    <div id="error" class="error hidden"></div>
+
+    <main class="layout">
+      <section class="panel">
+        <div class="panel__title">State</div>
+        <div class="stack">
+          <div class="box" id="summaryBox"></div>
+          <div class="box" id="intentBox"></div>
+        </div>
+
+        <div class="panel__title" style="margin-top:16px;">Host Layout</div>
+        <div class="box" id="layoutBox"></div>
+
+        <div class="panel__title" style="margin-top:16px;">Scope State</div>
+        <div class="tableWrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>VM</th>
+                <th>Tier</th>
+                <th>AllowedCPUs</th>
+                <th>CPUWeight</th>
+              </tr>
+            </thead>
+            <tbody id="scopeBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel panel--right">
+        <div class="panel__title">Current Pinning</div>
+        <div id="pinGrid" class="pin-grid"></div>
+
+        <div class="panel__title" style="margin-top:16px;">Host CPU Frequency</div>
+        <div class="tableWrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>CPU</th>
+                <th>Current Max</th>
+                <th>Hardware Max</th>
+              </tr>
+            </thead>
+            <tbody id="cpuBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

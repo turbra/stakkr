@@ -1,0 +1,193 @@
+---
+- name: Apply first-pass cgroup tiering policy to live systemd VM scopes
+  hosts: hypervisors
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../../vars/global/cgroup_tiering.yml
+  tasks:
+    - name: Gather current vCPU count for each managed VM
+      ansible.builtin.shell: |
+        set -euo pipefail
+        virsh dominfo "{{ cgroup_tiering.managed_vm_domains.get(item, item) }}" |
+          awk -F': +' '/^CPU\(s\):/ { print $2 }'
+      args:
+        executable: /bin/bash
+      loop: "{{ cgroup_tiering.managed_vm_names }}"
+      loop_control:
+        label: "{{ item }}"
+      register: cgroup_tiering_vcpu_counts
+      changed_when: false
+
+    - name: Query current systemd scope units
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - list-units
+          - --type=scope
+          - --all
+          - --no-pager
+      register: cgroup_tiering_systemctl_scope_units
+      changed_when: false
+
+    - name: Resolve live VM scope names from current systemd output
+      ansible.builtin.set_fact:
+        cgroup_tiering_vm_scope_names: >-
+          {{
+            cgroup_tiering_vm_scope_names | default({}) | combine(
+              {
+                vm_name: (
+                  (
+                    cgroup_tiering_systemctl_scope_units.stdout_lines
+                    | select('search', vm_name)
+                    | list
+                    | first
+                    | default('')
+                  ).split() | first | default(
+                    cgroup_tiering.vm_scope_name_hints.get(vm_name, vm_name)
+                  )
+                )
+              }
+            )
+          }}
+      loop: "{{ cgroup_tiering.managed_vm_names }}"
+      loop_control:
+        loop_var: vm_name
+        label: "{{ vm_name }}"
+
+    - name: Fail if any VM scope could not be resolved safely
+      ansible.builtin.assert:
+        that:
+          - cgroup_tiering_vm_scope_names.get(vm_name, '') | length > 0
+          - cgroup_tiering_vm_scope_names.get(vm_name, '') is search('^machine-qemu')
+        fail_msg: >-
+          Unable to resolve a valid machine-qemu scope for {{ vm_name }}.
+      loop: "{{ cgroup_tiering.managed_vm_names }}"
+      loop_control:
+        loop_var: vm_name
+        label: "{{ vm_name }}"
+
+    - name: Capture current CPU properties before apply
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - show
+          - "{{ cgroup_tiering_vm_scope_names[vm_name] }}"
+          - -p
+          - AllowedCPUs
+          - -p
+          - CPUWeight
+      register: cgroup_tiering_pre_apply_properties
+      changed_when: false
+      loop: "{{ cgroup_tiering.managed_vm_names }}"
+      loop_control:
+        loop_var: vm_name
+        label: "{{ vm_name }}"
+
+    - name: Show pre-apply CPU properties
+      ansible.builtin.debug:
+        msg: "{{ item.stdout_lines }}"
+      loop: "{{ cgroup_tiering_pre_apply_properties.results }}"
+
+    - name: Apply widened AllowedCPUs and default CPUWeight to each live VM scope
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - set-property
+          - "{{ cgroup_tiering_vm_scope_names[vm_name] }}"
+          - "AllowedCPUs={{ cgroup_tiering.host_all_cpus }}"
+          - "CPUWeight={{ cgroup_tiering.vm_cpu_weights.get(vm_name, cgroup_tiering.vm_cpu_weight_default) }}"
+      loop: "{{ cgroup_tiering.managed_vm_names }}"
+      loop_control:
+        loop_var: vm_name
+        label: "{{ vm_name }}"
+
+    - name: Pin shared-pool guest vCPUs to the guest execution pool
+      ansible.builtin.shell: |
+        set -euo pipefail
+        for ((vcpu=0; vcpu<{{ item.stdout | trim | int }}; vcpu++)); do
+          virsh vcpupin \
+            "{{ cgroup_tiering.managed_vm_domains.get(item.item, item.item) }}" \
+            "${vcpu}" \
+            "{{ cgroup_tiering.guest_shared_cpus }}" \
+            --live \
+            --config
+        done
+      args:
+        executable: /bin/bash
+      loop: "{{ cgroup_tiering_vcpu_counts.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      changed_when: true
+
+    - name: Pin emulator threads to the reserved host CPUs
+      ansible.builtin.command:
+        argv:
+          - virsh
+          - emulatorpin
+          - "{{ cgroup_tiering.managed_vm_domains.get(vm_name, vm_name) }}"
+          - "{{ cgroup_tiering.qemu_emulatorpin_cpus }}"
+          - --live
+          - --config
+      loop: "{{ cgroup_tiering.managed_vm_names }}"
+      loop_control:
+        loop_var: vm_name
+        label: "{{ vm_name }}"
+
+    - name: Read live vCPU pinning after apply
+      ansible.builtin.command:
+        argv:
+          - virsh
+          - vcpupin
+          - "{{ cgroup_tiering.managed_vm_domains.get(vm_name, vm_name) }}"
+      register: cgroup_tiering_post_apply_vcpupin
+      changed_when: false
+      loop: "{{ cgroup_tiering.managed_vm_names }}"
+      loop_control:
+        loop_var: vm_name
+        label: "{{ vm_name }}"
+
+    - name: Read live emulator pinning after apply
+      ansible.builtin.command:
+        argv:
+          - virsh
+          - emulatorpin
+          - "{{ cgroup_tiering.managed_vm_domains.get(vm_name, vm_name) }}"
+      register: cgroup_tiering_post_apply_emulatorpin
+      changed_when: false
+      loop: "{{ cgroup_tiering.managed_vm_names }}"
+      loop_control:
+        loop_var: vm_name
+        label: "{{ vm_name }}"
+
+    - name: Capture CPU properties after apply
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - show
+          - "{{ cgroup_tiering_vm_scope_names[vm_name] }}"
+          - -p
+          - AllowedCPUs
+          - -p
+          - CPUWeight
+      register: cgroup_tiering_post_apply_properties
+      changed_when: false
+      loop: "{{ cgroup_tiering.managed_vm_names }}"
+      loop_control:
+        loop_var: vm_name
+        label: "{{ vm_name }}"
+
+    - name: Show post-apply CPU properties
+      ansible.builtin.debug:
+        msg: "{{ item.stdout_lines }}"
+      loop: "{{ cgroup_tiering_post_apply_properties.results }}"
+
+    - name: Show post-apply vCPU pinning
+      ansible.builtin.debug:
+        msg: "{{ item.stdout_lines }}"
+      loop: "{{ cgroup_tiering_post_apply_vcpupin.results }}"
+
+    - name: Show post-apply emulator pinning
+      ansible.builtin.debug:
+        msg: "{{ item.stdout_lines }}"
+      loop: "{{ cgroup_tiering_post_apply_emulatorpin.results }}"
