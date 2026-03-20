@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+{% for vm_name in cgroup_tiering.managed_vm_names %}
+sudo systemctl set-property {{ cgroup_tiering_vm_scope_names.get(vm_name, cgroup_tiering.vm_scope_name_hints.get(vm_name, vm_name)) }} \
+  AllowedCPUs={{ cgroup_tiering.guest_shared_cpus }} \
+  CPUWeight={{ cgroup_tiering.vm_cpu_weights.get(vm_name, cgroup_tiering.vm_cpu_weight_default) }}
+{% endfor %}

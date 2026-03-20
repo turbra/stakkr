@@ -1,0 +1,130 @@
+---
+- name: Render cgroup tiering implementation preview locally
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ../../vars/global/cgroup_tiering.yml
+  vars:
+    cgroup_tiering_render_root: >-
+      {{
+        playbook_dir
+        ~ '/../../generated/cgroup-tiering/rendered'
+      }}
+    cgroup_tiering_render_systemd_root: >-
+      {{ cgroup_tiering_render_root ~ '/systemd' }}
+    cgroup_tiering_render_libvirt_root: >-
+      {{ cgroup_tiering_render_root ~ '/libvirt' }}
+  tasks:
+    - name: Query current systemd scope units
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - list-units
+          - --type=scope
+          - --all
+          - --no-pager
+      register: cgroup_tiering_systemctl_scope_units
+      changed_when: false
+
+    - name: Resolve live VM scope names from current systemd output
+      ansible.builtin.set_fact:
+        cgroup_tiering_vm_scope_names: >-
+          {{
+            cgroup_tiering_vm_scope_names | default({}) | combine(
+              {
+                vm_name: (
+                  (
+                    cgroup_tiering_systemctl_scope_units.stdout_lines
+                    | select('search', vm_name)
+                    | list
+                    | first
+                    | default('')
+                  ).split() | first | default(
+                    cgroup_tiering.vm_scope_name_hints.get(vm_name, vm_name)
+                  )
+                )
+              }
+            )
+          }}
+      loop: "{{ cgroup_tiering.managed_vm_names }}"
+      loop_control:
+        loop_var: vm_name
+        label: "{{ vm_name }}"
+
+    - name: Ensure local render directories exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ cgroup_tiering_render_root }}"
+        - "{{ cgroup_tiering_render_systemd_root }}"
+        - "{{ cgroup_tiering_render_libvirt_root }}"
+
+    - name: Render implementation notes
+      ansible.builtin.template:
+        src: ../../templates/cgroup-tiering/implementation-notes.md.j2
+        dest: "{{ cgroup_tiering_render_root }}/implementation-notes.md"
+        mode: "0644"
+
+    - name: Render systemctl set-property helper
+      ansible.builtin.template:
+        src: ../../templates/cgroup-tiering/systemctl-set-property.sh.j2
+        dest: "{{ cgroup_tiering_render_root }}/apply-systemctl-set-property.sh"
+        mode: "0755"
+
+    - name: Ensure scope drop-in directories exist
+      ansible.builtin.file:
+        path: >-
+          {{
+            cgroup_tiering_render_systemd_root
+            ~ '/'
+            ~ vm_name
+            ~ '.scope.d'
+          }}
+        state: directory
+        mode: "0755"
+      loop: "{{ cgroup_tiering.managed_vm_names }}"
+      loop_control:
+        loop_var: vm_name
+        label: "{{ vm_name }}"
+
+    - name: Render per-VM systemd scope drop-ins
+      ansible.builtin.template:
+        src: ../../templates/cgroup-tiering/systemd-scope-dropin.conf.j2
+        dest: >-
+          {{
+            cgroup_tiering_render_systemd_root
+            ~ '/'
+            ~ vm_name
+            ~ '.scope.d'
+            ~ '/10-cgroup-tiering.conf'
+          }}
+        mode: "0644"
+      loop: "{{ cgroup_tiering.managed_vm_names }}"
+      loop_control:
+        loop_var: vm_name
+        label: "{{ vm_name }}"
+
+    - name: Render per-VM libvirt cputune snippets
+      ansible.builtin.template:
+        src: ../../templates/cgroup-tiering/libvirt-cputune.xml.j2
+        dest: >-
+          {{
+            cgroup_tiering_render_libvirt_root
+            ~ '/'
+            ~ vm_name
+            ~ '-cputune.xml'
+          }}
+        mode: "0644"
+      loop: "{{ cgroup_tiering.managed_vm_names }}"
+      loop_control:
+        loop_var: vm_name
+        label: "{{ vm_name }}"
+
+    - name: Show render root
+      ansible.builtin.debug:
+        msg:
+          - "Rendered preview root: {{ cgroup_tiering_render_root }}"
+          - "No host changes were applied."

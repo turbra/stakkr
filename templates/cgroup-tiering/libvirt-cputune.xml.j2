@@ -1,0 +1,6 @@
+<cputune>
+  <emulatorpin cpuset='{{ cgroup_tiering.qemu_emulatorpin_cpus }}'/>
+{% if cgroup_tiering.qemu_iothreads_enabled %}
+  <iothreadpin iothread='1' cpuset='{{ cgroup_tiering.qemu_iothreadpin_cpus }}'/>
+{% endif %}
+</cputune>

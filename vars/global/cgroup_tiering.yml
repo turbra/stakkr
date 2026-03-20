@@ -1,0 +1,77 @@
+---
+cgroup_tiering:
+  enabled: false
+  host_all_cpus: "0-11"
+  housekeeping_cpus: "0-1"
+  guest_shared_cpus: "2-11"
+  vm_cpu_weight_default: 100
+  vm_cpu_quota_enabled: false
+  vm_cpu_quota_default: ""
+  managed_vm_names:
+    - kvm-worker-01
+    - kvm-worker-02
+    - kvm-worker-03
+  managed_vm_domains:
+    kvm-worker-01: kvm-worker-01
+    kvm-worker-02: kvm-worker-02
+    kvm-worker-03: kvm-worker-03
+  vm_cpu_weights:
+    kvm-worker-01: 100
+    kvm-worker-02: 100
+    kvm-worker-03: 100
+  vm_scope_name_hints:
+    kvm-worker-01: machine-qemu\\x2d21\\x2dkvm\\x2dworker\\x2d01.scope
+    kvm-worker-02: machine-qemu\\x2d22\\x2dkvm\\x2dworker\\x2d02.scope
+    kvm-worker-03: machine-qemu\\x2d23\\x2dkvm\\x2dworker\\x2d03.scope
+  qemu_emulatorpin_cpus: "0-1"
+  qemu_iothreadpin_cpus: "0-1"
+  qemu_iothreads_enabled: false
+  notes:
+    - Reserve CPUs 0-1 for host housekeeping and QEMU emulator overhead.
+    - Share CPUs 2-11 across the three worker VMs.
+    - Start with equal weights and no hard quota.
+
+clock_frequency_tiering:
+  enabled: true
+  cpufreq_interface: scaling_max_freq
+  default_stock_cpuset: "0-11"
+  managed_vm_names:
+    - kvm-worker-01
+    - kvm-worker-02
+    - kvm-worker-03
+  vm_policies:
+    kvm-worker-01:
+      domain: kvm-worker-01
+      vcpu_cpuset: "2-4"
+      emulator_cpuset: "0-1"
+      scaling_max_freq_khz: 3000000
+    kvm-worker-02:
+      domain: kvm-worker-02
+      vcpu_cpuset: "5-7"
+      emulator_cpuset: "0-1"
+      scaling_max_freq_khz: 2000000
+    kvm-worker-03:
+      domain: kvm-worker-03
+      vcpu_cpuset: "8-11"
+      emulator_cpuset: "0-1"
+      scaling_max_freq_khz: 1000000
+
+contention_tiering:
+  enabled: true
+  default_stock_cpu_weight: 100
+  managed_vm_names:
+    - kvm-worker-01
+    - kvm-worker-02
+    - kvm-worker-03
+  tier_weights:
+    gold: 512
+    silver: 333
+    bronze: 167
+  vm_tiers:
+    kvm-worker-01: gold
+    kvm-worker-02: silver
+    kvm-worker-03: bronze
+  notes:
+    - Gold, Silver, and Bronze are relative contention domains, not hard reservations.
+    - Idle capacity remains borrowable when a higher tier is quiet.
+    - The clock-tiering lane model and contention weights can be applied together.

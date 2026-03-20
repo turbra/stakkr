@@ -1,0 +1,97 @@
+---
+- name: Roll back first-pass clock frequency tiering from managed KVM workers
+  hosts: hypervisors
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../../vars/global/cgroup_tiering.yml
+  vars:
+    clock_frequency_tiering_policies: >-
+      {{ clock_frequency_tiering.vm_policies | default({}) }}
+  tasks:
+    - name: Validate that clock frequency tiering is populated
+      ansible.builtin.assert:
+        that:
+          - clock_frequency_tiering.cpufreq_interface | length > 0
+          - clock_frequency_tiering_policies | length > 0
+
+    - name: Gather current vCPU count for each managed VM
+      ansible.builtin.shell: |
+        set -euo pipefail
+        virsh dominfo "{{ item.value.domain | default(item.key) }}" |
+          awk -F': +' '/^CPU\(s\):/ { print $2 }'
+      args:
+        executable: /bin/bash
+      loop: "{{ clock_frequency_tiering_policies | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+      register: clock_frequency_tiering_vcpu_counts
+      changed_when: false
+
+    - name: Restore stock vCPU pinning for each managed VM
+      ansible.builtin.shell: |
+        set -euo pipefail
+        for ((vcpu=0; vcpu<{{ item.stdout | trim | int }}; vcpu++)); do
+          virsh vcpupin \
+            "{{ item.item.value.domain | default(item.item.key) }}" \
+            "${vcpu}" \
+            "{{ clock_frequency_tiering.default_stock_cpuset | default(cgroup_tiering.host_all_cpus) }}" \
+            --live \
+            --config
+        done
+      args:
+        executable: /bin/bash
+      loop: "{{ clock_frequency_tiering_vcpu_counts.results }}"
+      loop_control:
+        label: "{{ item.item.key }}"
+      changed_when: true
+
+    - name: Restore stock emulator pinning for each managed VM
+      ansible.builtin.command:
+        argv:
+          - virsh
+          - emulatorpin
+          - "{{ item.value.domain | default(item.key) }}"
+          - "{{ clock_frequency_tiering.default_stock_cpuset | default(cgroup_tiering.host_all_cpus) }}"
+          - --live
+          - --config
+      loop: "{{ clock_frequency_tiering_policies | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+      changed_when: true
+
+    - name: Restore hardware-max frequency for each managed VM cpuset
+      ansible.builtin.shell: |
+        set -euo pipefail
+
+        expand_cpuset() {
+          local token start end cpu
+          IFS=',' read -ra tokens <<< "$1"
+          for token in "${tokens[@]}"; do
+            if [[ "$token" == *-* ]]; then
+              start="${token%-*}"
+              end="${token#*-}"
+              for ((cpu=start; cpu<=end; cpu++)); do
+                printf '%s\n' "$cpu"
+              done
+            else
+              printf '%s\n' "$token"
+            fi
+          done
+        }
+
+        while read -r cpu; do
+          max_path="/sys/devices/system/cpu/cpu${cpu}/cpufreq/cpuinfo_max_freq"
+          set_path="/sys/devices/system/cpu/cpu${cpu}/cpufreq/{{ clock_frequency_tiering.cpufreq_interface }}"
+          if [[ ! -f "$max_path" || ! -f "$set_path" ]]; then
+            echo "missing cpufreq control for cpu${cpu}" >&2
+            exit 1
+          fi
+          printf '%s\n' "$(<"$max_path")" >"$set_path"
+        done < <(expand_cpuset "{{ item.value.vcpu_cpuset }}")
+      args:
+        executable: /bin/bash
+      loop: "{{ clock_frequency_tiering_policies | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+      changed_when: true

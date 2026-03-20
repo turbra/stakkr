@@ -1,0 +1,6 @@
+[Scope]
+AllowedCPUs={{ cgroup_tiering.guest_shared_cpus }}
+CPUWeight={{ cgroup_tiering.vm_cpu_weights.get(vm_name, cgroup_tiering.vm_cpu_weight_default) }}
+{% if cgroup_tiering.vm_cpu_quota_enabled and cgroup_tiering.vm_cpu_quota_default | length > 0 %}
+CPUQuota={{ cgroup_tiering.vm_cpu_quota_default }}
+{% endif %}
