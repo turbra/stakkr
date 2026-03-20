@@ -11,6 +11,16 @@ There are now two UI choices:
 Both use the same generated live-state JSON. The beta dashboard is only an
 alternate UI surface.
 
+## Preview
+
+Standard dashboard:
+
+![Standard dashboard preview](./dashboard.png)
+
+Beta dashboard:
+
+![Beta dashboard preview](./dashboard-beta.png)
+
 The UI is checked into git:
 
 - `dashboard/index.html`
