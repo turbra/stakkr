@@ -115,15 +115,19 @@ policy.
 Apply that host foundation once per host:
 
 ```bash
-./scripts/host-resource-management.sh host-config-apply
-./scripts/host-resource-management.sh host-config-status
+./scripts/host-resource-management.sh host-resource-management-apply
+./scripts/host-resource-management.sh host-resource-management-status
+./scripts/host-resource-management.sh host-memory-oversubscription-apply
+./scripts/host-resource-management.sh host-memory-oversubscription-status
 ```
 
-That host step installs:
+That host layer is split into two parts:
 
-- the reserved CPU policy for the host
-- the Gold, Silver, and Bronze slice definitions
-- the optional host memory-efficiency service for zram, THP, and KSM
+- `host-resource-management-*`
+  - reserved CPU policy for the host
+  - Gold, Silver, and Bronze slice definitions
+- `host-memory-oversubscription-*`
+  - host memory-efficiency policy for zram, THP, and KSM
 
 It is not the same thing as the live `apply` action. The host foundation shapes
 the machine itself. The live `apply` action shapes the running VM scopes and

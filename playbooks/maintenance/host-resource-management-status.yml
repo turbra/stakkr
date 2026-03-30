@@ -1,0 +1,67 @@
+---
+- name: Report current host resource management policy
+  hosts: hypervisors
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../../vars/global/host_resource_management.yml
+  tasks:
+    - name: Read the current systemd manager host resource policy file
+      ansible.builtin.command:
+        argv:
+          - cat
+          - /etc/systemd/system.conf.d/90-stakkr-host-resource-management.conf
+      register: stakkr_host_resource_management_manager_conf
+      changed_when: false
+      failed_when: false
+
+    - name: Read the current performance-domain slice definitions
+      ansible.builtin.command:
+        argv:
+          - cat
+          - "/etc/systemd/system/{{ item }}"
+      loop:
+        - machine-gold.slice
+        - machine-silver.slice
+        - machine-bronze.slice
+      loop_control:
+        label: "{{ item }}"
+      register: stakkr_host_resource_management_slices
+      changed_when: false
+      failed_when: false
+
+    - name: Read the irqbalance banned CPU list
+      ansible.builtin.command:
+        argv:
+          - bash
+          - -lc
+          - "grep '^IRQBALANCE_BANNED_CPULIST=' /etc/sysconfig/irqbalance"
+      register: stakkr_host_resource_management_irqbalance
+      changed_when: false
+      failed_when: false
+
+    - name: Show current host resource management summary
+      ansible.builtin.debug:
+        msg:
+          - "Host reserved CPUs: {{ host_resource_management.cpu_pools.host_reserved }}"
+          - "Host housekeeping CPUs: {{ host_resource_management.cpu_pools.host_housekeeping }}"
+          - "Host emulator CPUs: {{ host_resource_management.cpu_pools.host_emulator }}"
+          - "Guest-domain CPUs: {{ host_resource_management.cpu_pools.guest_domain }}"
+          - "Gold CPUWeight: {{ host_resource_management.performance_domains.gold.cpu_weight }}"
+          - "Silver CPUWeight: {{ host_resource_management.performance_domains.silver.cpu_weight }}"
+          - "Bronze CPUWeight: {{ host_resource_management.performance_domains.bronze.cpu_weight }}"
+
+    - name: Show current systemd manager resource policy file
+      ansible.builtin.debug:
+        msg: "{{ stakkr_host_resource_management_manager_conf.stdout_lines | default(['<missing>']) }}"
+
+    - name: Show current performance-domain slices
+      ansible.builtin.debug:
+        msg: "{{ item.stdout_lines | default(['<missing>']) }}"
+      loop: "{{ stakkr_host_resource_management_slices.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Show current irqbalance policy
+      ansible.builtin.debug:
+        msg: "{{ stakkr_host_resource_management_irqbalance.stdout | default('<not set>') }}"

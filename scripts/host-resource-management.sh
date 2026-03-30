@@ -14,8 +14,10 @@ ansible_playbook() {
 usage() {
   cat <<'EOF' >&2
 usage:
-  host-resource-management.sh host-config-apply
-  host-resource-management.sh host-config-status
+  host-resource-management.sh host-resource-management-apply
+  host-resource-management.sh host-resource-management-status
+  host-resource-management.sh host-memory-oversubscription-apply
+  host-resource-management.sh host-memory-oversubscription-status
   host-resource-management.sh status
   host-resource-management.sh render
   host-resource-management.sh apply
@@ -41,13 +43,33 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${PROJECT_ROOT}"
 
 case "${ACTION}" in
-  host-config-apply)
+  host-resource-management-apply)
     ansible_playbook \
-      playbooks/maintenance/host-config-apply.yml
+      playbooks/maintenance/host-resource-management-apply.yml
     ;;
-  host-config-status)
+  host-resource-management-status)
     ansible_playbook \
-      playbooks/maintenance/host-config-status.yml
+      playbooks/maintenance/host-resource-management-status.yml
+    ;;
+  host-memory-oversubscription-apply)
+    ansible_playbook \
+      playbooks/maintenance/host-memory-oversubscription-apply.yml
+    ;;
+  host-memory-oversubscription-status)
+    ansible_playbook \
+      playbooks/maintenance/host-memory-oversubscription-status.yml
+    ;;
+  host-baseline-apply|host-config-apply)
+    ansible_playbook \
+      playbooks/maintenance/host-resource-management-apply.yml
+    ansible_playbook \
+      playbooks/maintenance/host-memory-oversubscription-apply.yml
+    ;;
+  host-baseline-status|host-config-status)
+    ansible_playbook \
+      playbooks/maintenance/host-resource-management-status.yml
+    ansible_playbook \
+      playbooks/maintenance/host-memory-oversubscription-status.yml
     ;;
   status)
     ansible_playbook \

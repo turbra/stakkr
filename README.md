@@ -55,15 +55,16 @@ ansible-inventory -i inventory/hosts.yml --graph
 Prepare the host foundation policy:
 
 ```bash
-./scripts/host-resource-management.sh host-config-apply
-./scripts/host-resource-management.sh host-config-status
+./scripts/host-resource-management.sh host-resource-management-apply
+./scripts/host-resource-management.sh host-resource-management-status
+./scripts/host-resource-management.sh host-memory-oversubscription-apply
+./scripts/host-resource-management.sh host-memory-oversubscription-status
 ```
 
 > [!NOTE]
-> This is the host-side foundation layer. It installs the reserved CPU policy,
-> Gold/Silver/Bronze slice definitions, and the optional memory-efficiency
-> service for zram, THP, and KSM. Run it when you first prepare the host or
-> after rebuilding it.
+> This is the host-side foundation layer. `host-resource-management-*` handles
+> reserved CPU policy and Gold/Silver/Bronze slices. 
+> `host-memory-oversubscription-*` handles zram, THP, and KSM.
 
 Apply the shared execution pool path:
 

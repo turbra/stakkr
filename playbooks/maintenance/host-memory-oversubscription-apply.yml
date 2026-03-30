@@ -1,0 +1,88 @@
+---
+- name: Apply host memory oversubscription policy
+  hosts: hypervisors
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../../vars/global/host_memory_oversubscription.yml
+  tasks:
+    - name: Validate host memory oversubscription variables
+      ansible.builtin.assert:
+        that:
+          - host_memory_oversubscription.enabled is boolean
+          - host_memory_oversubscription.verify_state is boolean
+          - host_memory_oversubscription.zram.enabled is boolean
+          - host_memory_oversubscription.transparent_hugepages.enabled is boolean
+          - host_memory_oversubscription.ksm.enabled is boolean
+          - host_memory_oversubscription.zram.device_name | length > 0
+          - host_memory_oversubscription.zram.size | length > 0
+          - host_memory_oversubscription.zram.swap_priority | int >= -1
+          - host_memory_oversubscription.transparent_hugepages.mode in ['always', 'madvise', 'never']
+          - host_memory_oversubscription.transparent_hugepages.defrag_mode in ['always', 'defer', 'defer+madvise', 'madvise', 'never']
+          - (host_memory_oversubscription.ksm.run | int) in [0, 1]
+          - (host_memory_oversubscription.ksm.pages_to_scan | int) > 0
+          - (host_memory_oversubscription.ksm.sleep_millisecs | int) > 0
+      when: host_memory_oversubscription.enabled | bool
+
+    - name: Ensure host memory oversubscription directories exist
+      ansible.builtin.file:
+        path: /etc/systemd/system
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+      when: host_memory_oversubscription.enabled | bool
+
+    - name: Check that zramctl is available on the host
+      ansible.builtin.command:
+        argv:
+          - bash
+          - -lc
+          - command -v zramctl
+      register: stakkr_host_memory_oversubscription_zramctl
+      changed_when: false
+      failed_when: false
+      when:
+        - host_memory_oversubscription.enabled | bool
+        - host_memory_oversubscription.zram.enabled | bool
+
+    - name: Fail when zramctl is unavailable on the host
+      ansible.builtin.assert:
+        that:
+          - stakkr_host_memory_oversubscription_zramctl.rc == 0
+        fail_msg: >-
+          zramctl is not available on the host, so the explicit zram path
+          cannot be applied.
+      when:
+        - host_memory_oversubscription.enabled | bool
+        - host_memory_oversubscription.zram.enabled | bool
+
+    - name: Install the host memory oversubscription policy unit
+      ansible.builtin.template:
+        src: ../../templates/host-resource-management/host-memory-oversubscription.service.j2
+        dest: /etc/systemd/system/stakkr-host-memory-oversubscription.service
+        owner: root
+        group: root
+        mode: "0644"
+      register: stakkr_host_memory_oversubscription_unit
+      when: host_memory_oversubscription.enabled | bool
+
+    - name: Reload systemd after host memory policy changes
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - daemon-reload
+      when:
+        - host_memory_oversubscription.enabled | bool
+        - not ansible_check_mode
+        - stakkr_host_memory_oversubscription_unit.changed
+      changed_when: true
+
+    - name: Ensure the host memory oversubscription policy service is enabled and active
+      ansible.builtin.systemd:
+        name: stakkr-host-memory-oversubscription.service
+        enabled: true
+        state: started
+      when:
+        - host_memory_oversubscription.enabled | bool
+        - not ansible_check_mode
