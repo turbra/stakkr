@@ -28,7 +28,24 @@ operating model.
 - clock-lane path:
   [method](./docs/clock-frequency-tiering.md),
   [findings](./docs/clock-frequency-validation.md)
+- local prerequisites:
+  [checklist](./docs/prerequisites.md)
+- local IdM VM bootstrap:
+  `ansible-playbook -i inventory/hosts.yml playbooks/bootstrap/idm-local.yml`
 - [Cockpit observer](./cockpit/stakkr-observer/README.md)
+
+> [!NOTE]
+> The local IdM bootstrap currently expects a seeded guest image (`qcow2` or
+> `raw`), not a RHEL DVD ISO. Its default NIC model now follows the worker VM
+> pattern: `bridge0` with `virtio`.
+
+> [!IMPORTANT]
+> The local IdM path depends on the checklist in
+> [prerequisites.md](./docs/prerequisites.md), including:
+>
+> - `freeipa.ansible_freeipa`
+> - `inventory/group_vars/all/lab_credentials.yml`
+> - a local RHEL guest image in `qcow2` format
 
 
 ## Default Operating Model
