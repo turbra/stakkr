@@ -56,8 +56,10 @@ Prepare the host foundation policy:
 
 ```bash
 ./scripts/host-resource-management.sh host-resource-management-apply
+./scripts/host-resource-management.sh host-resource-management-rollback
 ./scripts/host-resource-management.sh host-resource-management-status
 ./scripts/host-resource-management.sh host-memory-oversubscription-apply
+./scripts/host-resource-management.sh host-memory-oversubscription-rollback
 ./scripts/host-resource-management.sh host-memory-oversubscription-status
 ```
 

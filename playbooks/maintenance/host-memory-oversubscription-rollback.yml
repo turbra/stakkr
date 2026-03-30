@@ -1,0 +1,63 @@
+---
+- name: Roll back host memory oversubscription policy
+  hosts: hypervisors
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../../vars/global/host_memory_oversubscription.yml
+  tasks:
+    - name: Stop and disable the host memory oversubscription service
+      ansible.builtin.systemd:
+        name: stakkr-host-memory-oversubscription.service
+        enabled: false
+        state: stopped
+      failed_when: false
+
+    - name: Remove the host memory oversubscription policy unit
+      ansible.builtin.file:
+        path: /etc/systemd/system/stakkr-host-memory-oversubscription.service
+        state: absent
+      register: stakkr_host_memory_oversubscription_unit_removed
+
+    - name: Reload systemd after host memory policy removal
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - daemon-reload
+      when:
+        - not ansible_check_mode
+        - stakkr_host_memory_oversubscription_unit_removed.changed
+      changed_when: true
+
+    - name: Restore THP and KSM rollback values
+      ansible.builtin.shell: |
+        set -euo pipefail
+        if [ -e /sys/kernel/mm/transparent_hugepage/enabled ]; then
+          echo {{ host_memory_oversubscription.rollback_state.transparent_hugepages.mode }} > /sys/kernel/mm/transparent_hugepage/enabled
+        fi
+        if [ -e /sys/kernel/mm/transparent_hugepage/defrag ]; then
+          echo {{ host_memory_oversubscription.rollback_state.transparent_hugepages.defrag_mode }} > /sys/kernel/mm/transparent_hugepage/defrag
+        fi
+        if [ -e /sys/kernel/mm/ksm/pages_to_scan ]; then
+          echo {{ host_memory_oversubscription.rollback_state.ksm.pages_to_scan }} > /sys/kernel/mm/ksm/pages_to_scan
+        fi
+        if [ -e /sys/kernel/mm/ksm/sleep_millisecs ]; then
+          echo {{ host_memory_oversubscription.rollback_state.ksm.sleep_millisecs }} > /sys/kernel/mm/ksm/sleep_millisecs
+        fi
+        if [ -e /sys/kernel/mm/ksm/run ]; then
+          echo {{ host_memory_oversubscription.rollback_state.ksm.run }} > /sys/kernel/mm/ksm/run
+        fi
+      args:
+        executable: /bin/bash
+      changed_when: true
+
+    - name: Ensure the zram device is no longer active
+      ansible.builtin.shell: |
+        set -euo pipefail
+        if swapon --show=NAME --noheadings | awk '$1=="/dev/{{ host_memory_oversubscription.zram.device_name }}"{found=1} END{exit(found?0:1)}'; then
+          exit 1
+        fi
+      args:
+        executable: /bin/bash
+      changed_when: false
+      failed_when: false

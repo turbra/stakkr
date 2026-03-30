@@ -1,0 +1,72 @@
+---
+- name: Roll back host resource management policy
+  hosts: hypervisors
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../../vars/global/host_resource_management.yml
+  tasks:
+    - name: Remove the systemd manager CPU affinity policy
+      ansible.builtin.file:
+        path: /etc/systemd/system.conf.d/90-stakkr-host-resource-management.conf
+        state: absent
+      register: stakkr_host_resource_management_manager_conf_removed
+
+    - name: Remove the Gold performance-domain slice
+      ansible.builtin.file:
+        path: /etc/systemd/system/machine-gold.slice
+        state: absent
+      register: stakkr_host_resource_management_gold_slice_removed
+
+    - name: Remove the Silver performance-domain slice
+      ansible.builtin.file:
+        path: /etc/systemd/system/machine-silver.slice
+        state: absent
+      register: stakkr_host_resource_management_silver_slice_removed
+
+    - name: Remove the Bronze performance-domain slice
+      ansible.builtin.file:
+        path: /etc/systemd/system/machine-bronze.slice
+        state: absent
+      register: stakkr_host_resource_management_bronze_slice_removed
+
+    - name: Remove the irqbalance guest-domain exclusion policy
+      ansible.builtin.lineinfile:
+        path: /etc/sysconfig/irqbalance
+        regexp: '^IRQBALANCE_BANNED_CPULIST='
+        state: absent
+        create: false
+      register: stakkr_host_resource_management_irqbalance_removed
+
+    - name: Reload systemd after slice removals
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - daemon-reload
+      when:
+        - not ansible_check_mode
+        - >-
+          stakkr_host_resource_management_gold_slice_removed.changed or
+          stakkr_host_resource_management_silver_slice_removed.changed or
+          stakkr_host_resource_management_bronze_slice_removed.changed
+      changed_when: true
+
+    - name: Reexecute systemd to remove manager CPU affinity changes
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - daemon-reexec
+      when:
+        - not ansible_check_mode
+        - stakkr_host_resource_management_manager_conf_removed.changed
+      changed_when: true
+
+    - name: Restart irqbalance when the CPU exclusion policy changed
+      ansible.builtin.systemd:
+        name: irqbalance.service
+        state: restarted
+        enabled: true
+      when:
+        - not ansible_check_mode
+        - stakkr_host_resource_management_irqbalance_removed.changed
+      failed_when: false

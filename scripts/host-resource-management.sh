@@ -15,8 +15,10 @@ usage() {
   cat <<'EOF' >&2
 usage:
   host-resource-management.sh host-resource-management-apply
+  host-resource-management.sh host-resource-management-rollback
   host-resource-management.sh host-resource-management-status
   host-resource-management.sh host-memory-oversubscription-apply
+  host-resource-management.sh host-memory-oversubscription-rollback
   host-resource-management.sh host-memory-oversubscription-status
   host-resource-management.sh status
   host-resource-management.sh render
@@ -47,6 +49,10 @@ case "${ACTION}" in
     ansible_playbook \
       playbooks/maintenance/host-resource-management-apply.yml
     ;;
+  host-resource-management-rollback)
+    ansible_playbook \
+      playbooks/maintenance/host-resource-management-rollback.yml
+    ;;
   host-resource-management-status)
     ansible_playbook \
       playbooks/maintenance/host-resource-management-status.yml
@@ -54,6 +60,10 @@ case "${ACTION}" in
   host-memory-oversubscription-apply)
     ansible_playbook \
       playbooks/maintenance/host-memory-oversubscription-apply.yml
+    ;;
+  host-memory-oversubscription-rollback)
+    ansible_playbook \
+      playbooks/maintenance/host-memory-oversubscription-rollback.yml
     ;;
   host-memory-oversubscription-status)
     ansible_playbook \

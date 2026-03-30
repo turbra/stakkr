@@ -17,3 +17,11 @@ host_memory_oversubscription:
     run: 1
     pages_to_scan: 1000
     sleep_millisecs: 20
+  rollback_state:
+    transparent_hugepages:
+      mode: always
+      defrag_mode: always
+    ksm:
+      run: 0
+      pages_to_scan: 100
+      sleep_millisecs: 20
