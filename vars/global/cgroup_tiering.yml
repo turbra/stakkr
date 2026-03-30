@@ -1,9 +1,9 @@
 ---
 cgroup_tiering:
-  enabled: false
+  enabled: "{{ host_resource_management.enabled | default(false) }}"
   host_all_cpus: "0-11"
-  housekeeping_cpus: "0-1"
-  guest_shared_cpus: "2-11"
+  housekeeping_cpus: "{{ host_resource_management.cpu_pools.host_housekeeping }}"
+  guest_shared_cpus: "{{ host_resource_management.cpu_pools.guest_domain }}"
   vm_cpu_weight_default: 100
   vm_cpu_quota_enabled: false
   vm_cpu_quota_default: ""
@@ -23,12 +23,12 @@ cgroup_tiering:
     kvm-worker-01: machine-qemu\\x2d21\\x2dkvm\\x2dworker\\x2d01.scope
     kvm-worker-02: machine-qemu\\x2d22\\x2dkvm\\x2dworker\\x2d02.scope
     kvm-worker-03: machine-qemu\\x2d23\\x2dkvm\\x2dworker\\x2d03.scope
-  qemu_emulatorpin_cpus: "0-1"
-  qemu_iothreadpin_cpus: "0-1"
+  qemu_emulatorpin_cpus: "{{ host_resource_management.cpu_pools.host_emulator }}"
+  qemu_iothreadpin_cpus: "{{ host_resource_management.cpu_pools.host_emulator }}"
   qemu_iothreads_enabled: false
   notes:
-    - Reserve CPUs 0-1 for host housekeeping and QEMU emulator overhead.
-    - Share CPUs 2-11 across the three worker VMs.
+    - Reserve CPUs {{ host_resource_management.cpu_pools.host_reserved }} for host and emulator overhead.
+    - Share CPUs {{ host_resource_management.cpu_pools.guest_domain }} across the three worker VMs.
     - Start with equal weights and no hard quota.
 
 clock_frequency_tiering:
@@ -57,16 +57,16 @@ clock_frequency_tiering:
       scaling_max_freq_khz: 1000000
 
 contention_tiering:
-  enabled: true
+  enabled: "{{ host_resource_management.enabled | default(false) }}"
   default_stock_cpu_weight: 100
   managed_vm_names:
     - kvm-worker-01
     - kvm-worker-02
     - kvm-worker-03
   tier_weights:
-    gold: 512
-    silver: 333
-    bronze: 167
+    gold: "{{ host_resource_management.performance_domains.gold.cpu_weight }}"
+    silver: "{{ host_resource_management.performance_domains.silver.cpu_weight }}"
+    bronze: "{{ host_resource_management.performance_domains.bronze.cpu_weight }}"
   vm_tiers:
     kvm-worker-01: gold
     kvm-worker-02: silver

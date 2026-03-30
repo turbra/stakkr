@@ -4,6 +4,8 @@
   become: true
   gather_facts: false
   vars_files:
+    - ../../vars/global/host_resource_management.yml
+    - ../../vars/global/host_memory_oversubscription.yml
     - ../../vars/global/cgroup_tiering.yml
   tasks:
     - name: Validate that contention tiering is enabled and populated
