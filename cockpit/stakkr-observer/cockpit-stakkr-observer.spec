@@ -41,6 +41,8 @@ install -m 0644 sparkline.js %{buildroot}%{_datadir}/cockpit/stakkr-observer/
 install -m 0755 collector.py %{buildroot}%{_datadir}/cockpit/stakkr-observer/
 install -m 0644 README.md %{buildroot}%{_datadir}/cockpit/stakkr-observer/
 install -m 0644 INTERPRETING.md %{buildroot}%{_datadir}/cockpit/stakkr-observer/
+mkdir -p %{buildroot}%{_datadir}/cockpit/stakkr-observer/images
+cp -a images/. %{buildroot}%{_datadir}/cockpit/stakkr-observer/images/
 
 %files
 %{_datadir}/cockpit/stakkr-observer/

@@ -52,6 +52,24 @@ For Stakkr, that means showing whether the host is in:
 | **Memory Overview** | Host memory totals, available memory, THP state, KSM savings, zram state, swap usage |
 | **Memory Management Overhead** | CPU overhead for `ksmd`, `kswapd*`, and `kcompactd*` |
 
+## Panel Screenshots
+
+### CPU Performance Domains
+
+![CPU Performance Domains](./images/observer_cpu_performance_domains.png)
+
+### CPU Pool Topology
+
+![CPU Pool Topology](./images/observer_cpu_pool_topology.png)
+
+### Memory Overview
+
+![Memory Overview](./images/observer_memory_overview.png)
+
+### Memory Management Overhead
+
+![Memory Management Overhead](./images/observer_memory_management_overhead.png)
+
 ## Architecture
 
 ```text

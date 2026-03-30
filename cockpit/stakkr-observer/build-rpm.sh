@@ -16,6 +16,7 @@ WORK="$(mktemp -d)"
 mkdir -p "${WORK}/${TARBALL_DIR}"
 cp "${SCRIPT_DIR}"/{manifest.json,index.html,stakkr-observer.js,stakkr-observer.css,sparkline.js,collector.py,README.md,INTERPRETING.md} \
    "${WORK}/${TARBALL_DIR}/"
+cp -r "${SCRIPT_DIR}/images" "${WORK}/${TARBALL_DIR}/"
 tar czf "${BUILD_ROOT}/SOURCES/${SPEC_NAME}-${VERSION}.tar.gz" -C "${WORK}" "${TARBALL_DIR}"
 rm -rf "${WORK}"
 
