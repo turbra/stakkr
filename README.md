@@ -10,7 +10,7 @@ The default path is simple:
 - the host can also carry a foundation policy for CPU pools and memory efficiency
 
 That is the small-scale adaptation of the host resource management model being
-developed in `dcib2026`.
+developed in [Calabi](https://github.com/gprocunier/calabi).
 
 There is also an optional second path:
 
