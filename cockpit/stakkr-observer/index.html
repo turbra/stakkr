@@ -26,32 +26,37 @@
             </div>
         </header>
 
-        <section class="observer-card">
-            <h3>Current State</h3>
-            <div id="state-content" class="panel-placeholder">Waiting for data...</div>
+        <section id="ksm-panel" class="calabi-card">
+            <h3>KSM Cost-Benefit</h3>
+            <div id="ksm-content" class="panel-placeholder">Waiting for data...</div>
         </section>
 
-        <section class="observer-card">
+        <section id="cpu-panel" class="calabi-card">
             <h3>CPU Performance Domains</h3>
             <div id="cpu-content" class="panel-placeholder">Waiting for data...</div>
         </section>
 
-        <section class="observer-card">
+        <section id="cpu-map-panel" class="calabi-card">
             <h3>CPU Pool Topology</h3>
-            <div id="topology-content" class="panel-placeholder">Waiting for data...</div>
+            <div id="cpu-map-content" class="panel-placeholder">Waiting for data...</div>
         </section>
 
-        <section class="observer-card">
+        <section id="mem-panel" class="calabi-card">
             <h3>Memory Overview</h3>
-            <div id="memory-content" class="panel-placeholder">Waiting for data...</div>
+            <div id="mem-content" class="panel-placeholder">Waiting for data...</div>
         </section>
 
-        <section class="observer-card">
+        <section id="zram-panel" class="calabi-card">
+            <h3>zram Cost-Benefit</h3>
+            <div id="zram-content" class="panel-placeholder">Waiting for data...</div>
+        </section>
+
+        <section id="overhead-panel" class="calabi-card">
             <h3>Memory Management Overhead</h3>
             <div id="overhead-content" class="panel-placeholder">Waiting for data...</div>
         </section>
 
-        <div id="error-banner" class="observer-error" hidden></div>
+        <div id="error-banner" class="calabi-error" hidden></div>
     </div>
 
     <script src="sparkline.js"></script>

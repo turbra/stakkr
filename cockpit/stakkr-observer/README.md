@@ -150,18 +150,49 @@ Cockpit picks up new plugins on page load. No service restart is required.
 
 ### From RPM
 
-```bash
-sudo dnf install -y ./cockpit-stakkr-observer-*.noarch.rpm
-```
-
-## Building The RPM
+Build the RPM first:
 
 ```bash
 cd /path/to/stakkr/cockpit/stakkr-observer
 ./build-rpm.sh
 ```
 
-Outputs:
+Then install it from the same directory:
+
+```bash
+sudo dnf install -y ./rpmbuild/RPMS/noarch/cockpit-stakkr-observer-1.0.0-1.el10.noarch.rpm
+```
+
+If you are standing at the repo root instead, use:
+
+```bash
+cd /path/to/stakkr
+sudo dnf install -y ./cockpit/stakkr-observer/rpmbuild/RPMS/noarch/cockpit-stakkr-observer-1.0.0-1.el10.noarch.rpm
+```
+
+> [!IMPORTANT]
+> Use `./...rpm` so `dnf` treats the target as a local file path.
+
+> [!NOTE]
+> Prefer a normal SSH shell for the RPM install step. If the Cockpit terminal
+> session drops, rerun the same `dnf install` command over SSH.
+
+## Building The RPM
+
+Install the packaging tool once on the build host:
+
+```bash
+sudo dnf install -y rpm-build
+```
+
+Then build from the observer directory:
+
+```bash
+cd /path/to/stakkr/cockpit/stakkr-observer
+./build-rpm.sh
+```
+
+Build output:
 
 - `rpmbuild/RPMS/noarch/cockpit-stakkr-observer-*.noarch.rpm`
 - `rpmbuild/SRPMS/cockpit-stakkr-observer-*.src.rpm`
