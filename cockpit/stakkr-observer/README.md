@@ -41,9 +41,7 @@ For Stakkr, that means showing whether the host is in:
 - `clock-tiering`
 - `mixed`
 
-The observer now discovers Stakkr-managed libvirt domains from live
-performance-domain state. New guests such as IdM appear automatically once
-they are attached to a Gold, Silver, or Bronze partition.
+The observer updates automatically when new managed guests are added.
 
 ## Panels
 
