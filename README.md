@@ -52,46 +52,62 @@ Inventory check:
 ansible-inventory -i inventory/hosts.yml --graph
 ```
 
-Prepare the host foundation policy:
+Apply the host foundation first:
 
 ```bash
 ./scripts/host-resource-management.sh host-resource-management-apply
-./scripts/host-resource-management.sh host-resource-management-rollback
-./scripts/host-resource-management.sh host-resource-management-status
 ./scripts/host-resource-management.sh host-memory-oversubscription-apply
-./scripts/host-resource-management.sh host-memory-oversubscription-rollback
+./scripts/host-resource-management.sh host-resource-management-status
 ./scripts/host-resource-management.sh host-memory-oversubscription-status
 ```
 
-> [!NOTE]
-> This is the host-side foundation layer. `host-resource-management-*` handles
-> reserved CPU policy and Gold/Silver/Bronze slices. 
-> `host-memory-oversubscription-*` handles zram, THP, and KSM.
-
-Apply the shared execution pool path:
+Apply the live shared execution pool policy second:
 
 ```bash
-./scripts/host-resource-management.sh apply
-./scripts/host-resource-management.sh status
+./scripts/host-resource-management.sh shared-execution-pool-apply
+./scripts/host-resource-management.sh shared-execution-pool-status
 ```
 
 > [!IMPORTANT]
-> `./scripts/host-resource-management.sh apply` is the default shared execution
-> pool action. It applies both:
+> The normal operator order is:
+>
+> 1. `host-resource-management-apply`
+> 2. `host-memory-oversubscription-apply`
+> 3. `shared-execution-pool-apply`
+
+> [!NOTE]
+> `host-resource-management-*` is the host CPU foundation layer.
+> `host-memory-oversubscription-*` is the host memory foundation layer.
+> `shared-execution-pool-*` is the live VM policy layer.
+
+Roll back the live shared execution pool policy:
+
+```bash
+./scripts/host-resource-management.sh shared-execution-pool-rollback
+./scripts/host-resource-management.sh shared-execution-pool-status
+```
+
+Roll back the host foundation:
+
+```bash
+./scripts/host-resource-management.sh host-memory-oversubscription-rollback
+./scripts/host-resource-management.sh host-resource-management-rollback
+./scripts/host-resource-management.sh host-memory-oversubscription-status
+./scripts/host-resource-management.sh host-resource-management-status
+```
+
+> [!IMPORTANT]
+> `./scripts/host-resource-management.sh shared-execution-pool-apply` is the
+> default live shared execution pool action. It applies both:
 >
 > - shared execution pool placement
 > - Gold / Silver / Bronze performance-domain `CPUWeight`
 
 > [!TIP]
-> `./scripts/host-resource-management.sh status` is the normal verification
-> command. Use `./scripts/host-resource-management.sh contention-status` only
-> when you want a narrower view of the Gold / Silver / Bronze weights.
-
-Roll back the shared execution pool path:
-
-```bash
-./scripts/host-resource-management.sh rollback
-```
+> `./scripts/host-resource-management.sh shared-execution-pool-status` is the
+> normal verification command for the live VM policy layer. Use
+> `./scripts/host-resource-management.sh contention-status` only when you want a
+> narrower view of the Gold / Silver / Bronze weights.
 
 Apply the clock-tiering experiment:
 

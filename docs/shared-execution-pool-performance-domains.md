@@ -88,9 +88,10 @@ Important behavior:
 - vCPU placement and emulator placement are separate concerns
 - the shared execution pool path is the default operating model on this host
 
-## What `apply` Does
+## What `shared-execution-pool-apply` Does
 
-`./scripts/host-resource-management.sh apply` does the whole default setup.
+`./scripts/host-resource-management.sh shared-execution-pool-apply` does the
+whole default live shared execution pool setup.
 
 It does two things:
 
@@ -131,9 +132,9 @@ That host layer is split into two parts:
 - `host-memory-oversubscription-*`
   - host memory-efficiency policy for zram, THP, and KSM
 
-It is not the same thing as the live `apply` action. The host foundation shapes
-the machine itself. The live `apply` action shapes the running VM scopes and
-pinning on top of that host baseline.
+It is not the same thing as the live `shared-execution-pool-apply` action. The
+host foundation shapes the machine itself. The live shared execution pool
+action shapes the running VM scopes and pinning on top of that host baseline.
 
 ## Recommended Operator Flow
 
@@ -144,19 +145,28 @@ pinning on top of that host baseline.
 > ```bash
 > cd /path/to/stakkr
 > ./scripts/host-resource-management.sh clock-rollback
-> ./scripts/host-resource-management.sh rollback
+> ./scripts/host-resource-management.sh shared-execution-pool-rollback
 > ```
+
+Apply the host foundation first:
+
+```bash
+./scripts/host-resource-management.sh host-resource-management-apply
+./scripts/host-resource-management.sh host-memory-oversubscription-apply
+```
 
 Apply the shared execution pool model:
 
 ```bash
-./scripts/host-resource-management.sh apply
+./scripts/host-resource-management.sh shared-execution-pool-apply
 ```
 
 Verify:
 
 ```bash
-./scripts/host-resource-management.sh status
+./scripts/host-resource-management.sh host-resource-management-status
+./scripts/host-resource-management.sh host-memory-oversubscription-status
+./scripts/host-resource-management.sh shared-execution-pool-status
 ```
 
 What you should see:
@@ -167,8 +177,9 @@ What you should see:
 - `CPUWeight` of `512`, `333`, and `167`
 
 > [!TIP]
-> `status` is the normal verification command. It answers the big question:
-> "What state is the host in right now?"
+> `shared-execution-pool-status` is the normal verification command for the
+> live VM policy layer. It answers the big question:
+> "What live shared execution pool state is active right now?"
 >
 > It shows:
 >
@@ -211,7 +222,7 @@ Those are no longer required for the normal operator flow.
 Undo the full shared execution pool model:
 
 ```bash
-./scripts/host-resource-management.sh rollback
+./scripts/host-resource-management.sh shared-execution-pool-rollback
 ```
 
 That restores stock `0-11` pinning, resets the contention weights, and removes

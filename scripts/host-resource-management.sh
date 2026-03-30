@@ -20,16 +20,20 @@ usage:
   host-resource-management.sh host-memory-oversubscription-apply
   host-resource-management.sh host-memory-oversubscription-rollback
   host-resource-management.sh host-memory-oversubscription-status
-  host-resource-management.sh status
-  host-resource-management.sh render
-  host-resource-management.sh apply
-  host-resource-management.sh rollback
+  host-resource-management.sh shared-execution-pool-apply
+  host-resource-management.sh shared-execution-pool-rollback
+  host-resource-management.sh shared-execution-pool-status
   host-resource-management.sh contention-status
   host-resource-management.sh contention-apply
   host-resource-management.sh contention-rollback
   host-resource-management.sh clock-status
   host-resource-management.sh clock-apply
   host-resource-management.sh clock-rollback
+
+legacy aliases:
+  host-resource-management.sh apply
+  host-resource-management.sh rollback
+  host-resource-management.sh status
 EOF
 }
 
@@ -69,20 +73,20 @@ case "${ACTION}" in
     ansible_playbook \
       playbooks/maintenance/host-memory-oversubscription-status.yml
     ;;
-  status)
+  shared-execution-pool-status|status)
     ansible_playbook \
       playbooks/maintenance/cgroup-tiering-status.yml
     ;;
   render)
     ansible-playbook playbooks/maintenance/cgroup-tiering-render.yml
     ;;
-  apply)
+  shared-execution-pool-apply|apply)
     ansible_playbook \
       playbooks/maintenance/cgroup-tiering-apply-v1.yml
     ansible_playbook \
       playbooks/maintenance/contention-tiering-apply-v1.yml
     ;;
-  rollback)
+  shared-execution-pool-rollback|rollback)
     ansible_playbook \
       playbooks/maintenance/contention-tiering-rollback-v1.yml
     ansible_playbook \

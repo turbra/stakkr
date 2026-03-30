@@ -80,7 +80,8 @@ After rollback you should see:
 
 > [!TIP]
 > `clock-rollback` removes the clock experiment. If you want to go back to the
-> shared-pool path afterward, run `./scripts/host-resource-management.sh apply`.
+> shared-pool path afterward, run
+> `./scripts/host-resource-management.sh shared-execution-pool-apply`.
 
 ## Why It Is Separate
 

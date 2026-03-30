@@ -3,7 +3,9 @@
 These results came from the shared-pool path after:
 
 ```bash
-./scripts/host-resource-management.sh apply
+./scripts/host-resource-management.sh host-resource-management-apply
+./scripts/host-resource-management.sh host-memory-oversubscription-apply
+./scripts/host-resource-management.sh shared-execution-pool-apply
 ```
 
 Live intent during the test:
