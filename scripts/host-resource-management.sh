@@ -69,18 +69,6 @@ case "${ACTION}" in
     ansible_playbook \
       playbooks/maintenance/host-memory-oversubscription-status.yml
     ;;
-  host-baseline-apply|host-config-apply)
-    ansible_playbook \
-      playbooks/maintenance/host-resource-management-apply.yml
-    ansible_playbook \
-      playbooks/maintenance/host-memory-oversubscription-apply.yml
-    ;;
-  host-baseline-status|host-config-status)
-    ansible_playbook \
-      playbooks/maintenance/host-resource-management-status.yml
-    ansible_playbook \
-      playbooks/maintenance/host-memory-oversubscription-status.yml
-    ;;
   status)
     ansible_playbook \
       playbooks/maintenance/cgroup-tiering-status.yml
