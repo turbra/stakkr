@@ -28,7 +28,6 @@ operating model.
 - clock-lane path:
   [method](./docs/clock-frequency-tiering.md),
   [findings](./docs/clock-frequency-validation.md)
-- [dashboard generation and serving](./docs/dashboard.md)
 - [Cockpit observer](./cockpit/stakkr-observer/README.md)
 
 
@@ -107,14 +106,13 @@ Roll back the clock-tiering experiment:
 ./scripts/host-resource-management.sh clock-rollback
 ```
 
-Run the dashboard:
+Use the Cockpit observer:
 
 ```bash
-./scripts/dashboard-workflow.sh serve
+sudo dnf install -y ./cockpit/stakkr-observer/rpmbuild/RPMS/noarch/cockpit-stakkr-observer-1.0.0-1.el10.noarch.rpm
 ```
 
-Then open:
+Then open Cockpit and navigate to `Stakkr Observer`.
 
-```text
-http://localhost:8081/
-```
+> [!NOTE]
+> The Cockpit observer is now the supported UI path for Stakkr.

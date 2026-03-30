@@ -8,7 +8,6 @@ adapted to the smaller Stakkr host shape.
 
 <a href="../../docs/shared-execution-pool-performance-domains.md"><kbd>&nbsp;&nbsp;SHARED EXECUTION POOL&nbsp;&nbsp;</kbd></a>
 <a href="../../docs/clock-frequency-tiering.md"><kbd>&nbsp;&nbsp;CLOCK-TIERING&nbsp;&nbsp;</kbd></a>
-<a href="../../docs/dashboard.md"><kbd>&nbsp;&nbsp;DASHBOARDS&nbsp;&nbsp;</kbd></a>
 <a href="./INTERPRETING.md"><kbd>&nbsp;&nbsp;INTERPRETING&nbsp;&nbsp;</kbd></a>
 
 ## Contents
@@ -143,10 +142,6 @@ sudo rsync -av /path/to/stakkr/cockpit/stakkr-observer/ /usr/share/cockpit/stakk
 ```
 
 Cockpit picks up new plugins on page load. No service restart is required.
-
-> [!NOTE]
-> This is a separate optional UI. It does not replace `dashboard/` or
-> `dashboard-beta/`.
 
 ### From RPM
 
