@@ -3,3 +3,4 @@ generated/
 *.retry
 __pycache__/
 *.pyc
+cockpit/*/rpmbuild/
