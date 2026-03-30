@@ -107,6 +107,28 @@ After that, the host is in the intended shared execution pool shape:
 - reserved host/emulator pair
 - intentional degradation through weighted performance domains
 
+## Host Foundation
+
+The live shared execution pool controls sit on top of a host-side foundation
+policy.
+
+Apply that host foundation once per host:
+
+```bash
+./scripts/host-resource-management.sh host-config-apply
+./scripts/host-resource-management.sh host-config-status
+```
+
+That host step installs:
+
+- the reserved CPU policy for the host
+- the Gold, Silver, and Bronze slice definitions
+- the optional host memory-efficiency service for zram, THP, and KSM
+
+It is not the same thing as the live `apply` action. The host foundation shapes
+the machine itself. The live `apply` action shapes the running VM scopes and
+pinning on top of that host baseline.
+
 ## Recommended Operator Flow
 
 > [!NOTE]

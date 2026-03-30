@@ -7,6 +7,7 @@ The default path is simple:
 
 - all three workers share one guest CPU pool
 - Gold, Silver, and Bronze decide who gets more CPU when the host is busy
+- the host can also carry a foundation policy for CPU pools and memory efficiency
 
 That is the small-scale adaptation of the host resource management model being
 developed in `dcib2026`.
@@ -50,6 +51,19 @@ Inventory check:
 ```bash
 ansible-inventory -i inventory/hosts.yml --graph
 ```
+
+Prepare the host foundation policy:
+
+```bash
+./scripts/host-resource-management.sh host-config-apply
+./scripts/host-resource-management.sh host-config-status
+```
+
+> [!NOTE]
+> This is the host-side foundation layer. It installs the reserved CPU policy,
+> Gold/Silver/Bronze slice definitions, and the optional memory-efficiency
+> service for zram, THP, and KSM. Run it when you first prepare the host or
+> after rebuilding it.
 
 Apply the shared execution pool path:
 

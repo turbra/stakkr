@@ -14,6 +14,8 @@ ansible_playbook() {
 usage() {
   cat <<'EOF' >&2
 usage:
+  host-resource-management.sh host-config-apply
+  host-resource-management.sh host-config-status
   host-resource-management.sh status
   host-resource-management.sh render
   host-resource-management.sh apply
@@ -39,6 +41,14 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${PROJECT_ROOT}"
 
 case "${ACTION}" in
+  host-config-apply)
+    ansible_playbook \
+      playbooks/maintenance/host-config-apply.yml
+    ;;
+  host-config-status)
+    ansible_playbook \
+      playbooks/maintenance/host-config-status.yml
+    ;;
   status)
     ansible_playbook \
       playbooks/maintenance/cgroup-tiering-status.yml
