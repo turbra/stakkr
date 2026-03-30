@@ -29,6 +29,7 @@ operating model.
   [method](./docs/clock-frequency-tiering.md),
   [findings](./docs/clock-frequency-validation.md)
 - [dashboard generation and serving](./docs/dashboard.md)
+- [Cockpit observer](./cockpit/stakkr-observer/README.md)
 
 
 ## Default Operating Model

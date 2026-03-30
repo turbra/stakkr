@@ -1,0 +1,230 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "RedHatText", "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #151515;
+    background: #f0f0f0;
+}
+
+#app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+#header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding: 8px 0;
+}
+
+#header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+#header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+}
+
+#header-controls label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#header-controls select,
+#header-controls button {
+    padding: 4px 8px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: #fff;
+}
+
+#header-controls button {
+    cursor: pointer;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-dot--ok { background: #2e7d32; }
+.status-dot--waiting { background: #bbb; }
+.status-dot--error { background: #c62828; }
+.status-dot--paused { background: #e65100; }
+
+.observer-card {
+    background: #fff;
+    border: 1px solid #d2d2d2;
+    border-radius: 4px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.observer-card h3 {
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+}
+
+.panel-placeholder {
+    color: #888;
+    font-style: italic;
+    padding: 8px 0;
+}
+
+.observer-error {
+    background: #fde8e8;
+    border: 1px solid #c62828;
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: #c62828;
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+.summary-grid,
+.metric-grid,
+.vm-grid,
+.scope-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.summary-grid,
+.metric-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.vm-grid,
+.scope-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.metric,
+.scope-card,
+.vm-card {
+    border: 1px solid #d2d2d2;
+    border-radius: 4px;
+    padding: 10px 12px;
+    background: #fafafa;
+}
+
+.metric-label,
+.vm-card h4,
+.scope-card h4 {
+    display: block;
+    font-size: 12px;
+    color: #6a6e73;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.metric-value {
+    font-weight: 600;
+}
+
+.state-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.state-badge.stock { background: #e8e8e8; color: #4d4d4d; }
+.state-badge.shared { background: #d9f2e3; color: #1b5e20; }
+.state-badge.clock { background: #e3f2fd; color: #1565c0; }
+.state-badge.mixed { background: #fff4cc; color: #8a5a00; }
+
+.tier-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.tier-gold { background: #f6efc7; color: #8f6a00; }
+.tier-silver { background: #eceef1; color: #5d6166; }
+.tier-bronze { background: #f6dfd1; color: #8c4f2b; }
+
+.cpu-map {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+    gap: 8px;
+}
+
+.cpu-tile {
+    border-radius: 4px;
+    color: #fff;
+    padding: 10px;
+    min-height: 88px;
+}
+
+.cpu-tile .cpu-num {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.cpu-tile .cpu-role {
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.cpu-tile .cpu-meta {
+    font-size: 11px;
+    margin-top: 8px;
+    opacity: 0.92;
+}
+
+.cpu-host { background: #4d4d4d; }
+.cpu-gold { background: #c9b037; }
+.cpu-silver { background: #8a8d91; }
+.cpu-bronze { background: #cd7f32; }
+.cpu-pool { background: #2e7d32; }
+.cpu-other { background: #607d8b; }
+
+.sparkline-canvas {
+    width: 100%;
+    height: 44px;
+    display: block;
+}
+
+.overhead-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.overhead-card {
+    border: 1px solid #d2d2d2;
+    border-radius: 4px;
+    padding: 10px 12px;
+    background: #fafafa;
+}
+
+pre {
+    margin: 0;
+    white-space: pre-wrap;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+}

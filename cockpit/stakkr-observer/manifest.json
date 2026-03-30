@@ -1,0 +1,22 @@
+{
+    "name": "stakkr-observer",
+    "requires": {
+        "cockpit": "219"
+    },
+    "menu": {
+        "index": {
+            "label": "Stakkr Observer",
+            "order": 15,
+            "keywords": [
+                {
+                    "matches": [
+                        "stakkr", "observer", "ksm", "zram", "memory",
+                        "thp", "cgroup", "cpu", "gold", "silver", "bronze",
+                        "cockpit", "kvm", "tiering"
+                    ]
+                }
+            ]
+        }
+    },
+    "content-security-policy": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'"
+}
