@@ -29,8 +29,7 @@ import sys
 import time
 import xml.etree.ElementTree as ET
 
-MANAGED_VMS = ["kvm-worker-01", "kvm-worker-02", "kvm-worker-03"]
-VM_TIERS = {
+LEGACY_VM_TIERS = {
     "kvm-worker-01": "gold",
     "kvm-worker-02": "silver",
     "kvm-worker-03": "bronze",
@@ -515,11 +514,14 @@ def parse_domain_cgroups(domains: list[dict] | None = None) -> dict:
             if cpu_stat is not None:
                 result[name] = cpu_stat
     else:
-        for name in MANAGED_VMS:
-            scope_name = detect_scope_name(name)
+        for domain in discover_managed_domains_from_cgroups():
+            scope_name = detect_scope_name(domain["name"])
             cpu_stat = parse_scope_cpu_stat(scope_name) if scope_name else None
+            if cpu_stat is None:
+                scope_base = f"/sys/fs/cgroup/machine.slice/machine-{domain['tier']}.slice"
+                cpu_stat = _find_domain_cgroup(scope_base, domain["name"])
             if cpu_stat is not None:
-                result[name] = cpu_stat
+                result[domain["name"]] = cpu_stat
 
     return result
 
@@ -590,20 +592,66 @@ def _unescape_scope_name(dirname: str) -> str | None:
     return s if s else None
 
 
+def discover_managed_domains_from_cgroups() -> list[dict]:
+    """Discover domains currently attached to Stakkr performance-domain slices."""
+    discovered: dict[str, dict] = {}
+    for tier in TIER_NAMES:
+        scope_base = f"/sys/fs/cgroup/machine.slice/machine-{tier}.slice"
+        if not os.path.isdir(scope_base):
+            continue
+        for entry in os.listdir(scope_base):
+            if not entry.startswith("machine-qemu") or not entry.endswith(".scope"):
+                continue
+            name = _unescape_scope_name(entry)
+            if not name:
+                continue
+            discovered[name] = {
+                "name": name,
+                "tier": tier,
+                "memory_bytes": 0,
+                "vcpus": 0,
+                "partition": f"/machine/{tier}",
+            }
+    return [discovered[name] for name in sorted(discovered)]
+
+
+def read_scope_cpu_weight(vm_name: str) -> int | None:
+    scope_name = detect_scope_name(vm_name)
+    if not scope_name:
+        return None
+    proc = run(
+        "systemctl", "show", scope_name, "-p", "CPUWeight", "--value",
+        check=False,
+    )
+    if proc.returncode != 0:
+        return None
+    value = proc.stdout.strip()
+    if not value or value == "[not set]":
+        return None
+    try:
+        return int(value)
+    except ValueError:
+        return None
+
+
 # ---------------------------------------------------------------------------
 # libvirt domains (slow — involves virsh forks)
 # ---------------------------------------------------------------------------
 
-def classify_tier(name: str, partition: str) -> str:
+def classify_tier(name: str, partition: str, cpu_weight: int | None = None) -> str | None:
     if partition == "/machine/gold":
         return "gold"
     if partition == "/machine/silver":
         return "silver"
     if partition == "/machine/bronze":
         return "bronze"
-    if name in VM_TIERS:
-        return VM_TIERS[name]
-    return "bronze"
+    if cpu_weight is not None:
+        for tier, weight in TIER_WEIGHTS.items():
+            if cpu_weight == weight:
+                return tier
+    if name in LEGACY_VM_TIERS:
+        return LEGACY_VM_TIERS[name]
+    return None
 
 
 def parse_domains() -> list[dict]:
@@ -612,8 +660,6 @@ def parse_domains() -> list[dict]:
         return []
     result: list[dict] = []
     for name in [l.strip() for l in proc.stdout.splitlines() if l.strip()]:
-        if name not in MANAGED_VMS:
-            continue
         xml_proc = run("virsh", "dumpxml", name, check=False)
         if xml_proc.returncode != 0:
             continue
@@ -633,7 +679,10 @@ def parse_domains() -> list[dict]:
             partition_elem.text.strip()
             if partition_elem is not None and partition_elem.text else ""
         )
-        tier = classify_tier(name, partition)
+        cpu_weight = read_scope_cpu_weight(name)
+        tier = classify_tier(name, partition, cpu_weight)
+        if tier is None:
+            continue
         result.append({
             "name": name,
             "memory_bytes": memory_kib * 1024,
@@ -735,8 +784,8 @@ def collect(fast: bool = False) -> dict:
         payload["guest_vcpus"] = sum(d["vcpus"] for d in domains)
     else:
         # Fast mode: skip virsh but still read per-domain cgroup CPU
-        # via discovery (scanning cgroup tree for QEMU scopes)
-        domains = [{"name": name, "tier": VM_TIERS[name], "memory_bytes": 0, "vcpus": 0, "partition": ""} for name in MANAGED_VMS]
+        # via discovery under the performance-domain tier slices
+        domains = discover_managed_domains_from_cgroups()
         domain_cgroups = parse_domain_cgroups()
         tier_cgroups = synthesize_tier_cgroups(domains, domain_cgroups, tier_cgroups)
         payload["tier_cgroups"] = tier_cgroups
