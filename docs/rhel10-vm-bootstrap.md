@@ -180,3 +180,36 @@ sudo virsh undefine <guest-fqdn> --nvram
 sudo rm -f <disk_path>
 sudo rm -rf /var/lib/stakkr/rhel10-vms/<guest-short-name>
 ```
+
+## Change A Guest Tier After Deployment
+
+Today, changing a guest's Stakkr tier is a libvirt domain recreation workflow,
+not a live retiering workflow.
+
+To move an existing guest from one tier to another:
+
+1. update the guest's `stakkr.tier` value in your VM definition
+2. set:
+
+```yaml
+provisioning:
+  rebuild_disk_from_image: false
+  recreate_domain: true
+```
+
+3. rerun the same playbook
+
+That recreates the libvirt domain definition with the new partitioning and CPU
+placement, while keeping the existing guest disk.
+
+After the tier change succeeds, return:
+
+```yaml
+provisioning:
+  rebuild_disk_from_image: false
+  recreate_domain: false
+```
+
+If you also set `rebuild_disk_from_image: true`, the guest disk will be reseeded
+from the source image, which is usually not what you want for a simple tier
+change.
