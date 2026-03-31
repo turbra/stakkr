@@ -1,0 +1,105 @@
+---
+- name: Derive OpenShift installer binary paths
+  ansible.builtin.set_fact:
+    openshift_installer_binaries_download_dir: "{{ openshift_installer_binaries.download_dir }}"
+    openshift_installer_binaries_install_dir: "{{ openshift_installer_binaries.install_dir }}"
+
+- name: Install local packages required for agent media generation
+  ansible.builtin.command:
+    argv:
+      - dnf
+      - install
+      - -y
+      - "{{ item }}"
+  loop: "{{ openshift_installer_binaries.local_packages }}"
+  loop_control:
+    label: "{{ item }}"
+  become: true
+  changed_when: true
+
+- name: Create local download and install directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ openshift_installer_binaries_download_dir }}"
+    - "{{ openshift_installer_binaries_install_dir }}"
+
+- name: Download openshift-install archive when enabled
+  ansible.builtin.get_url:
+    url: >-
+      {{
+        openshift_installer_binaries.base_url ~ '/'
+        ~ openshift_installer_binaries.binaries.openshift_install.archive
+      }}
+    dest: >-
+      {{
+        openshift_installer_binaries_download_dir ~ '/'
+        ~ openshift_installer_binaries.binaries.openshift_install.archive
+      }}
+    mode: "0644"
+  when: openshift_installer_binaries.download_enabled | bool
+
+- name: Download OpenShift client archive when enabled
+  ansible.builtin.get_url:
+    url: >-
+      {{
+        openshift_installer_binaries.base_url ~ '/'
+        ~ openshift_installer_binaries.binaries.openshift_client.archive
+      }}
+    dest: >-
+      {{
+        openshift_installer_binaries_download_dir ~ '/'
+        ~ openshift_installer_binaries.binaries.openshift_client.archive
+      }}
+    mode: "0644"
+  when: openshift_installer_binaries.download_enabled | bool
+
+- name: Extract openshift-install binary when download mode is enabled
+  ansible.builtin.unarchive:
+    src: >-
+      {{
+        openshift_installer_binaries_download_dir ~ '/'
+        ~ openshift_installer_binaries.binaries.openshift_install.archive
+      }}
+    dest: "{{ openshift_installer_binaries_install_dir }}"
+    remote_src: true
+    creates: "{{ openshift_installer_binaries.binary_path }}"
+  when: openshift_installer_binaries.download_enabled | bool
+
+- name: Extract OpenShift client binaries when download mode is enabled
+  ansible.builtin.unarchive:
+    src: >-
+      {{
+        openshift_installer_binaries_download_dir ~ '/'
+        ~ openshift_installer_binaries.binaries.openshift_client.archive
+      }}
+    dest: "{{ openshift_installer_binaries_install_dir }}"
+    remote_src: true
+  when: openshift_installer_binaries.download_enabled | bool
+
+- name: Ensure extracted OpenShift binaries are executable when download mode is enabled
+  ansible.builtin.file:
+    path: "{{ openshift_installer_binaries_install_dir }}/{{ item }}"
+    mode: "0755"
+  loop: >-
+    {{
+      [openshift_installer_binaries.binaries.openshift_install.binary_name]
+      + openshift_installer_binaries.binaries.openshift_client.binary_names
+    }}
+  when: openshift_installer_binaries.download_enabled | bool
+
+- name: Validate openshift-install binary path
+  ansible.builtin.stat:
+    path: "{{ openshift_installer_binaries.binary_path }}"
+  register: stakkr_openshift_installer_binary_stat
+
+- name: Assert openshift-install is available
+  ansible.builtin.assert:
+    that:
+      - stakkr_openshift_installer_binary_stat.stat.exists
+    fail_msg: >-
+      openshift-install was not found at {{
+      openshift_installer_binaries.binary_path }}. Either enable download mode
+      or point binary_path at an existing local installer.

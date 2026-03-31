@@ -1,0 +1,4 @@
+---
+openshift_cluster_cleanup_runtime_root: /var/lib/stakkr/openshift-cluster
+openshift_cluster_cleanup_remove_disk_files: false
+

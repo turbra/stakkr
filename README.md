@@ -34,6 +34,8 @@ operating model.
   [guide](./docs/idm-local-bootstrap.md)
 - generic RHEL 10 VM bootstrap:
   [guide](./docs/rhel10-vm-bootstrap.md)
+- local OpenShift cluster scaffold:
+  [guide](./docs/openshift-local-cluster.md)
 - [Cockpit observer](./cockpit/stakkr-observer/README.md)
 
 > [!NOTE]

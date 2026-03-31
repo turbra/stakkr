@@ -1,0 +1,13 @@
+---
+- name: Render local OpenShift install artifacts
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ../../vars/global/execution_environment.yml
+    - ../../vars/cluster/openshift_install_cluster.yml
+    - ../../vars/cluster/openshift_install_artifacts.yml
+    - ../../vars/guests/openshift_cluster_vm.yml
+  roles:
+    - openshift_install_artifacts
+

@@ -1,0 +1,222 @@
+---
+- name: Derive OpenShift cluster naming facts
+  ansible.builtin.set_fact:
+    openshift_cluster_effective_domain: "{{ openshift_cluster_vm_defaults.domain }}"
+    openshift_cluster_effective_nodes: "{{ openshift_cluster_nodes }}"
+
+- name: Validate OpenShift cluster orchestration data
+  ansible.builtin.assert:
+    that:
+      - openshift_install_cluster.name | default('') | length > 0
+      - openshift_cluster_effective_domain | length > 0
+      - openshift_cluster_effective_nodes | length > 0
+    fail_msg: >-
+      vars/guests/openshift_cluster_vm.yml is missing required OpenShift node
+      data.
+
+- name: Install packages needed for the OpenShift VM build workflow
+  ansible.builtin.command:
+    argv:
+      - dnf
+      - install
+      - -y
+      - "{{ item }}"
+  loop:
+    - qemu-img
+    - qemu-kvm
+    - virt-install
+    - virt-manager-common
+  loop_control:
+    label: "{{ item }}"
+  changed_when: true
+
+- name: Validate the OpenShift node definitions
+  ansible.builtin.assert:
+    that:
+      - item.name | length > 0
+      - item.role in ['control-plane', 'worker']
+      - item.mac_address | length > 0
+      - (item.resources.vcpus | int) > 0
+      - (item.resources.memory_mb | int) > 0
+      - item.disks.root.path | length > 0
+      - (item.disks.root.serial | default('')) | length > 0
+      - (item.disks.root.size_gb | default(openshift_cluster_vm_defaults.disks.root.size_gb) | int) > 0
+    fail_msg: >-
+      OpenShift node {{ item.name | default('unnamed') }} is missing required
+      identity, resource, or disk settings.
+  loop: "{{ openshift_cluster_effective_nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Validate the generated agent ISO is present on the hypervisor
+  ansible.builtin.stat:
+    path: "{{ openshift_agent_media.hypervisor_boot_media_path }}"
+  register: stakkr_openshift_cluster_agent_iso_stat
+
+- name: Assert generated agent ISO is present before VM creation
+  ansible.builtin.assert:
+    that:
+      - stakkr_openshift_cluster_agent_iso_stat.stat.exists
+    fail_msg: >-
+      Agent ISO {{ openshift_agent_media.hypervisor_boot_media_path }} is
+      missing. Run playbooks/cluster/openshift-agent-media.yml first.
+
+- name: Check whether the OpenShift node libvirt domains already exist
+  ansible.builtin.command:
+    argv:
+      - virsh
+      - dominfo
+      - "{{ item.name }}.{{ openshift_cluster_effective_domain }}"
+  loop: "{{ openshift_cluster_effective_nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: stakkr_openshift_cluster_domain_info
+  changed_when: false
+  failed_when: false
+
+- name: Stop the existing OpenShift node VMs before recreation
+  ansible.builtin.command:
+    argv:
+      - virsh
+      - destroy
+      - "{{ item.item.name }}.{{ openshift_cluster_effective_domain }}"
+  loop: "{{ stakkr_openshift_cluster_domain_info.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when:
+    - item.rc == 0
+    - >-
+      openshift_cluster_recreate_existing_domains | bool or
+      (
+        item.item.provisioning.recreate_domain
+        | default(openshift_cluster_vm_defaults.provisioning.recreate_domain)
+        | bool
+      ) or (
+        item.item.provisioning.reinitialize_root_disk
+        | default(openshift_cluster_vm_defaults.provisioning.reinitialize_root_disk)
+        | bool
+      )
+  changed_when: true
+  failed_when: false
+
+- name: Undefine the existing OpenShift node VMs before recreation
+  ansible.builtin.command:
+    argv:
+      - virsh
+      - undefine
+      - "{{ item.item.name }}.{{ openshift_cluster_effective_domain }}"
+      - --nvram
+  loop: "{{ stakkr_openshift_cluster_domain_info.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when:
+    - item.rc == 0
+    - >-
+      openshift_cluster_recreate_existing_domains | bool or
+      (
+        item.item.provisioning.recreate_domain
+        | default(openshift_cluster_vm_defaults.provisioning.recreate_domain)
+        | bool
+      ) or (
+        item.item.provisioning.reinitialize_root_disk
+        | default(openshift_cluster_vm_defaults.provisioning.reinitialize_root_disk)
+        | bool
+      )
+  changed_when: true
+  failed_when: false
+
+- name: Create OpenShift cluster runtime directories
+  ansible.builtin.file:
+    path: "{{ openshift_cluster_runtime_root }}/{{ item.name }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop: "{{ openshift_cluster_effective_nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Ensure OpenShift root disk directories exist
+  ansible.builtin.file:
+    path: "{{ item.disks.root.path | dirname }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop: "{{ openshift_cluster_effective_nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Remove root disks when reinitialization is requested
+  ansible.builtin.file:
+    path: "{{ item.disks.root.path }}"
+    state: absent
+  loop: "{{ openshift_cluster_effective_nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: >-
+    item.provisioning.reinitialize_root_disk
+    | default(openshift_cluster_vm_defaults.provisioning.reinitialize_root_disk)
+    | bool
+
+- name: Check whether the OpenShift node root disk files exist
+  ansible.builtin.stat:
+    path: "{{ item.disks.root.path }}"
+  loop: "{{ openshift_cluster_effective_nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: stakkr_openshift_cluster_root_disk_stat
+
+- name: Create OpenShift root disk files when absent
+  ansible.builtin.command:
+    argv:
+      - qemu-img
+      - create
+      - -f
+      - "{{ item.item.disks.root.format | default(openshift_cluster_vm_defaults.disks.root.format) }}"
+      - "{{ item.item.disks.root.path }}"
+      - "{{ item.item.disks.root.size_gb | default(openshift_cluster_vm_defaults.disks.root.size_gb) }}G"
+  loop: "{{ stakkr_openshift_cluster_root_disk_stat.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when: not item.stat.exists
+  changed_when: true
+
+- name: Render virt-install command previews for each OpenShift node
+  ansible.builtin.template:
+    src: virt-install-command.j2
+    dest: "{{ openshift_cluster_runtime_root }}/{{ item.name }}/virt-install.sh"
+    owner: root
+    group: root
+    mode: "0700"
+  loop: "{{ openshift_cluster_effective_nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+  vars:
+    openshift_cluster_node: "{{ item }}"
+
+- name: Install the OpenShift node libvirt domains when absent or recreation was requested
+  ansible.builtin.command:
+    argv:
+      - bash
+      - "{{ openshift_cluster_runtime_root }}/{{ item.name }}/virt-install.sh"
+  loop: "{{ openshift_cluster_effective_nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: >-
+    (
+      stakkr_openshift_cluster_domain_info.results
+      | selectattr('item.name', 'equalto', item.name)
+      | first
+    ).rc != 0 or
+    openshift_cluster_recreate_existing_domains | bool or
+    (
+      item.provisioning.recreate_domain
+      | default(openshift_cluster_vm_defaults.provisioning.recreate_domain)
+      | bool
+    ) or (
+      item.provisioning.reinitialize_root_disk
+      | default(openshift_cluster_vm_defaults.provisioning.reinitialize_root_disk)
+      | bool
+    )
+  changed_when: true

@@ -1,0 +1,13 @@
+---
+- name: Generate and publish local OpenShift agent media
+  hosts: localhost
+  connection: local
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../../vars/global/execution_environment.yml
+    - ../../vars/cluster/openshift_installer_binaries.yml
+    - ../../vars/cluster/openshift_agent_media.yml
+  roles:
+    - openshift_agent_media
+

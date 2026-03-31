@@ -1,0 +1,68 @@
+---
+openshift_cluster_vm_defaults:
+  domain: "{{ openshift_install_cluster.name }}.{{ openshift_install_cluster.base_domain }}"
+  osinfo: rhel10.1
+  boot:
+    firmware: uefi
+    machine: q35
+    cpu_model: host-passthrough
+    tpm_enabled: false
+  network:
+    attachment_type: bridge
+    bridge_name: bridge0
+    libvirt_network: ""
+    libvirt_portgroup: ""
+    model: virtio
+  provisioning:
+    recreate_domain: false
+    reinitialize_root_disk: false
+  performance_domain:
+    tier: bronze
+    iothreads: 0
+  access:
+    attach_agent_boot_media: true
+    agent_boot_media_path: /var/lib/libvirt/images/agent.x86_64.iso
+    agent_boot_media_target_dev: sdb
+  console:
+    graphics_type: none
+    vnc_listen: 127.0.0.1
+  disks:
+    root:
+      format: qcow2
+      size_gb: 120
+      bus: scsi
+      cache: none
+      io: native
+      discard: unmap
+      rotation_rate: 1
+      serial: ""
+
+openshift_cluster_nodes:
+  - name: ocp-sno-01
+    role: control-plane
+    mac_address: "52:54:00:40:00:10"
+    resources:
+      vcpus: 16
+      memory_mb: 32768
+    performance_domain:
+      tier: gold
+      iothreads: 0
+    disks:
+      root:
+        path: /var/lib/libvirt/images/ocp-sno-01.qcow2
+        serial: ocpsno01root
+
+  - name: ocp-worker-01
+    role: worker
+    mac_address: "52:54:00:40:00:20"
+    resources:
+      vcpus: 8
+      memory_mb: 16384
+    performance_domain:
+      tier: bronze
+      iothreads: 0
+    disks:
+      root:
+        path: /var/lib/libvirt/images/ocp-worker-01.qcow2
+        serial: ocpworker01root
+

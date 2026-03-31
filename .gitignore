@@ -5,3 +5,5 @@ __pycache__/
 *.pyc
 cockpit/*/rpmbuild/
 inventory/group_vars/all/lab_credentials.yml
+secrets/*
+!secrets/.gitkeep

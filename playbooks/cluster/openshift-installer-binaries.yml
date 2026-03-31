@@ -1,0 +1,11 @@
+---
+- name: Prepare OpenShift installer and client binaries for local cluster work
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ../../vars/global/execution_environment.yml
+    - ../../vars/cluster/openshift_installer_binaries.yml
+  roles:
+    - openshift_installer_binaries
+

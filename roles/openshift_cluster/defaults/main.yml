@@ -1,0 +1,4 @@
+---
+openshift_cluster_runtime_root: /var/lib/stakkr/openshift-cluster
+openshift_cluster_recreate_existing_domains: false
+

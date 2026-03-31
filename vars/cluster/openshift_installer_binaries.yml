@@ -1,0 +1,27 @@
+---
+openshift_installer_binaries:
+  release: "4.20.15"
+  download_enabled: false
+  local_packages:
+    - nmstate
+  base_url: >-
+    https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/{{
+    openshift_installer_binaries.release }}
+  download_dir: >-
+    {{ stakkr_execution_tools_root }}/{{ openshift_installer_binaries.release }}/downloads
+  install_dir: >-
+    {{ stakkr_execution_tools_root }}/{{ openshift_installer_binaries.release }}/bin
+  binary_path: >-
+    {{ openshift_installer_binaries.install_dir }}/openshift-install
+  binaries:
+    openshift_install:
+      archive: >-
+        openshift-install-linux-{{ openshift_installer_binaries.release }}.tar.gz
+      binary_name: openshift-install
+    openshift_client:
+      archive: >-
+        openshift-client-linux-{{ openshift_installer_binaries.release }}.tar.gz
+      binary_names:
+        - oc
+        - kubectl
+

@@ -1,0 +1,45 @@
+---
+- name: Wait for local OpenShift agent-based installation to complete
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ../../vars/global/execution_environment.yml
+    - ../../vars/cluster/openshift_installer_binaries.yml
+    - ../../vars/cluster/openshift_install_artifacts.yml
+  tasks:
+    - name: Validate openshift-install is available
+      ansible.builtin.stat:
+        path: "{{ openshift_installer_binaries.binary_path }}"
+      register: stakkr_openshift_install_binary_stat
+
+    - name: Assert openshift-install exists before waiting
+      ansible.builtin.assert:
+        that:
+          - stakkr_openshift_install_binary_stat.stat.exists
+        fail_msg: >-
+          Expected openshift-install at {{
+          openshift_installer_binaries.binary_path }}. Run
+          playbooks/cluster/openshift-installer-binaries.yml first or point the
+          binary_path at an existing installer.
+
+    - name: Wait for bootstrap completion
+      ansible.builtin.command:
+        argv:
+          - "{{ openshift_installer_binaries.binary_path }}"
+          - --dir
+          - "{{ openshift_install_artifacts.output_dir }}"
+          - wait-for
+          - bootstrap-complete
+      changed_when: false
+
+    - name: Wait for install completion
+      ansible.builtin.command:
+        argv:
+          - "{{ openshift_installer_binaries.binary_path }}"
+          - --dir
+          - "{{ openshift_install_artifacts.output_dir }}"
+          - wait-for
+          - install-complete
+      changed_when: false
+

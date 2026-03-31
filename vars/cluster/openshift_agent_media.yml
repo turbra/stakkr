@@ -1,0 +1,14 @@
+---
+openshift_agent_media:
+  output_dir: "{{ stakkr_execution_ocp_generated_root }}"
+  regenerate_boot_media: false
+  publish_to_hypervisor: true
+  hypervisor_boot_media_path: /var/lib/libvirt/images/agent.x86_64.iso
+  openshift_install_binary: "{{ openshift_installer_binaries.binary_path }}"
+  create_image_subcommand:
+    - agent
+    - create
+    - image
+  boot_artifact:
+    filename: agent.x86_64.iso
+

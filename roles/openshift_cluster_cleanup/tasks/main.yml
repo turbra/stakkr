@@ -1,0 +1,63 @@
+---
+- name: Derive OpenShift cluster cleanup facts
+  ansible.builtin.set_fact:
+    openshift_cluster_cleanup_nodes: "{{ openshift_cluster_nodes }}"
+    openshift_cluster_cleanup_effective_domain: "{{ openshift_cluster_vm_defaults.domain }}"
+
+- name: Check whether the OpenShift node libvirt domains exist
+  ansible.builtin.command:
+    argv:
+      - virsh
+      - dominfo
+      - "{{ item.name }}.{{ openshift_cluster_cleanup_effective_domain }}"
+  loop: "{{ openshift_cluster_cleanup_nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: stakkr_openshift_cluster_cleanup_domain_info
+  changed_when: false
+  failed_when: false
+
+- name: Stop the OpenShift node VMs when they exist
+  ansible.builtin.command:
+    argv:
+      - virsh
+      - destroy
+      - "{{ item.item.name }}.{{ openshift_cluster_cleanup_effective_domain }}"
+  loop: "{{ stakkr_openshift_cluster_cleanup_domain_info.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when: item.rc == 0
+  changed_when: true
+  failed_when: false
+
+- name: Undefine the OpenShift node VMs when they exist
+  ansible.builtin.command:
+    argv:
+      - virsh
+      - undefine
+      - "{{ item.item.name }}.{{ openshift_cluster_cleanup_effective_domain }}"
+      - --nvram
+  loop: "{{ stakkr_openshift_cluster_cleanup_domain_info.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when: item.rc == 0
+  changed_when: true
+  failed_when: false
+
+- name: Remove OpenShift node runtime directories from the hypervisor
+  ansible.builtin.file:
+    path: "{{ openshift_cluster_cleanup_runtime_root }}/{{ item.name }}"
+    state: absent
+  loop: "{{ openshift_cluster_cleanup_nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Remove OpenShift root disk files when requested
+  ansible.builtin.file:
+    path: "{{ item.disks.root.path }}"
+    state: absent
+  loop: "{{ openshift_cluster_cleanup_nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: openshift_cluster_cleanup_remove_disk_files | bool
+

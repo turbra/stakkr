@@ -1,0 +1,14 @@
+---
+- name: Provision local OpenShift cluster VM shells
+  hosts: hypervisors
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../../vars/global/host_resource_management.yml
+    - ../../vars/global/execution_environment.yml
+    - ../../vars/cluster/openshift_install_cluster.yml
+    - ../../vars/guests/openshift_cluster_vm.yml
+    - ../../vars/cluster/openshift_agent_media.yml
+  roles:
+    - openshift_cluster
+
