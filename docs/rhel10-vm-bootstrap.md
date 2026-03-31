@@ -133,6 +133,21 @@ To verify SSH:
 ssh -i ~/.ssh/id_ed25519 <admin-user>@<guest-ip>
 ```
 
+Using the bundled example values, that would be:
+
+```bash
+ssh -i ~/.ssh/id_ed25519 cloud-user@192.168.1.230
+ssh -i ~/.ssh/id_ed25519 cloud-user@192.168.1.231
+```
+
+If your environment resolves the configured guest names in DNS, you can also
+connect by FQDN:
+
+```bash
+ssh -i ~/.ssh/id_ed25519 cloud-user@rhel10-admin.stakkr.lan
+ssh -i ~/.ssh/id_ed25519 cloud-user@rhel10-app.stakkr.lan
+```
+
 If Stakkr placement is enabled for a guest:
 
 ```bash
