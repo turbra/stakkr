@@ -1,0 +1,451 @@
+---
+- name: Validate generic RHEL 10 guest identity fields before deriving facts
+  ansible.builtin.assert:
+    that:
+      - rhel10_vm.name is defined
+      - rhel10_vm.domain is defined
+      - rhel10_vm.name | length > 0
+      - rhel10_vm.domain | length > 0
+    fail_msg: >-
+      Each rhel10_vms entry must define both name and domain before guest facts
+      can be derived.
+
+- name: Derive generic RHEL 10 guest identity facts
+  ansible.builtin.set_fact:
+    rhel10_vm_name: >-
+      {{
+        rhel10_vm.name
+        if ('.' not in rhel10_vm.name)
+        else (
+          rhel10_vm.name
+          | regex_replace('\\.' ~ (rhel10_vm.domain | regex_escape) ~ '$', '')
+        )
+      }}
+    rhel10_vm_fqdn: >-
+      {{
+        rhel10_vm.name
+        if (rhel10_vm.name.endswith('.' ~ rhel10_vm.domain) or rhel10_vm.name == rhel10_vm.domain)
+        else (rhel10_vm.name ~ '.' ~ rhel10_vm.domain)
+      }}
+
+- name: Derive generic RHEL 10 guest runtime facts
+  ansible.builtin.set_fact:
+    rhel10_vm_ip_cidr: "{{ rhel10_vm.network.ipv4_address }}/{{ rhel10_vm.network.prefix_length }}"
+    rhel10_vm_runtime_dir: "{{ rhel10_vm_runtime_root }}/{{ rhel10_vm_name }}"
+    rhel10_vm_cloudinit_dir: "{{ rhel10_vm_runtime_root }}/{{ rhel10_vm_name }}/cloudinit"
+    rhel10_vm_cloudinit_iso: "{{ rhel10_vm_runtime_root }}/{{ rhel10_vm_name }}/{{ rhel10_vm_name }}-cidata.iso"
+    rhel10_vm_driver: "{{ rhel10_vm.driver | default('local-libvirt') }}"
+    rhel10_vm_network_attachment_type: "{{ rhel10_vm.network.attachment_type | default('libvirt-network') }}"
+    rhel10_vm_stakkr_enabled: "{{ rhel10_vm.stakkr.enabled | default(false) }}"
+
+- name: Validate generic RHEL 10 guest data
+  ansible.builtin.assert:
+    that:
+      - rhel10_vm_driver == 'local-libvirt'
+      - rhel10_vm.name | length > 0
+      - rhel10_vm.domain | length > 0
+      - rhel10_vm.source_image | length > 0
+      - rhel10_vm.source_image_format in ['qcow2', 'raw']
+      - rhel10_vm.disk_path | length > 0
+      - rhel10_vm.disk_format | length > 0
+      - rhel10_vm.osinfo | length > 0
+      - rhel10_vm.resources.memory_mb | int > 0
+      - rhel10_vm.resources.vcpus | int > 0
+      - rhel10_vm_network_attachment_type in ['bridge', 'libvirt-network']
+      - >-
+        (
+          rhel10_vm_network_attachment_type == 'bridge' and
+          (rhel10_vm.network.bridge_name | default('') | length) > 0
+        ) or (
+          rhel10_vm_network_attachment_type == 'libvirt-network' and
+          (rhel10_vm.network.libvirt_network | default('') | length) > 0
+        )
+      - rhel10_vm.network.interface_name | length > 0
+      - rhel10_vm.network.mac_address | length > 0
+      - rhel10_vm.network.ipv4_address | length > 0
+      - rhel10_vm.network.prefix_length | int > 0
+      - rhel10_vm.network.gateway | length > 0
+      - rhel10_vm.access.admin_user | length > 0
+      - rhel10_vm.access.ssh_private_key_file | length > 0
+      - (rhel10_vm.access.ssh_authorized_keys | length) > 0 or (rhel10_vm.access.admin_password | length) > 0
+    fail_msg: >-
+      One of the rhel10_vms entries is missing required guest identity, image,
+      disk, network, or access data.
+
+- name: Validate RHSM data when guest registration is enabled
+  ansible.builtin.assert:
+    that:
+      - >-
+        (
+          rhel10_vm.subscription.activation_key | length > 0 and
+          rhel10_vm.subscription.organization_id | length > 0
+        ) or (
+          rhel10_vm.subscription.username | length > 0 and
+          rhel10_vm.subscription.password | length > 0
+        )
+    fail_msg: >-
+      Guest subscription enablement requires either activation_key +
+      organization_id or username + password for {{ rhel10_vm.name }}.
+  when: rhel10_vm.subscription.enabled | bool
+
+- name: Validate Stakkr performance-domain data when enabled
+  ansible.builtin.assert:
+    that:
+      - rhel10_vm.stakkr.tier | length > 0
+      - host_resource_management.performance_domains[rhel10_vm.stakkr.tier] is mapping
+    fail_msg: >-
+      Guest {{ rhel10_vm.name }} requested a Stakkr performance domain, but the
+      selected tier is not defined in vars/global/host_resource_management.yml.
+  when: rhel10_vm_stakkr_enabled | bool
+
+- name: Derive generic RHEL 10 network argument
+  ansible.builtin.set_fact:
+    rhel10_vm_network_arg: >-
+      {{
+        (
+          'bridge=' ~ rhel10_vm.network.bridge_name
+        )
+        if rhel10_vm_network_attachment_type == 'bridge'
+        else
+        (
+          'network=' ~ rhel10_vm.network.libvirt_network
+          ~ (
+              ',portgroup=' ~ rhel10_vm.network.libvirt_portgroup
+              if (rhel10_vm.network.libvirt_portgroup | default('') | length) > 0
+              else ''
+            )
+        )
+      }}{{ ',model=' ~ (rhel10_vm.network.model | default('virtio')) }}{{ ',mac=' ~ rhel10_vm.network.mac_address }}
+
+- name: Derive generic RHEL 10 Stakkr settings when enabled
+  ansible.builtin.set_fact:
+    rhel10_vm_stakkr_settings: "{{ host_resource_management.performance_domains[rhel10_vm.stakkr.tier] }}"
+  when: rhel10_vm_stakkr_enabled | bool
+
+- name: Initialize generic RHEL 10 cputune entries
+  ansible.builtin.set_fact:
+    rhel10_vm_cputune_entries: >-
+      {{
+        (
+          [
+            'shares=' ~ (rhel10_vm_stakkr_settings.cpu_shares | string),
+            'emulatorpin.cpuset=' ~ host_resource_management.cpu_pools.host_emulator
+          ]
+          + (
+            [
+              'iothreadpin0.iothread=1',
+              'iothreadpin0.cpuset=' ~ host_resource_management.cpu_pools.host_emulator
+            ]
+            if (rhel10_vm.stakkr.iothreads | default(0) | int) > 0
+            else []
+          )
+        )
+        if rhel10_vm_stakkr_enabled | bool
+        else []
+      }}
+
+- name: Add generic RHEL 10 vCPU pinning entries when Stakkr placement is enabled
+  ansible.builtin.set_fact:
+    rhel10_vm_cputune_entries: >-
+      {{
+        rhel10_vm_cputune_entries
+        + [
+            'vcpupin' ~ (item | string) ~ '.vcpu=' ~ (item | string),
+            'vcpupin' ~ (item | string) ~ '.cpuset=' ~ host_resource_management.cpu_pools.guest_domain
+          ]
+      }}
+  loop: "{{ range(0, rhel10_vm.resources.vcpus | int) | list }}"
+  when: rhel10_vm_stakkr_enabled | bool
+
+- name: Derive generic RHEL 10 performance arguments
+  ansible.builtin.set_fact:
+    rhel10_vm_performance_args: >-
+      {{
+        (
+          [
+            '--resource',
+            'partition=' ~ rhel10_vm_stakkr_settings.partition,
+            '--cputune',
+            rhel10_vm_cputune_entries | join(',')
+          ]
+          + (
+            [
+              '--iothreads',
+              'iothreads=' ~ (rhel10_vm.stakkr.iothreads | string)
+            ]
+            if (rhel10_vm.stakkr.iothreads | default(0) | int) > 0
+            else []
+          )
+        )
+        if rhel10_vm_stakkr_enabled | bool
+        else []
+      }}
+
+- name: Install packages needed for the generic RHEL 10 VM build workflow
+  ansible.builtin.command:
+    argv:
+      - dnf
+      - install
+      - -y
+      - libguestfs-tools-c
+      - qemu-img
+      - qemu-kvm
+      - virt-install
+      - virt-manager-common
+      - xorriso
+  changed_when: true
+
+- name: Check whether the guest disk image is present
+  ansible.builtin.stat:
+    path: "{{ rhel10_vm.disk_path }}"
+  register: rhel10_vm_disk_stat
+
+- name: Derive whether the guest disk must be seeded from the image
+  ansible.builtin.set_fact:
+    rhel10_vm_seed_disk_from_image: >-
+      {{
+        (rhel10_vm.provisioning.rebuild_disk_from_image | bool) or
+        not (rhel10_vm_disk_stat.stat.exists | default(false))
+      }}
+
+- name: Check whether the base source image is present
+  ansible.builtin.stat:
+    path: "{{ rhel10_vm.source_image }}"
+  register: rhel10_vm_source_image_stat
+  when: rhel10_vm_seed_disk_from_image | bool
+
+- name: Fail when the base source image is missing
+  ansible.builtin.assert:
+    that:
+      - rhel10_vm_source_image_stat.stat.exists
+    fail_msg: >-
+      Source image {{ rhel10_vm.source_image }} was not found for
+      {{ rhel10_vm.name }}.
+  when: rhel10_vm_seed_disk_from_image | bool
+
+- name: Check whether the libvirt domain already exists
+  ansible.builtin.command:
+    argv:
+      - virsh
+      - dominfo
+      - "{{ rhel10_vm_fqdn }}"
+  register: rhel10_vm_domain_info
+  changed_when: false
+  failed_when: false
+
+- name: Stop the existing guest before disk reseed or recreation
+  ansible.builtin.command:
+    argv:
+      - virsh
+      - destroy
+      - "{{ rhel10_vm_fqdn }}"
+  when:
+    - >-
+      rhel10_vm.provisioning.recreate_domain | bool or
+      rhel10_vm_seed_disk_from_image | bool
+    - rhel10_vm_domain_info.rc == 0
+  changed_when: true
+  failed_when: false
+
+- name: Undefine the existing guest before reseeding the disk
+  ansible.builtin.command:
+    argv:
+      - virsh
+      - undefine
+      - "{{ rhel10_vm_fqdn }}"
+      - --nvram
+  when:
+    - >-
+      rhel10_vm.provisioning.recreate_domain | bool or
+      rhel10_vm_seed_disk_from_image | bool
+    - rhel10_vm_domain_info.rc == 0
+  changed_when: true
+  failed_when: false
+
+- name: Create the guest working directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - "{{ rhel10_vm_cloudinit_dir }}"
+    - "{{ rhel10_vm_cloudinit_iso | dirname }}"
+    - "{{ rhel10_vm.disk_path | dirname }}"
+
+- name: Render generic RHEL 10 cloud-init metadata
+  ansible.builtin.template:
+    src: ../../../templates/rhel10-vm/meta-data.j2
+    dest: "{{ rhel10_vm_cloudinit_dir }}/meta-data"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Render generic RHEL 10 cloud-init user-data
+  ansible.builtin.template:
+    src: ../../../templates/rhel10-vm/user-data.j2
+    dest: "{{ rhel10_vm_cloudinit_dir }}/user-data"
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Render generic RHEL 10 cloud-init network-config
+  ansible.builtin.template:
+    src: ../../../templates/rhel10-vm/network-config.j2
+    dest: "{{ rhel10_vm_cloudinit_dir }}/network-config"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Stage the SSH public key for offline guest injection
+  ansible.builtin.copy:
+    content: "{{ rhel10_vm.access.ssh_authorized_keys | first }}\n"
+    dest: "{{ rhel10_vm_cloudinit_dir }}/access.pub"
+    owner: root
+    group: root
+    mode: "0600"
+  when:
+    - rhel10_vm_seed_disk_from_image | bool
+    - (rhel10_vm.access.ssh_authorized_keys | length) > 0
+
+- name: Rebuild the guest disk from the source image when requested
+  ansible.builtin.command:
+    argv:
+      - qemu-img
+      - convert
+      - -p
+      - -f
+      - "{{ rhel10_vm.source_image_format }}"
+      - -O
+      - "{{ rhel10_vm.disk_format }}"
+      - "{{ rhel10_vm.source_image }}"
+      - "{{ rhel10_vm.disk_path }}"
+  when: rhel10_vm_seed_disk_from_image | bool
+  changed_when: true
+
+- name: Inject access credentials into the reseeded guest disk
+  ansible.builtin.command:
+    argv: >-
+      {{
+        ['virt-customize', '-a', rhel10_vm.disk_path]
+        + [
+            '--run-command',
+            'id -u ' ~ rhel10_vm.access.admin_user ~
+            ' >/dev/null 2>&1 || useradd -m -G wheel -s /bin/bash ' ~
+            rhel10_vm.access.admin_user,
+            '--run-command',
+            'usermod -aG wheel ' ~ rhel10_vm.access.admin_user,
+            '--run-command',
+            'printf ''%s\\n'' ' ~
+            (rhel10_vm.access.admin_user ~ ' ALL=(ALL) NOPASSWD:ALL' | quote) ~
+            ' > /etc/sudoers.d/90-' ~ rhel10_vm.access.admin_user,
+            '--run-command',
+            'chmod 0440 /etc/sudoers.d/90-' ~ rhel10_vm.access.admin_user
+          ]
+        + (
+          [
+            '--ssh-inject',
+            rhel10_vm.access.admin_user ~ ':file:' ~ rhel10_vm_cloudinit_dir ~ '/access.pub'
+          ]
+          if (rhel10_vm.access.ssh_authorized_keys | length) > 0
+          else []
+        )
+        + (
+          [
+            '--password',
+            rhel10_vm.access.admin_user ~ ':password:' ~ rhel10_vm.access.admin_password,
+            '--password-crypto',
+            'sha512'
+          ]
+          if (rhel10_vm.access.admin_password | length) > 0
+          else []
+        )
+      }}
+  when: rhel10_vm_seed_disk_from_image | bool
+  changed_when: true
+
+- name: Generate the guest cloud-init ISO
+  ansible.builtin.command:
+    argv:
+      - xorriso
+      - -as
+      - mkisofs
+      - -o
+      - "{{ rhel10_vm_cloudinit_iso }}"
+      - -V
+      - CIDATA
+      - -J
+      - -R
+      - -graft-points
+      - "user-data={{ rhel10_vm_cloudinit_dir }}/user-data"
+      - "meta-data={{ rhel10_vm_cloudinit_dir }}/meta-data"
+      - "network-config={{ rhel10_vm_cloudinit_dir }}/network-config"
+  changed_when: true
+
+- name: Ensure libvirt can read the guest cloud-init ISO
+  ansible.builtin.file:
+    path: "{{ rhel10_vm_cloudinit_iso }}"
+    owner: qemu
+    group: qemu
+    mode: "0644"
+
+- name: Install the guest when it is absent or recreation was requested
+  ansible.builtin.command:
+    argv: >-
+      {{
+        [
+          'virt-install',
+          '--name', rhel10_vm_fqdn,
+          '--osinfo', rhel10_vm.osinfo,
+          '--boot', rhel10_vm.boot.firmware,
+          '--machine', rhel10_vm.boot.machine,
+          '--memory', (rhel10_vm.resources.memory_mb | string),
+          '--vcpus', (rhel10_vm.resources.vcpus | string),
+          '--cpu', rhel10_vm.boot.cpu_model,
+          '--controller', 'type=scsi,model=virtio-scsi',
+          '--disk',
+          'path=' ~ rhel10_vm.disk_path ~ ',format=' ~ rhel10_vm.disk_format ~ ',bus=scsi',
+          '--disk', 'path=' ~ rhel10_vm_cloudinit_iso ~ ',device=cdrom',
+          '--network', rhel10_vm_network_arg,
+          '--rng', 'builtin',
+          '--import',
+          '--graphics', 'none',
+          '--console', 'pty,target_type=serial',
+          '--autostart',
+          '--noautoconsole'
+        ]
+        + rhel10_vm_performance_args
+        + (
+          ['--tpm', 'none']
+          if not (rhel10_vm.boot.tpm_enabled | default(false) | bool)
+          else []
+        )
+      }}
+  when: >-
+    rhel10_vm_domain_info.rc != 0 or
+    rhel10_vm.provisioning.recreate_domain | bool or
+    rhel10_vm_seed_disk_from_image | bool
+  changed_when: true
+
+- name: Register the guest as a temporary Ansible host
+  ansible.builtin.add_host:
+    name: "{{ rhel10_vm_fqdn }}"
+    groups:
+      - rhel10_vm_guests
+    ansible_host: "{{ rhel10_vm.network.ipv4_address }}"
+    ansible_user: "{{ rhel10_vm.access.admin_user }}"
+    ansible_ssh_private_key_file: "{{ rhel10_vm.access.ssh_private_key_file }}"
+    ansible_become: true
+    ansible_ssh_common_args: >-
+      -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+
+- name: Show generic RHEL 10 build summary
+  ansible.builtin.debug:
+    msg:
+      - "Guest: {{ rhel10_vm_fqdn }}"
+      - "Role: {{ rhel10_vm.role | default('unspecified') }}"
+      - "Disk path: {{ rhel10_vm.disk_path }}"
+      - "Cloud-init ISO: {{ rhel10_vm_cloudinit_iso }}"
+      - "Network attachment: {{ rhel10_vm_network_arg }}"
+      - "IP address: {{ rhel10_vm.network.ipv4_address }}"

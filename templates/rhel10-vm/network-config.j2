@@ -1,0 +1,16 @@
+version: 2
+ethernets:
+  {{ rhel10_vm.network.interface_name }}:
+    match:
+      macaddress: "{{ rhel10_vm.network.mac_address }}"
+    set-name: {{ rhel10_vm.network.interface_name }}
+    addresses:
+      - {{ rhel10_vm_ip_cidr }}
+    routes:
+      - to: 0.0.0.0/0
+        via: {{ rhel10_vm.network.gateway }}
+    nameservers:
+      addresses:
+{% for dns_server in rhel10_vm.network.dns_servers %}
+        - {{ dns_server }}
+{% endfor %}

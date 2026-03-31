@@ -32,6 +32,8 @@ operating model.
   [checklist](./docs/prerequisites.md)
 - local IdM VM bootstrap:
   [guide](./docs/idm-local-bootstrap.md)
+- generic RHEL 10 VM bootstrap:
+  [guide](./docs/rhel10-vm-bootstrap.md)
 - [Cockpit observer](./cockpit/stakkr-observer/README.md)
 
 > [!NOTE]

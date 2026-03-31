@@ -1,0 +1,70 @@
+---
+- name: Validate generic RHEL 10 guest identity fields before cleanup
+  ansible.builtin.assert:
+    that:
+      - rhel10_vm.name is defined
+      - rhel10_vm.domain is defined
+      - rhel10_vm.name | length > 0
+      - rhel10_vm.domain | length > 0
+    fail_msg: >-
+      Each rhel10_vms entry must define both name and domain before cleanup
+      facts can be derived.
+
+- name: Derive generic RHEL 10 cleanup facts
+  ansible.builtin.set_fact:
+    rhel10_vm_name: >-
+      {{
+        rhel10_vm.name
+        if ('.' not in rhel10_vm.name)
+        else (
+          rhel10_vm.name
+          | regex_replace('\\.' ~ (rhel10_vm.domain | regex_escape) ~ '$', '')
+        )
+      }}
+    rhel10_vm_fqdn: >-
+      {{
+        rhel10_vm.name
+        if (rhel10_vm.name.endswith('.' ~ rhel10_vm.domain) or rhel10_vm.name == rhel10_vm.domain)
+        else (rhel10_vm.name ~ '.' ~ rhel10_vm.domain)
+      }}
+    rhel10_vm_cloudinit_iso: "{{ rhel10_vm_runtime_root }}/{{ rhel10_vm_name }}/{{ rhel10_vm_name }}-cidata.iso"
+
+- name: Identify matching cloud-init CD-ROM targets in persistent XML
+  ansible.builtin.shell: |
+    set -euo pipefail
+    virsh domblklist "{{ rhel10_vm_fqdn }}" --details \
+      | awk -v media="{{ rhel10_vm_cloudinit_iso }}" \
+          '$2 == "cdrom" && ($4 == media || $4 == "-") {print $3}'
+  args:
+    executable: /bin/bash
+  register: rhel10_vm_cdrom_targets
+  changed_when: false
+  failed_when: false
+
+- name: Remove cloud-init CD-ROM devices from persistent XML
+  ansible.builtin.command:
+    argv:
+      - virt-xml
+      - "{{ rhel10_vm_fqdn }}"
+      - --remove-device
+      - --disk
+      - "target={{ item }}"
+  loop: "{{ rhel10_vm_cdrom_targets.stdout_lines }}"
+  when: rhel10_vm_cdrom_targets.stdout_lines | length > 0
+  changed_when: true
+
+- name: Reset guest boot order to disk only
+  ansible.builtin.command:
+    argv:
+      - virt-xml
+      - "{{ rhel10_vm_fqdn }}"
+      - --edit
+      - --boot
+      - hd
+  when: rhel10_vm_cdrom_targets.stdout_lines | length > 0
+  changed_when: true
+
+- name: Remove the guest cloud-init ISO from the hypervisor
+  ansible.builtin.file:
+    path: "{{ rhel10_vm_cloudinit_iso }}"
+    state: absent

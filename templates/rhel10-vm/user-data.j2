@@ -1,0 +1,41 @@
+#cloud-config
+fqdn: {{ rhel10_vm_fqdn }}
+preserve_hostname: false
+users:
+  - default
+  - name: {{ rhel10_vm.access.admin_user }}
+    groups: [wheel]
+    shell: /bin/bash
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    lock_passwd: {{ rhel10_vm.access.lock_password | default(false) | to_json }}
+{% if rhel10_vm.access.ssh_authorized_keys | length > 0 %}
+    ssh_authorized_keys:
+{% for ssh_key in rhel10_vm.access.ssh_authorized_keys %}
+      - {{ ssh_key }}
+{% endfor %}
+{% endif %}
+{% if rhel10_vm.access.admin_password | length > 0 %}
+    passwd: {{ rhel10_vm.access.admin_password | password_hash('sha512') }}
+{% endif %}
+
+ssh_pwauth: {{ rhel10_vm.access.ssh_password_auth | default(false) | to_json }}
+{% if rhel10_vm.subscription.enabled | default(false) %}
+
+rh_subscription:
+{% if rhel10_vm.subscription.activation_key | length > 0 and rhel10_vm.subscription.organization_id | length > 0 %}
+  activation-key: "{{ rhel10_vm.subscription.activation_key }}"
+  org: "{{ rhel10_vm.subscription.organization_id }}"
+{% else %}
+  username: "{{ rhel10_vm.subscription.username }}"
+  password: "{{ rhel10_vm.subscription.password }}"
+{% endif %}
+{% if rhel10_vm.subscription.server_hostname | default('') | length > 0 %}
+  server-hostname: "{{ rhel10_vm.subscription.server_hostname }}"
+{% endif %}
+{% endif %}
+
+package_update: false
+runcmd:
+{% for command in rhel10_vm.cloud_init.runcmd | default([]) %}
+  - {{ command }}
+{% endfor %}
