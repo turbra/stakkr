@@ -31,7 +31,7 @@ operating model.
 - local prerequisites:
   [checklist](./docs/prerequisites.md)
 - local IdM VM bootstrap:
-  `ansible-playbook -i inventory/hosts.yml playbooks/bootstrap/idm-local.yml`
+  [guide](./docs/idm-local-bootstrap.md)
 - [Cockpit observer](./cockpit/stakkr-observer/README.md)
 
 > [!NOTE]
