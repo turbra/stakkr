@@ -88,6 +88,21 @@ Apply the live shared execution pool policy second:
 ```
 
 > [!IMPORTANT]
+> The host foundation commands do not require the managed worker VMs to already
+> exist. `shared-execution-pool-apply` does.
+>
+> The live shared execution pool flow in this repo is defined around these
+> already-deployed worker domains:
+>
+> - `kvm-worker-01`
+> - `kvm-worker-02`
+> - `kvm-worker-03`
+>
+> If those guests are not already present and running, apply the host
+> foundation first, then deploy the workers, and only then run
+> `shared-execution-pool-apply`.
+
+> [!IMPORTANT]
 > The normal operator order is:
 >
 > 1. `host-resource-management-apply`

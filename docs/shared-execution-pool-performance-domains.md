@@ -93,6 +93,16 @@ Important behavior:
 `./scripts/host-resource-management.sh shared-execution-pool-apply` does the
 whole default live shared execution pool setup.
 
+It assumes the managed worker domains already exist and are running:
+
+- `kvm-worker-01`
+- `kvm-worker-02`
+- `kvm-worker-03`
+
+That is because this is a live VM policy action, not a VM creation action. The
+host foundation commands can be applied before those guests exist, but the
+shared execution pool action cannot.
+
 It does two things:
 
 1. placement
@@ -154,6 +164,15 @@ Apply the host foundation first:
 ./scripts/host-resource-management.sh host-resource-management-apply
 ./scripts/host-resource-management.sh host-memory-oversubscription-apply
 ```
+
+At this point the host foundation is in place, but the live shared execution
+pool model is not active yet unless the managed worker VMs already exist.
+
+Deploy or confirm these workers before the next step:
+
+- `kvm-worker-01`
+- `kvm-worker-02`
+- `kvm-worker-03`
 
 Apply the shared execution pool model:
 
