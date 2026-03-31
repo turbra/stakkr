@@ -80,6 +80,11 @@ Apply the host foundation first:
 ./scripts/host-resource-management.sh host-memory-oversubscription-status
 ```
 
+> [!NOTE]
+> The `*-status` commands are direct host inspections now. They validate live
+> state with system tools like `systemctl`, `virsh`, and `/sys` reads instead
+> of running Ansible status playbooks, so they do not require vault decryption.
+
 Apply the live shared execution pool policy second:
 
 ```bash

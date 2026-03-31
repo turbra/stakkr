@@ -188,6 +188,10 @@ Verify:
 ./scripts/host-resource-management.sh shared-execution-pool-status
 ```
 
+Those status commands are direct live checks, not Ansible status playbooks.
+They read the current host and VM state with commands such as `systemctl show`,
+`virsh vcpupin`, `virsh emulatorpin`, and `/sys` reads.
+
 What you should see:
 
 - scope `AllowedCPUs=0-11`
