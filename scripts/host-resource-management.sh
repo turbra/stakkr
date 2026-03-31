@@ -442,9 +442,6 @@ case "${ACTION}" in
   shared-execution-pool-status|status)
     show_shared_execution_pool_status
     ;;
-  render)
-    ansible-playbook playbooks/maintenance/cgroup-tiering-render.yml "${EXTRA_ARGS[@]}"
-    ;;
   shared-execution-pool-apply|apply)
     ansible_playbook \
       playbooks/maintenance/cgroup-tiering-apply-v1.yml \
