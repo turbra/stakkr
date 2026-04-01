@@ -176,7 +176,7 @@ ansible-playbook -i inventory/hosts.yml playbooks/day2/openshift-post-install-va
 - During bring-up, the most useful live signal is on-node journald:
 
 ```bash
-ssh core@192.168.1.245
+ssh core@<control-plane-ip>
 sudo journalctl -b -f -u start-cluster-installation.sh -u bootkube.service -u kubelet -u release-image.service
 ```
 
