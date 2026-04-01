@@ -78,7 +78,7 @@ The preferred operator entrypoint is one playbook:
 
 ```bash
 ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-sno.yml \
-  --vault-password-file /home/freemem/vault \
+  --vault-password-file <vault-file> \
   --ask-become-pass
 ```
 
@@ -86,7 +86,7 @@ For a clean rebuild from scratch:
 
 ```bash
 ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-sno-redeploy.yml \
-  --vault-password-file /home/freemem/vault \
+  --vault-password-file <vault-file> \
   --ask-become-pass \
   -e openshift_cluster_cleanup_remove_disk_files=true
 ```
@@ -165,26 +165,22 @@ ansible-playbook -i inventory/hosts.yml playbooks/day2/openshift-post-install-va
 
 ## Practical Notes
 
-- This scaffold uses file-backed local libvirt disks, not AWS EBS devices.
-- The OpenShift node root disks are blank qcow2 files by default.
-- The agent ISO is attached as virtual CD-ROM media for the initial install.
-- New VM shells prefer the root disk first and fall back to the agent ISO until
-  the installed system becomes bootable.
-- Follow the Calabi pattern after install: run a separate install-media detach
-  step so later boots use the installed disk instead of falling back into the
-  agent ISO.
-- For this local SNO path, the decisive lifecycle event is the first pivot
-  reboot. Detach install media immediately after that reboot, then validate full
-  cluster convergence.
-- During install bring-up, the most useful live signal is on-node journald:
+- The local SNO node uses a blank qcow2 root disk plus the generated agent ISO
+  on an attached CD-ROM device.
+- New VM shells are created with `hd` before `cdrom` so the installer can use
+  the ISO on first boot, but later boots prefer the installed disk.
+- The expected steady state after a successful install is:
+  - root disk on `sda`
+  - empty CD-ROM device on `sdb`
+  - boot order `hd` then `cdrom`
+- During bring-up, the most useful live signal is on-node journald:
 
 ```bash
 ssh core@192.168.1.245
 sudo journalctl -b -f -u start-cluster-installation.sh -u bootkube.service -u kubelet -u release-image.service
 ```
 
-- `curl` and `oc` become useful after the API is actually stable; they are not
-  the primary install-phase signal.
+- `curl` and `oc` become useful after the API is actually stable.
 - Stakkr performance domains are applied to the VM shells through the same
   host resource management model used elsewhere in the repo.
 
