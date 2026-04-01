@@ -87,6 +87,16 @@ That split matters because:
 
 ## Validated Shape
 
+The default example is true SNO:
+- `1` control-plane node
+- `0` workers
+
+That is the shape that was validated in this repo.
+The validated control-plane sizing is:
+- `12` vCPU
+- `32768` MiB memory
+- `gold` performance-domain tier
+
 For the current validated path:
 - `platform: none` is used in `install-config.yaml`
 - `api.ocp.<base_domain>` must resolve to the control-plane node IP
@@ -107,7 +117,7 @@ Adding workers is a follow-on workflow, not the initial install shape.
   - `secrets/pull-secret.txt`
 - SSH keypair for cluster access:
   - `secrets/id_ed25519`
-- `secrets/id_ed25519.pub`
+  - `secrets/id_ed25519.pub`
 - either:
   - an existing `openshift-install` binary path
   - or enable the installer download flow
@@ -240,13 +250,17 @@ sudo virsh dumpxml ocp-control-01.ocp.stakkr.lan | grep -A5 -B5 '<boot'
 
 - Stakkr performance domains are applied to the VM shells through the same
   host resource management model used elsewhere in the repo.
+- The validated true SNO example places `ocp-control-01` in the `gold`
+  performance domain. That is defined in
+  [openshift_cluster_vm.yml.example](../vars/guests/openshift_cluster_vm.yml.example).
 
 ## Cleanup
 
 Remove the local cluster VM shells:
 
 ```bash
-ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-cluster-cleanup.yml
+ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-cluster-cleanup.yml \
+  --vault-password-file <vault-file>
 ```
 
 If you also want the root disk files removed:
