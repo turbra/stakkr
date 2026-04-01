@@ -22,11 +22,18 @@ networking:
     - {{ cidr }}
 {% endfor %}
 platform:
+{% if openshift_install_artifacts.install_config.platform_type == 'baremetal' %}
   baremetal:
     apiVIPs:
       - {{ openshift_install_cluster.network.api_vip }}
     ingressVIPs:
       - {{ openshift_install_cluster.network.ingress_vip }}
+{% elif openshift_install_artifacts.install_config.platform_type == 'external' %}
+  external:
+    platformName: external
+{% else %}
+  none: {}
+{% endif %}
 pullSecret: >-
   {{ stakkr_openshift_install_artifacts_pull_secret_raw.content | b64decode | trim }}
 sshKey: >-
@@ -35,4 +42,3 @@ sshKey: >-
 additionalTrustBundle: |
 {{ stakkr_openshift_install_artifacts_trust_bundle_raw.content | b64decode | indent(2, true) }}
 {% endif %}
-

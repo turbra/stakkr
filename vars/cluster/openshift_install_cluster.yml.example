@@ -3,24 +3,19 @@ openshift_install_cluster:
   name: ocp
   base_domain: stakkr.lan
   network:
-    machine_cidr: 192.168.50.0/24
-    machine_gateway: 192.168.50.1
+    machine_cidr: 192.168.1.0/24
+    machine_gateway: 192.168.1.1
     machine_dns_servers:
       - 192.168.1.142
       - 192.168.1.242
-    api_vip: 192.168.50.5
-    ingress_vip: 192.168.50.7
+    # For the current validated true SNO path with platform: none, point both
+    # names at the single control-plane node IP in local DNS.
+    api_vip: 192.168.1.245
+    ingress_vip: 192.168.1.245
   nodes:
-    - name: ocp-sno-01
+    - name: ocp-control-01
       role: control-plane
       mac_address: "52:54:00:40:00:10"
       machine_network:
-        ipv4_address: 192.168.50.11
+        ipv4_address: 192.168.1.245
         prefix_length: 24
-    - name: ocp-worker-01
-      role: worker
-      mac_address: "52:54:00:40:00:20"
-      machine_network:
-        ipv4_address: 192.168.50.21
-        prefix_length: 24
-

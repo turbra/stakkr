@@ -1,0 +1,62 @@
+---
+- name: Wait for the first OpenShift pivot reboot on local cluster nodes
+  hosts: localhost
+  connection: local
+  become: false
+  gather_facts: false
+  vars_files:
+    - ../../vars/cluster/openshift_install_cluster.yml
+  vars:
+    openshift_pivot_wait_port: 22
+    openshift_pivot_wait_initial_ssh_timeout: 1800
+    openshift_pivot_wait_reboot_timeout: 3600
+    openshift_pivot_wait_reconnect_timeout: 1800
+  tasks:
+    - name: Assert OpenShift node IPs are defined for pivot wait
+      ansible.builtin.assert:
+        that:
+          - openshift_install_cluster.nodes | length > 0
+          - item.machine_network.ipv4_address | default('') | length > 0
+        fail_msg: >-
+          OpenShift node {{ item.name | default('unnamed') }} is missing
+          machine_network.ipv4_address, which is required to detect the pivot
+          reboot.
+      loop: "{{ openshift_install_cluster.nodes }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Wait for node SSH to come up before the pivot reboot
+      ansible.builtin.wait_for:
+        host: "{{ item.machine_network.ipv4_address }}"
+        port: "{{ openshift_pivot_wait_port }}"
+        state: started
+        timeout: "{{ openshift_pivot_wait_initial_ssh_timeout }}"
+        connect_timeout: 5
+        sleep: 5
+      loop: "{{ openshift_install_cluster.nodes }}"
+      loop_control:
+        label: "{{ item.name }} {{ item.machine_network.ipv4_address }}"
+
+    - name: Wait for node SSH to drop during the pivot reboot
+      ansible.builtin.wait_for:
+        host: "{{ item.machine_network.ipv4_address }}"
+        port: "{{ openshift_pivot_wait_port }}"
+        state: stopped
+        timeout: "{{ openshift_pivot_wait_reboot_timeout }}"
+        connect_timeout: 5
+        sleep: 5
+      loop: "{{ openshift_install_cluster.nodes }}"
+      loop_control:
+        label: "{{ item.name }} {{ item.machine_network.ipv4_address }}"
+
+    - name: Wait for node SSH to return after the pivot reboot
+      ansible.builtin.wait_for:
+        host: "{{ item.machine_network.ipv4_address }}"
+        port: "{{ openshift_pivot_wait_port }}"
+        state: started
+        timeout: "{{ openshift_pivot_wait_reconnect_timeout }}"
+        connect_timeout: 5
+        sleep: 5
+      loop: "{{ openshift_install_cluster.nodes }}"
+      loop_control:
+        label: "{{ item.name }} {{ item.machine_network.ipv4_address }}"

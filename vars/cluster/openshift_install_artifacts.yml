@@ -7,6 +7,7 @@ openshift_install_artifacts:
   additional_trust_bundle_file: ""
   install_config:
     metadata_name: "{{ openshift_install_cluster.name }}"
+    platform_type: none
     compute_replicas: >-
       {{
         openshift_install_cluster.nodes
@@ -38,4 +39,3 @@ openshift_install_artifacts:
       }}
     primary_interface_name: eth0
     root_device_hints: {}
-

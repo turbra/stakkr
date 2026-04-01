@@ -7,15 +7,29 @@
 - name: Install local packages required for agent media generation
   ansible.builtin.command:
     argv:
-      - dnf
-      - install
-      - -y
+      - rpm
+      - -q
       - "{{ item }}"
   loop: "{{ openshift_installer_binaries.local_packages }}"
   loop_control:
     label: "{{ item }}"
+  register: stakkr_openshift_installer_binaries_local_package_query
+  changed_when: false
+  failed_when: false
+
+- name: Install missing local packages required for agent media generation
+  ansible.builtin.command:
+    argv:
+      - dnf
+      - install
+      - -y
+      - "{{ item.item }}"
+  loop: "{{ stakkr_openshift_installer_binaries_local_package_query.results }}"
+  loop_control:
+    label: "{{ item.item }}"
   become: true
   changed_when: true
+  when: item.rc != 0
 
 - name: Create local download and install directories
   ansible.builtin.file:

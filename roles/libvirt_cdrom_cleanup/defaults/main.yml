@@ -1,0 +1,4 @@
+---
+libvirt_cdrom_cleanup_reset_boot_to_hd_only: false
+libvirt_cdrom_cleanup_remove_device: true
+libvirt_cdrom_cleanup_remove_media_file: false

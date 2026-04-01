@@ -51,6 +51,16 @@ operating model.
 > - `inventory/group_vars/all/lab_credentials.yml`
 > - a local RHEL guest image in `qcow2` format
 
+> [!NOTE]
+> The current OpenShift scaffold on `sno-go` is validated for true SNO first:
+> one control-plane node, no initial workers, with a `12` vCPU SNO profile.
+> It now follows the Calabi pattern for install media cleanup: the agent ISO is
+> detached in a separate maintenance step after the first pivot reboot, before
+> the final installer completion waits.
+> The normal operator entrypoint is now
+> [site-openshift-sno.yml](./playbooks/site-openshift-sno.yml), not a manual
+> sequence of cluster phase playbooks.
+
 
 ## Default Operating Model
 

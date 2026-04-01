@@ -8,8 +8,9 @@ It covers:
 - `install-config.yaml`
 - `agent-config.yaml`
 - agent ISO generation
-- local libvirt VM shells for OpenShift nodes
+- local libvirt VM shells for a true SNO node
 - verification
+- post-install boot media cleanup
 - cleanup
 
 It does not pull in Calabi’s AWS, bastion, mirror-registry, or disconnected
@@ -37,25 +38,31 @@ That split matters because:
 
 ## Supported Shape
 
-The default example is:
+The default example is true SNO:
 - `1` control-plane node
-- `1` worker node
+- `0` workers
 
-That gives you the requested starting point:
-- single-node control plane
-- at least one worker
+That is the shape that was validated in this repo.
+The validated control-plane sizing is:
+- `12` vCPU
+- `32768` MiB memory
 
-To add more workers:
-- add worker entries to:
-  - `openshift_install_cluster.nodes`
-  - `openshift_cluster_nodes`
+For this path:
+- `platform: none` is used in `install-config.yaml`
+- `api.ocp.<base_domain>` must resolve to the control-plane node IP
+- `api-int.ocp.<base_domain>` must resolve to the control-plane node IP
+- `*.apps.ocp.<base_domain>` must resolve to the control-plane node IP
 
-The node names and MAC addresses must match between those two files.
+Adding workers is a follow-on workflow, not the initial install shape.
 
 ## Local Inputs You Must Provide
 
 - a reachable local KVM/libvirt host
-- network, DNS, and VIP values for the cluster network
+- network, DNS, and node IP values for the cluster network
+- working local DNS records for:
+  - `api.<cluster_name>.<base_domain>`
+  - `api-int.<cluster_name>.<base_domain>`
+  - `*.apps.<cluster_name>.<base_domain>`
 - pull secret:
   - `secrets/pull-secret.txt`
 - SSH keypair for cluster access:
@@ -66,6 +73,26 @@ The node names and MAC addresses must match between those two files.
   - or enable the installer download flow
 
 ## Recommended Run Order
+
+The preferred operator entrypoint is one playbook:
+
+```bash
+ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-sno.yml \
+  --vault-password-file /home/freemem/vault \
+  --ask-become-pass
+```
+
+For a clean rebuild from scratch:
+
+```bash
+ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-sno-redeploy.yml \
+  --vault-password-file /home/freemem/vault \
+  --ask-become-pass \
+  -e openshift_cluster_cleanup_remove_disk_files=true
+```
+
+The phase playbooks below still exist, but they are implementation details of
+the site playbook and should not be the normal operator path.
 
 From the project root:
 
@@ -94,29 +121,70 @@ ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-install-arti
 ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-agent-media.yml
 ```
 
-5. create the OpenShift VM shells
+5. create the OpenShift VM shell
 
 ```bash
 ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-cluster.yml
 ```
 
-6. verify the domains and ISO attachment
+6. verify the domain and ISO attachment
 
 ```bash
 ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-cluster-verify.yml
 ```
 
-7. wait for install completion
+7. wait for the first pivot reboot
+
+```bash
+ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-pivot-wait.yml
+```
+
+8. detach the agent ISO and restore disk-first boot order
+
+```bash
+ansible-playbook -i inventory/hosts.yml playbooks/maintenance/detach-install-media.yml
+```
+
+9. wait for bootstrap completion
 
 ```bash
 ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-install-wait.yml
+```
+
+10. wait for full install completion
+
+```bash
+ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-install-complete.yml
+```
+
+11. validate post-install cluster convergence
+
+```bash
+ansible-playbook -i inventory/hosts.yml playbooks/day2/openshift-post-install-validate.yml
 ```
 
 ## Practical Notes
 
 - This scaffold uses file-backed local libvirt disks, not AWS EBS devices.
 - The OpenShift node root disks are blank qcow2 files by default.
-- The agent ISO is attached as virtual CD-ROM media.
+- The agent ISO is attached as virtual CD-ROM media for the initial install.
+- New VM shells prefer the root disk first and fall back to the agent ISO until
+  the installed system becomes bootable.
+- Follow the Calabi pattern after install: run a separate install-media detach
+  step so later boots use the installed disk instead of falling back into the
+  agent ISO.
+- For this local SNO path, the decisive lifecycle event is the first pivot
+  reboot. Detach install media immediately after that reboot, then validate full
+  cluster convergence.
+- During install bring-up, the most useful live signal is on-node journald:
+
+```bash
+ssh core@192.168.1.245
+sudo journalctl -b -f -u start-cluster-installation.sh -u bootkube.service -u kubelet -u release-image.service
+```
+
+- `curl` and `oc` become useful after the API is actually stable; they are not
+  the primary install-phase signal.
 - Stakkr performance domains are applied to the VM shells through the same
   host resource management model used elsewhere in the repo.
 
