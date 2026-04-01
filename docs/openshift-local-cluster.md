@@ -1,7 +1,12 @@
 # Local OpenShift Cluster Scaffold
 
-This is the minimum local OpenShift scaffolding adapted from Calabi’s cluster
-architecture, but reduced to a single-hypervisor Stakkr model.
+This is the minimum local OpenShift scaffolding adapted from Calabi's cluster
+architecture for one local libvirt host.
+
+The current path is intentionally narrow:
+- true SNO first
+- one control-plane node
+- no initial workers
 
 It covers:
 - installer binaries
@@ -13,8 +18,52 @@ It covers:
 - post-install boot media cleanup
 - cleanup
 
-It does not pull in Calabi’s AWS, bastion, mirror-registry, or disconnected
+It does not pull in Calabi's AWS, bastion, mirror-registry, or disconnected
 dependencies.
+
+## Start Here
+
+- OpenShift cluster guide inputs:
+  [openshift_install_cluster.yml.example](../vars/cluster/openshift_install_cluster.yml.example)
+- OpenShift VM shell inputs:
+  [openshift_cluster_vm.yml.example](../vars/guests/openshift_cluster_vm.yml.example)
+- installer artifact settings:
+  [openshift_install_artifacts.yml](../vars/cluster/openshift_install_artifacts.yml)
+- agent media settings:
+  [openshift_agent_media.yml](../vars/cluster/openshift_agent_media.yml)
+- installer binary settings:
+  [openshift_installer_binaries.yml](../vars/cluster/openshift_installer_binaries.yml)
+- operator entrypoint:
+  [site-openshift-sno.yml](../playbooks/site-openshift-sno.yml)
+- clean rebuild entrypoint:
+  [site-openshift-sno-redeploy.yml](../playbooks/site-openshift-sno-redeploy.yml)
+
+> [!NOTE]
+> The validated shape in this repo is true SNO first:
+>
+> - `1` control-plane node
+> - `0` workers
+> - `12` vCPU
+> - `32768` MiB memory
+
+> [!IMPORTANT]
+> This path assumes working local DNS before you start:
+>
+> - `api.<cluster_name>.<base_domain>`
+> - `api-int.<cluster_name>.<base_domain>`
+> - `*.apps.<cluster_name>.<base_domain>`
+>
+> For the validated true SNO path with `platform: none`, those names must
+> resolve to the single control-plane node IP.
+
+> [!IMPORTANT]
+> The normal operator path is:
+>
+> 1. run [site-openshift-sno.yml](../playbooks/site-openshift-sno.yml)
+> 2. use [site-openshift-sno-redeploy.yml](../playbooks/site-openshift-sno-redeploy.yml) only for a clean rebuild
+>
+> The individual phase playbooks still exist, but they are implementation
+> details of the site playbooks.
 
 ## Design Pattern
 
@@ -36,18 +85,9 @@ That split matters because:
 - VM resource and disk layout changes in another
 - the same node set can be reused through the full workflow
 
-## Supported Shape
+## Validated Shape
 
-The default example is true SNO:
-- `1` control-plane node
-- `0` workers
-
-That is the shape that was validated in this repo.
-The validated control-plane sizing is:
-- `12` vCPU
-- `32768` MiB memory
-
-For this path:
+For the current validated path:
 - `platform: none` is used in `install-config.yaml`
 - `api.ocp.<base_domain>` must resolve to the control-plane node IP
 - `api-int.ocp.<base_domain>` must resolve to the control-plane node IP
@@ -67,14 +107,14 @@ Adding workers is a follow-on workflow, not the initial install shape.
   - `secrets/pull-secret.txt`
 - SSH keypair for cluster access:
   - `secrets/id_ed25519`
-  - `secrets/id_ed25519.pub`
+- `secrets/id_ed25519.pub`
 - either:
   - an existing `openshift-install` binary path
   - or enable the installer download flow
 
-## Recommended Run Order
+## Operator Commands
 
-The preferred operator entrypoint is one playbook:
+Preferred deploy command:
 
 ```bash
 ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-sno.yml \
@@ -82,7 +122,7 @@ ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-sno.yml \
   --ask-become-pass
 ```
 
-For a clean rebuild from scratch:
+Clean rebuild command:
 
 ```bash
 ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-sno-redeploy.yml \
@@ -91,8 +131,12 @@ ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-sno-redeploy.ym
   -e openshift_cluster_cleanup_remove_disk_files=true
 ```
 
-The phase playbooks below still exist, but they are implementation details of
-the site playbook and should not be the normal operator path.
+> [!TIP]
+> Use the site playbooks for normal operation. The phase playbooks below are
+> useful for inspection or recovery, but they should not be your default
+> operator path.
+
+## Phase Commands
 
 From the project root:
 
@@ -163,36 +207,49 @@ ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-install-comp
 ansible-playbook -i inventory/hosts.yml playbooks/day2/openshift-post-install-validate.yml
 ```
 
-## Practical Notes
+## Live Checks
 
-- The local SNO node uses a blank qcow2 root disk plus the generated agent ISO
-  on an attached CD-ROM device.
-- New VM shells are created with `hd` before `cdrom` so the installer can use
-  the ISO on first boot, but later boots prefer the installed disk.
-- The expected steady state after a successful install is:
-  - root disk on `sda`
-  - empty CD-ROM device on `sdb`
-  - boot order `hd` then `cdrom`
-- During bring-up, the most useful live signal is on-node journald:
+Most useful live signal during bring-up:
 
 ```bash
 ssh core@<control-plane-ip>
 sudo journalctl -b -f -u start-cluster-installation.sh -u bootkube.service -u kubelet -u release-image.service
 ```
 
-- `curl` and `oc` become useful after the API is actually stable.
+Useful cluster-side checks once the API is up:
+
+```bash
+oc --kubeconfig=generated/ocp/auth/kubeconfig get nodes
+oc --kubeconfig=generated/ocp/auth/kubeconfig get co
+oc --kubeconfig=generated/ocp/auth/kubeconfig get clusterversion
+```
+
+Expected steady state after a successful install:
+- root disk on `sda`
+- empty CD-ROM device on `sdb`
+- boot order `hd` then `cdrom`
+
+```bash
+sudo virsh domblklist ocp-control-01.ocp.stakkr.lan --details
+sudo virsh dumpxml ocp-control-01.ocp.stakkr.lan | grep -A5 -B5 '<boot'
+```
+
+> [!NOTE]
+> New VM shells are created with `hd` before `cdrom` so the installer can use
+> the ISO on first boot, but later boots prefer the installed disk.
+
 - Stakkr performance domains are applied to the VM shells through the same
   host resource management model used elsewhere in the repo.
 
 ## Cleanup
 
-To remove the local cluster VM shells:
+Remove the local cluster VM shells:
 
 ```bash
 ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-cluster-cleanup.yml
 ```
 
-If you also want the root disk files removed, set:
+If you also want the root disk files removed:
 
 ```yaml
 openshift_cluster_cleanup_remove_disk_files: true
