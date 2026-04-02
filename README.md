@@ -17,7 +17,9 @@ repo targets local consumer hardware rather than AWS.
 
 ## Start Here
 
-- local OpenShift SNO and compact cluster deployment:
+- local OpenShift SNO deployment:
+  [guide](./docs/openshift-sno-cluster.md)
+- local OpenShift compact cluster deployment:
   [guide](./docs/openshift-compact-cluster.md)
 - shared execution pool path:
   [method](./docs/shared-execution-pool-performance-domains.md),
@@ -47,12 +49,15 @@ repo targets local consumer hardware rather than AWS.
 > - a local RHEL guest image in `qcow2` format
 
 > [!NOTE]
+> For normal SNO installs, use
+> [site-openshift-sno.yml](./playbooks/site-openshift-sno.yml).
+> For clean SNO rebuilds, use
+> [site-openshift-sno-redeploy.yml](./playbooks/site-openshift-sno-redeploy.yml).
+>
 > For normal compact installs, use
 > [site-openshift-compact.yml](./playbooks/site-openshift-compact.yml).
 > For clean rebuilds, use
 > [site-openshift-compact-redeploy.yml](./playbooks/site-openshift-compact-redeploy.yml).
-> True SNO remains a separate path through
-> [site-openshift-sno.yml](./playbooks/site-openshift-sno.yml).
 
 
 ## Default Operating Model
