@@ -1,130 +1,107 @@
 # Local OpenShift Cluster Scaffold
 
-This is the minimum local OpenShift scaffolding adapted from Calabi's cluster
-architecture for one local libvirt host.
+This guide is the local OpenShift path for one libvirt host.
 
-The current path is intentionally narrow:
-- true SNO first
-- one control-plane node
-- no initial workers
+The current validated shape is intentionally narrow:
+- true SNO
+- `1` control-plane node
+- `0` workers
+- `12` vCPU
+- `32768` MiB memory
+- `gold` performance-domain tier for `ocp-control-01`
 
 It covers:
 - installer binaries
 - `install-config.yaml`
 - `agent-config.yaml`
 - agent ISO generation
-- local libvirt VM shells for a true SNO node
-- verification
-- post-install boot media cleanup
-- cleanup
+- local libvirt VM creation
+- pivot handling
+- post-install media cleanup
+- post-install validation
 
 It does not pull in Calabi's AWS, bastion, mirror-registry, or disconnected
 dependencies.
 
 ## Start Here
 
-- OpenShift cluster guide inputs:
-  [openshift_install_cluster.yml.example](../vars/cluster/openshift_install_cluster.yml.example)
-- OpenShift VM shell inputs:
-  [openshift_cluster_vm.yml.example](../vars/guests/openshift_cluster_vm.yml.example)
-- installer artifact settings:
-  [openshift_install_artifacts.yml](../vars/cluster/openshift_install_artifacts.yml)
-- agent media settings:
-  [openshift_agent_media.yml](../vars/cluster/openshift_agent_media.yml)
-- installer binary settings:
-  [openshift_installer_binaries.yml](../vars/cluster/openshift_installer_binaries.yml)
-- operator entrypoint:
-  [site-openshift-sno.yml](../playbooks/site-openshift-sno.yml)
-- clean rebuild entrypoint:
-  [site-openshift-sno-redeploy.yml](../playbooks/site-openshift-sno-redeploy.yml)
-
-> [!NOTE]
-> The validated shape in this repo is true SNO first:
->
-> - `1` control-plane node
-> - `0` workers
-> - `12` vCPU
-> - `32768` MiB memory
-
 > [!IMPORTANT]
-> This path assumes working local DNS before you start:
+> Do not run the deploy playbooks until the prerequisites and required input
+> files below are in place.
 >
-> - `api.<cluster_name>.<base_domain>`
-> - `api-int.<cluster_name>.<base_domain>`
-> - `*.apps.<cluster_name>.<base_domain>`
->
-> For the validated true SNO path with `platform: none`, those names must
-> resolve to the single control-plane node IP.
+> `playbooks/site-openshift-sno.yml` assumes those inputs already exist.
+> If they do not, the deploy will fail in the early phase playbooks.
 
-> [!IMPORTANT]
-> The normal operator path is:
->
-> 1. run [site-openshift-sno.yml](../playbooks/site-openshift-sno.yml)
-> 2. use [site-openshift-sno-redeploy.yml](../playbooks/site-openshift-sno-redeploy.yml) only for a clean rebuild
->
-> The individual phase playbooks still exist, but they are implementation
-> details of the site playbooks.
+## Prerequisites
 
-## Design Pattern
+You need all of these before running any deploy command:
 
-The local cluster scaffold keeps the same core separation Calabi uses:
-
-- cluster metadata:
-  - [openshift_install_cluster.yml.example](../vars/cluster/openshift_install_cluster.yml.example)
-- VM shell definitions:
-  - [openshift_cluster_vm.yml.example](../vars/guests/openshift_cluster_vm.yml.example)
-- install artifact settings:
-  - [openshift_install_artifacts.yml](../vars/cluster/openshift_install_artifacts.yml)
-- agent media settings:
-  - [openshift_agent_media.yml](../vars/cluster/openshift_agent_media.yml)
-- installer binary settings:
-  - [openshift_installer_binaries.yml](../vars/cluster/openshift_installer_binaries.yml)
-
-That split matters because:
-- cluster network and DNS data changes in one place
-- VM resource and disk layout changes in another
-- the same node set can be reused through the full workflow
-
-## Validated Shape
-
-The default example is true SNO:
-- `1` control-plane node
-- `0` workers
-
-That is the shape that was validated in this repo.
-The validated control-plane sizing is:
-- `12` vCPU
-- `32768` MiB memory
-- `gold` performance-domain tier
-
-For the current validated path:
-- `platform: none` is used in `install-config.yaml`
-- `api.ocp.<base_domain>` must resolve to the control-plane node IP
-- `api-int.ocp.<base_domain>` must resolve to the control-plane node IP
-- `*.apps.ocp.<base_domain>` must resolve to the control-plane node IP
-
-Adding workers is a follow-on workflow, not the initial install shape.
-
-## Local Inputs You Must Provide
-
-- a reachable local KVM/libvirt host
-- network, DNS, and node IP values for the cluster network
-- working local DNS records for:
+- a reachable local KVM/libvirt host from the Ansible control node
+- working local DNS for:
   - `api.<cluster_name>.<base_domain>`
   - `api-int.<cluster_name>.<base_domain>`
   - `*.apps.<cluster_name>.<base_domain>`
-- pull secret:
-  - `secrets/pull-secret.txt`
-- SSH keypair for cluster access:
+- a pull secret at `secrets/pull-secret.txt`
+- an SSH keypair for cluster access:
   - `secrets/id_ed25519`
   - `secrets/id_ed25519.pub`
+- vault access for this repo:
+  - `--vault-password-file <vault-file>`
 - either:
-  - an existing `openshift-install` binary path
-  - or enable the installer download flow
+  - allow this repo to download `openshift-install`
+  - or pre-provide an `openshift-install` binary in the configured tool path
 
-## Operator Commands
+> [!NOTE]
+> You do not download the final agent boot ISO manually in this workflow.
+> The repo generates that ISO after the installer inputs are rendered.
+> The prerequisite is the `openshift-install` binary, not a prebuilt ISO.
 
-Preferred deploy command:
+## Required Inputs
+
+Before the first deploy, copy the example matrices and populate them for your
+environment:
+
+```bash
+cp vars/cluster/openshift_install_cluster.yml.example vars/cluster/openshift_install_cluster.yml
+cp vars/guests/openshift_cluster_vm.yml.example vars/guests/openshift_cluster_vm.yml
+```
+
+The required files are:
+- cluster metadata:
+  [openshift_install_cluster.yml.example](../vars/cluster/openshift_install_cluster.yml.example)
+- VM shell definitions:
+  [openshift_cluster_vm.yml.example](../vars/guests/openshift_cluster_vm.yml.example)
+
+Populate them with:
+- cluster name and base domain
+- machine network, gateway, and DNS servers
+- API and ingress VIP values
+- the control-plane node IP and MAC address
+- VM sizing and root disk path
+
+> [!IMPORTANT]
+> For the validated true SNO path, `platform: none` is used in
+> `install-config.yaml`.
+>
+> That means:
+> - `api.ocp.<base_domain>` must resolve to the single control-plane node IP
+> - `api-int.ocp.<base_domain>` must resolve to the single control-plane node IP
+> - `*.apps.ocp.<base_domain>` must resolve to the single control-plane node IP
+
+## Recommended Workflow
+
+From the project root:
+
+1. prepare the required input files
+
+```bash
+cp vars/cluster/openshift_install_cluster.yml.example vars/cluster/openshift_install_cluster.yml
+cp vars/guests/openshift_cluster_vm.yml.example vars/guests/openshift_cluster_vm.yml
+```
+
+2. edit those copied files for your environment
+
+3. run the normal deploy entrypoint
 
 ```bash
 ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-sno.yml \
@@ -132,7 +109,7 @@ ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-sno.yml \
   --ask-become-pass
 ```
 
-Clean rebuild command:
+4. if you want a clean rebuild from scratch, use the redeploy entrypoint instead
 
 ```bash
 ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-sno-redeploy.yml \
@@ -141,80 +118,93 @@ ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-sno-redeploy.ym
   -e openshift_cluster_cleanup_remove_disk_files=true
 ```
 
+## What The Deploy Command Does
+
+`playbooks/site-openshift-sno.yml` runs these phase playbooks in order:
+
+1. `playbooks/cluster/openshift-installer-binaries.yml`
+2. `playbooks/cluster/openshift-install-artifacts.yml`
+3. `playbooks/cluster/openshift-agent-media.yml`
+4. `playbooks/cluster/openshift-cluster.yml`
+5. `playbooks/cluster/openshift-cluster-verify.yml`
+6. `playbooks/cluster/openshift-pivot-wait.yml`
+7. `playbooks/maintenance/detach-install-media.yml`
+8. `playbooks/cluster/openshift-install-wait.yml`
+9. `playbooks/cluster/openshift-install-complete.yml`
+10. `playbooks/day2/openshift-post-install-validate.yml`
+
+`playbooks/site-openshift-sno-redeploy.yml` does this:
+
+1. `playbooks/cluster/openshift-cluster-cleanup.yml`
+2. `playbooks/site-openshift-sno.yml`
+
 > [!TIP]
-> Use the site playbooks for normal operation. The phase playbooks below are
-> useful for inspection or recovery, but they should not be your default
-> operator path.
+> Use the site playbooks for normal operation.
+> The phase playbooks are primarily for understanding the flow, debugging, or
+> rerunning a specific stage.
 
 ## Phase Commands
 
-From the project root:
-
-1. review and copy the example matrices
+If you need to run the flow one phase at a time, use this exact order:
 
 ```bash
-cp vars/cluster/openshift_install_cluster.yml.example vars/cluster/openshift_install_cluster.yml
-cp vars/guests/openshift_cluster_vm.yml.example vars/guests/openshift_cluster_vm.yml
+ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-installer-binaries.yml \
+  --vault-password-file <vault-file> \
+  --ask-become-pass
 ```
 
-2. prepare installer binaries
-
 ```bash
-ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-installer-binaries.yml
+ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-install-artifacts.yml \
+  --vault-password-file <vault-file> \
+  --ask-become-pass
 ```
 
-3. render the OpenShift install artifacts
-
 ```bash
-ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-install-artifacts.yml
+ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-agent-media.yml \
+  --vault-password-file <vault-file> \
+  --ask-become-pass
 ```
 
-4. generate and publish the agent ISO
-
 ```bash
-ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-agent-media.yml
+ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-cluster.yml \
+  --vault-password-file <vault-file> \
+  --ask-become-pass
 ```
 
-5. create the OpenShift VM shell
-
 ```bash
-ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-cluster.yml
+ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-cluster-verify.yml \
+  --vault-password-file <vault-file> \
+  --ask-become-pass
 ```
 
-6. verify the domain and ISO attachment
-
 ```bash
-ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-cluster-verify.yml
+ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-pivot-wait.yml \
+  --vault-password-file <vault-file> \
+  --ask-become-pass
 ```
 
-7. wait for the first pivot reboot
-
 ```bash
-ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-pivot-wait.yml
+ansible-playbook -i inventory/hosts.yml playbooks/maintenance/detach-install-media.yml \
+  --vault-password-file <vault-file> \
+  --ask-become-pass
 ```
 
-8. detach the agent ISO and restore disk-first boot order
-
 ```bash
-ansible-playbook -i inventory/hosts.yml playbooks/maintenance/detach-install-media.yml
+ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-install-wait.yml \
+  --vault-password-file <vault-file> \
+  --ask-become-pass
 ```
 
-9. wait for bootstrap completion
-
 ```bash
-ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-install-wait.yml
+ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-install-complete.yml \
+  --vault-password-file <vault-file> \
+  --ask-become-pass
 ```
 
-10. wait for full install completion
-
 ```bash
-ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-install-complete.yml
-```
-
-11. validate post-install cluster convergence
-
-```bash
-ansible-playbook -i inventory/hosts.yml playbooks/day2/openshift-post-install-validate.yml
+ansible-playbook -i inventory/hosts.yml playbooks/day2/openshift-post-install-validate.yml \
+  --vault-password-file <vault-file> \
+  --ask-become-pass
 ```
 
 ## Live Checks
@@ -248,25 +238,21 @@ sudo virsh dumpxml ocp-control-01.ocp.stakkr.lan | grep -A5 -B5 '<boot'
 > New VM shells are created with `hd` before `cdrom` so the installer can use
 > the ISO on first boot, but later boots prefer the installed disk.
 
-- Stakkr performance domains are applied to the VM shells through the same
-  host resource management model used elsewhere in the repo.
-- The validated true SNO example places `ocp-control-01` in the `gold`
-  performance domain. That is defined in
-  [openshift_cluster_vm.yml.example](../vars/guests/openshift_cluster_vm.yml.example).
-
 ## Cleanup
 
 Remove the local cluster VM shells:
 
 ```bash
 ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-cluster-cleanup.yml \
-  --vault-password-file <vault-file>
+  --vault-password-file <vault-file> \
+  --ask-become-pass
 ```
 
 If you also want the root disk files removed:
 
-```yaml
-openshift_cluster_cleanup_remove_disk_files: true
+```bash
+ansible-playbook -i inventory/hosts.yml playbooks/cluster/openshift-cluster-cleanup.yml \
+  --vault-password-file <vault-file> \
+  --ask-become-pass \
+  -e openshift_cluster_cleanup_remove_disk_files=true
 ```
-
-in the cleanup role defaults or pass it with `-e`.
