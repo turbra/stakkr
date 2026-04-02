@@ -1,42 +1,37 @@
 # Stakkr
 
-`stakkr` lets you shape how three `kvm-worker-*` guests share CPU on one KVM
-host.
+`stakkr` is an on-prem KVM lab scaffold for OpenShift bring-up, supporting VM
+bootstrap, and host resource management on one libvirt host.
 
-The default path is simple:
+- shared execution-pool performance domains
+- KSM memory oversubscription
+- local OpenShift SNO deployment with the Gold tier
+- local OpenShift compact deployment with the Gold tier
+- local RHEL with IdM deployment with the Silver tier
+- generic RHEL VM bootstrap with Silver and Bronze example tiers
+- Cockpit observer
+- optional clock-lane CPU experiments
 
-- all three workers share one guest CPU pool
-- Gold, Silver, and Bronze decide who gets more CPU when the host is busy
-- the host can also carry a foundation policy for CPU pools and memory efficiency
-
-That is the small-scale adaptation of the host resource management model being
-developed in [Calabi](https://github.com/gprocunier/calabi).
-
-There is also an optional second path:
-
-- each worker gets its own CPU lane
-- each lane gets its own frequency ceiling
-
-That clock-lane path is useful for experiments, but it is not the default
-operating model.
+It borrows ideas from [Calabi](https://github.com/gprocunier/calabi), but this
+repo targets local consumer hardware rather than AWS.
 
 ## Start Here
 
+- local OpenShift SNO and compact cluster deployment:
+  [guide](./docs/openshift-compact-cluster.md)
 - shared execution pool path:
   [method](./docs/shared-execution-pool-performance-domains.md),
   [findings](./docs/shared-execution-pool-validation.md)
-- clock-lane path:
-  [method](./docs/clock-frequency-tiering.md),
-  [findings](./docs/clock-frequency-validation.md)
 - local prerequisites:
   [checklist](./docs/prerequisites.md)
 - local IdM VM bootstrap:
   [guide](./docs/idm-local-bootstrap.md)
 - generic RHEL 10 VM bootstrap:
   [guide](./docs/rhel10-vm-bootstrap.md)
-- compact OpenShift cluster scaffold:
-  [guide](./docs/openshift-compact-cluster.md)
 - [Cockpit observer](./cockpit/stakkr-observer/README.md)
+- clock-lane path:
+  [method](./docs/clock-frequency-tiering.md),
+  [findings](./docs/clock-frequency-validation.md)
 
 > [!NOTE]
 > The local IdM bootstrap currently expects a seeded guest image (`qcow2` or
