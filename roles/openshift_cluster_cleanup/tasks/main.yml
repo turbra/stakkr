@@ -60,4 +60,3 @@
   loop_control:
     label: "{{ item.name }}"
   when: openshift_cluster_cleanup_remove_disk_files | bool
-

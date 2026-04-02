@@ -52,14 +52,13 @@ operating model.
 > - a local RHEL guest image in `qcow2` format
 
 > [!NOTE]
-> The current OpenShift scaffold on `sno-go` is validated for true SNO first:
-> one control-plane node, no initial workers, with a `12` vCPU SNO profile.
-> It now follows the Calabi pattern for install media cleanup: the agent ISO is
-> detached in a separate maintenance step after the first pivot reboot, before
-> the final installer completion waits.
-> The normal operator entrypoint is now
-> [site-openshift-sno.yml](./playbooks/site-openshift-sno.yml), not a manual
-> sequence of cluster phase playbooks.
+> The local OpenShift path now has one canonical lifecycle entrypoint,
+> [site-openshift-cluster.yml](./playbooks/site-openshift-cluster.yml), with
+> topology wrappers for
+> [site-openshift-sno.yml](./playbooks/site-openshift-sno.yml) and
+> [site-openshift-compact.yml](./playbooks/site-openshift-compact.yml).
+> True SNO remains the live-validated path. Compact 3-node support follows the
+> Calabi control-plane shape with cluster-owned API and ingress VIPs.
 
 
 ## Default Operating Model

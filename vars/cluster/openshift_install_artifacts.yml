@@ -7,7 +7,7 @@ openshift_install_artifacts:
   additional_trust_bundle_file: ""
   install_config:
     metadata_name: "{{ openshift_install_cluster.name }}"
-    platform_type: none
+    platform_type: "{{ openshift_install_cluster.platform_type | default('none') }}"
     compute_replicas: >-
       {{
         openshift_install_cluster.nodes

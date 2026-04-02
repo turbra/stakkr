@@ -1,0 +1,8 @@
+---
+- import_playbook: cluster/openshift-cluster-cleanup.yml
+  tags:
+    - cluster-cleanup
+    - cluster-reset
+- import_playbook: site-openshift-cluster.yml
+  tags:
+    - cluster-deploy

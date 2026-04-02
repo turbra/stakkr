@@ -2,14 +2,15 @@
 openshift_install_cluster:
   name: ocp
   base_domain: example.test
+  platform_type: none
   network:
     machine_cidr: 192.0.2.0/24
     machine_gateway: 192.0.2.1
     machine_dns_servers:
       - 192.0.2.53
       - 192.0.2.54
-    # For the current validated true SNO path with platform: none, point both
-    # names at the single control-plane node IP in local DNS.
+    # For true SNO with platform_type none, point api, api-int, and *.apps at
+    # the single control-plane node IP in local DNS.
     api_vip: 192.0.2.10
     ingress_vip: 192.0.2.10
   nodes:

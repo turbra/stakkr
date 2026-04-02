@@ -2,6 +2,18 @@
 - name: Derive install artifact context
   ansible.builtin.set_fact:
     openshift_install_artifacts_render_dir: "{{ openshift_install_artifacts.output_dir }}"
+    openshift_install_artifacts_control_plane_nodes: >-
+      {{
+        openshift_install_cluster.nodes
+        | selectattr('role', 'equalto', 'control-plane')
+        | list
+      }}
+    openshift_install_artifacts_non_control_plane_nodes: >-
+      {{
+        openshift_install_cluster.nodes
+        | rejectattr('role', 'equalto', 'control-plane')
+        | list
+      }}
 
 - name: Validate pull secret exists on the control node
   ansible.builtin.stat:
@@ -31,6 +43,50 @@
     fail_msg: >-
       Required local input files are missing. Expected a pull secret, SSH
       public key, and any optional trust bundle on the control node.
+
+- name: Validate the requested local OpenShift platform type
+  ansible.builtin.assert:
+    that:
+      - >-
+        openshift_install_artifacts.install_config.platform_type
+        in ['none', 'baremetal', 'external']
+    fail_msg: >-
+      openshift_install_cluster.platform_type must resolve to one of none,
+      baremetal, or external.
+
+- name: Assert the local topology is one of the supported cluster shapes
+  ansible.builtin.assert:
+    that:
+      - >-
+        (
+          (openshift_install_artifacts_control_plane_nodes | length == 1)
+          and
+          (openshift_install_artifacts_non_control_plane_nodes | length == 0)
+          and
+          (openshift_install_artifacts.install_config.platform_type == 'none')
+        )
+        or
+        (
+          (openshift_install_artifacts_control_plane_nodes | length == 3)
+          and
+          (openshift_install_artifacts_non_control_plane_nodes | length == 0)
+          and
+          (openshift_install_artifacts.install_config.platform_type == 'baremetal')
+        )
+    fail_msg: >-
+      The local OpenShift path currently supports only:
+      1) true SNO: 1 control-plane, 0 workers, platform_type none
+      2) compact: 3 control-plane, 0 workers, platform_type baremetal
+
+- name: Assert baremetal compact clusters define API and ingress VIPs
+  ansible.builtin.assert:
+    that:
+      - openshift_install_cluster.network.api_vip | default('') | length > 0
+      - openshift_install_cluster.network.ingress_vip | default('') | length > 0
+    fail_msg: >-
+      Compact local clusters require openshift_install_cluster.network.api_vip
+      and openshift_install_cluster.network.ingress_vip.
+  when: openshift_install_artifacts.install_config.platform_type == 'baremetal'
 
 - name: Validate node counts between install matrix and VM matrix
   ansible.builtin.assert:
@@ -135,4 +191,3 @@
     src: agent-config.yaml.j2
     dest: "{{ openshift_install_artifacts_render_dir }}/agent-config.yaml"
     mode: "0644"
-

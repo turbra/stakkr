@@ -8,6 +8,25 @@
     openshift_post_install_validate_remote_dir: /var/tmp/openshift-post-install-validate
     openshift_post_install_validate_remote_oc_path: /var/tmp/openshift-post-install-validate/oc
     openshift_post_install_validate_remote_kubeconfig_path: /var/tmp/openshift-post-install-validate/kubeconfig
+    openshift_post_install_validate_control_plane_nodes: >-
+      {{
+        openshift_install_cluster.nodes
+        | selectattr('role', 'equalto', 'control-plane')
+        | list
+      }}
+    openshift_post_install_validate_compact_cluster: >-
+      {{
+        (
+          openshift_install_cluster.platform_type | default('none')
+        ) == 'baremetal'
+        and
+        (
+          openshift_install_cluster.nodes
+          | selectattr('role', 'equalto', 'control-plane')
+          | list
+          | length
+        ) > 1
+      }}
 
 - name: Assert local oc binary exists
   ansible.builtin.stat:
@@ -76,6 +95,19 @@
   register: openshift_post_install_validate_nodes
   changed_when: false
 
+- name: Capture cluster node status JSON from inside the hypervisor boundary
+  ansible.builtin.command:
+    argv:
+      - "{{ openshift_post_install_validate_remote_oc_path }}"
+      - get
+      - nodes
+      - -o
+      - json
+  environment:
+    KUBECONFIG: "{{ openshift_post_install_validate_remote_kubeconfig_path }}"
+  register: openshift_post_install_validate_nodes_json
+  changed_when: false
+
 - name: Capture cluster operator status from inside the hypervisor boundary
   ansible.builtin.command:
     argv:
@@ -121,6 +153,118 @@
     fail_msg: >-
       Cluster version did not report the expected available/non-progressing
       state from inside the hypervisor boundary.
+
+- name: Assert the expected number of nodes joined the cluster
+  ansible.builtin.assert:
+    that:
+      - >-
+        (
+          openshift_post_install_validate_nodes_json.stdout | from_json
+        )['items']
+        | length
+        ==
+        (
+          openshift_install_cluster.nodes | length
+        )
+    fail_msg: >-
+      The cluster did not report the expected number of nodes for this local
+      topology.
+
+- name: Assert each configured node is present in the cluster
+  ansible.builtin.assert:
+    that:
+      - >-
+        item.name in (
+          (
+            openshift_post_install_validate_nodes_json.stdout | from_json
+          )['items']
+          | map(attribute='metadata.name')
+          | list
+        )
+    fail_msg: >-
+      Expected configured node {{ item.name }} to be present in the cluster.
+  loop: "{{ openshift_install_cluster.nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Assert every cluster node reports Ready
+  ansible.builtin.assert:
+    that:
+      - >-
+        (
+          (
+            (
+              openshift_post_install_validate_nodes_json.stdout | from_json
+            )['items']
+            | selectattr('metadata.name', 'equalto', item.name)
+            | first
+          ).status.conditions
+          | selectattr('type', 'equalto', 'Ready')
+          | map(attribute='status')
+          | first
+        ) == 'True'
+    fail_msg: >-
+      Cluster node {{ item.name }} did not report Ready=True from the
+      hypervisor validation boundary.
+  loop: "{{ openshift_install_cluster.nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Resolve the API VIP MAC from the local machine network
+  ansible.builtin.shell: |
+    set -euo pipefail
+    interface="{{ openshift_cluster_vm_defaults.network.bridge_name }}"
+    vip="{{ openshift_install_cluster.network.api_vip }}"
+    ip neigh show "$vip" dev "$interface" | awk '{print $5}'
+  args:
+    executable: /bin/bash
+  register: openshift_post_install_validate_api_vip_mac
+  changed_when: false
+  become: true
+  failed_when: false
+  when: openshift_post_install_validate_compact_cluster | bool
+
+- name: Derive the control-plane node currently holding the API VIP
+  ansible.builtin.set_fact:
+    openshift_post_install_validate_api_vip_holder: >-
+      {{
+        (
+          openshift_post_install_validate_control_plane_nodes
+          | selectattr(
+              'mac_address',
+              'equalto',
+              openshift_post_install_validate_api_vip_mac.stdout | trim
+            )
+          | map(attribute='name')
+          | first
+        )
+      }}
+  when:
+    - openshift_post_install_validate_compact_cluster | bool
+    - openshift_post_install_validate_api_vip_mac.stdout | trim | length > 0
+
+- name: Derive compact API VIP summary when the holder is observable
+  ansible.builtin.set_fact:
+    openshift_post_install_validate_api_vip_summary: >-
+      API VIP {{ openshift_install_cluster.network.api_vip }} is currently
+      held by {{ openshift_post_install_validate_api_vip_holder }}.
+  when:
+    - openshift_post_install_validate_compact_cluster | bool
+    - openshift_post_install_validate_api_vip_holder is defined
+    - openshift_post_install_validate_api_vip_holder | length > 0
+
+- name: Derive compact API VIP summary when the holder is not observable
+  ansible.builtin.set_fact:
+    openshift_post_install_validate_api_vip_summary: >-
+      API VIP {{ openshift_install_cluster.network.api_vip }} is reachable,
+      but the current holder MAC was not observable from the hypervisor ARP
+      cache.
+  when:
+    - openshift_post_install_validate_compact_cluster | bool
+    - >-
+      openshift_post_install_validate_api_vip_holder is not defined
+      or
+      openshift_post_install_validate_api_vip_holder | length == 0
 
 - name: Assert all cluster operators are available and not degraded
   ansible.builtin.assert:
@@ -176,12 +320,46 @@
         )['items']
         | length
       }} cluster operators are Available=True and Degraded=False.
+    openshift_post_install_validate_node_summary: >-
+      {{
+        (
+          openshift_post_install_validate_nodes_json.stdout | from_json
+        )['items']
+        | length
+      }} nodes reported Ready=True.
+  when: openshift_post_install_validate_compact_cluster | bool
+
+- name: Derive concise post-install validation summaries for non-compact clusters
+  ansible.builtin.set_fact:
+    openshift_post_install_validate_version_summary: >-
+      Cluster version {{
+      (
+        openshift_post_install_validate_clusterversion.stdout | from_json
+      )['items'][0].status.desired.version
+      }} is Available=True and Progressing=False.
+    openshift_post_install_validate_operator_summary: >-
+      {{
+        (
+          openshift_post_install_validate_clusteroperators.stdout | from_json
+        )['items']
+        | length
+      }} cluster operators are Available=True and Degraded=False.
+    openshift_post_install_validate_node_summary: >-
+      {{
+        (
+          openshift_post_install_validate_nodes_json.stdout | from_json
+        )['items']
+        | length
+      }} nodes reported Ready=True.
+  when: not (openshift_post_install_validate_compact_cluster | bool)
 
 - name: Publish post-install validation summary
   ansible.builtin.debug:
     msg:
       - "{{ openshift_post_install_validate_version_summary }}"
+      - "{{ openshift_post_install_validate_node_summary }}"
       - "{{ openshift_post_install_validate_operator_summary }}"
+      - "{{ openshift_post_install_validate_api_vip_summary | default('') }}"
       - "{{ openshift_post_install_validate_nodes.stdout_lines }}"
       - "{{ openshift_post_install_validate_csrs.stdout_lines }}"
 

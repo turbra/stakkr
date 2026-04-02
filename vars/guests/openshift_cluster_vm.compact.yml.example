@@ -38,17 +38,45 @@ openshift_cluster_vm_defaults:
       serial: ""
 
 openshift_cluster_nodes:
-  - name: ocp-control-01
+  - name: ocp-master-01
     role: control-plane
     mac_address: "52:54:00:40:00:10"
     resources:
-      # Validated true SNO profile.
-      vcpus: 12
-      memory_mb: 32768
+      # Local compact control-plane profile.
+      vcpus: 10
+      memory_mb: 16384
     performance_domain:
       tier: gold
       iothreads: 0
     disks:
       root:
-        path: /var/lib/libvirt/images/ocp-control-01.qcow2
-        serial: ocpcontrol01root
+        path: /var/lib/libvirt/images/ocp-master-01.qcow2
+        serial: ocpmaster01root
+
+  - name: ocp-master-02
+    role: control-plane
+    mac_address: "52:54:00:40:00:11"
+    resources:
+      vcpus: 10
+      memory_mb: 16384
+    performance_domain:
+      tier: gold
+      iothreads: 0
+    disks:
+      root:
+        path: /var/lib/libvirt/images/ocp-master-02.qcow2
+        serial: ocpmaster02root
+
+  - name: ocp-master-03
+    role: control-plane
+    mac_address: "52:54:00:40:00:12"
+    resources:
+      vcpus: 10
+      memory_mb: 16384
+    performance_domain:
+      tier: gold
+      iothreads: 0
+    disks:
+      root:
+        path: /var/lib/libvirt/images/ocp-master-03.qcow2
+        serial: ocpmaster03root

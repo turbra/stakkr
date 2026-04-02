@@ -1,0 +1,34 @@
+---
+openshift_install_cluster:
+  name: ocp
+  base_domain: example.test
+  platform_type: baremetal
+  network:
+    machine_cidr: 192.0.2.0/24
+    machine_gateway: 192.0.2.1
+    machine_dns_servers:
+      - 192.0.2.53
+      - 192.0.2.54
+    # For compact, publish api and api-int to api_vip, and publish *.apps to
+    # ingress_vip in local DNS.
+    api_vip: 192.0.2.10
+    ingress_vip: 192.0.2.11
+  nodes:
+    - name: ocp-master-01
+      role: control-plane
+      mac_address: "52:54:00:40:00:10"
+      machine_network:
+        ipv4_address: 192.0.2.12
+        prefix_length: 24
+    - name: ocp-master-02
+      role: control-plane
+      mac_address: "52:54:00:40:00:11"
+      machine_network:
+        ipv4_address: 192.0.2.13
+        prefix_length: 24
+    - name: ocp-master-03
+      role: control-plane
+      mac_address: "52:54:00:40:00:12"
+      machine_network:
+        ipv4_address: 192.0.2.14
+        prefix_length: 24

@@ -1,0 +1,2 @@
+---
+- import_playbook: site-openshift-cluster.yml

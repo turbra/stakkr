@@ -3,6 +3,14 @@
   ansible.builtin.set_fact:
     openshift_cluster_effective_domain: "{{ openshift_cluster_vm_defaults.domain }}"
     openshift_cluster_effective_nodes: "{{ openshift_cluster_nodes }}"
+    openshift_cluster_root_disk_directories: >-
+      {{
+        openshift_cluster_nodes
+        | map(attribute='disks.root.path')
+        | map('dirname')
+        | unique
+        | list
+      }}
 
 - name: Validate OpenShift cluster orchestration data
   ansible.builtin.assert:
@@ -44,6 +52,15 @@
     label: "{{ item.item }}"
   changed_when: true
   when: item.rc != 0
+
+- name: Ensure SELinux tooling is installed for custom libvirt disk paths
+  ansible.builtin.command:
+    argv:
+      - dnf
+      - install
+      - -y
+      - policycoreutils-python-utils
+  changed_when: true
 
 - name: Validate the OpenShift node definitions
   ansible.builtin.assert:
@@ -294,14 +311,30 @@
 
 - name: Ensure OpenShift root disk directories exist
   ansible.builtin.file:
-    path: "{{ item.disks.root.path | dirname }}"
+    path: "{{ item }}"
     state: directory
     owner: root
     group: root
     mode: "0755"
-  loop: "{{ openshift_cluster_effective_nodes }}"
+  loop: "{{ openshift_cluster_root_disk_directories }}"
   loop_control:
-    label: "{{ item.name }}"
+    label: "{{ item }}"
+
+- name: Label OpenShift root disk directories for libvirt when outside the default pool
+  ansible.builtin.shell: |
+    set -euo pipefail
+    directory="{{ item }}"
+    pattern="${directory}(/.*)?"
+    semanage fcontext -a -t virt_image_t "$pattern" 2>/dev/null || \
+    semanage fcontext -m -t virt_image_t "$pattern"
+    restorecon -RF "$directory"
+  args:
+    executable: /bin/bash
+  loop: "{{ openshift_cluster_root_disk_directories }}"
+  loop_control:
+    label: "{{ item }}"
+  when: item != '/var/lib/libvirt/images'
+  changed_when: true
 
 - name: Remove root disks when reinitialization is requested
   ansible.builtin.file:
@@ -337,6 +370,17 @@
     label: "{{ item.item.name }}"
   when: not item.stat.exists
   changed_when: true
+
+- name: Normalize OpenShift root disk ownership and mode for qemu access
+  ansible.builtin.file:
+    path: "{{ item.disks.root.path }}"
+    state: file
+    owner: root
+    group: qemu
+    mode: "0660"
+  loop: "{{ openshift_cluster_effective_nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
 
 - name: Render virt-install command previews for each OpenShift node
   ansible.builtin.template:
