@@ -17,7 +17,7 @@ openshift_cluster_vm_defaults:
     recreate_domain: false
     reinitialize_root_disk: false
   performance_domain:
-    tier: bronze
+    tier: gold
     iothreads: 0
   access:
     attach_agent_boot_media: true
