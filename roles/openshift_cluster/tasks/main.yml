@@ -3,10 +3,22 @@
   ansible.builtin.set_fact:
     openshift_cluster_effective_domain: "{{ openshift_cluster_vm_defaults.domain }}"
     openshift_cluster_effective_nodes: "{{ openshift_cluster_nodes }}"
-    openshift_cluster_root_disk_directories: >-
+
+- name: Derive OpenShift root disk file-backed paths
+  ansible.builtin.set_fact:
+    openshift_cluster_root_disk_file_paths: >-
       {{
         openshift_cluster_nodes
         | map(attribute='disks.root.path')
+        | reject('match', '^/dev/')
+        | list
+      }}
+
+- name: Derive OpenShift root disk file-backed directories
+  ansible.builtin.set_fact:
+    openshift_cluster_root_disk_directories: >-
+      {{
+        openshift_cluster_root_disk_file_paths
         | map('dirname')
         | unique
         | list
@@ -73,6 +85,15 @@
       - item.disks.root.path | length > 0
       - (item.disks.root.serial | default('')) | length > 0
       - (item.disks.root.size_gb | default(openshift_cluster_vm_defaults.disks.root.size_gb) | int) > 0
+      - >-
+        not (
+          (item.disks.root.path is match('^/dev/'))
+          and
+          (
+            item.disks.root.format
+            | default(openshift_cluster_vm_defaults.disks.root.format)
+          ) != 'raw'
+        )
     fail_msg: >-
       OpenShift node {{ item.name | default('unnamed') }} is missing required
       identity, resource, or disk settings.
@@ -343,10 +364,30 @@
   loop: "{{ openshift_cluster_effective_nodes }}"
   loop_control:
     label: "{{ item.name }}"
-  when: >-
-    item.provisioning.reinitialize_root_disk
-    | default(openshift_cluster_vm_defaults.provisioning.reinitialize_root_disk)
-    | bool
+  when:
+    - >-
+      item.provisioning.reinitialize_root_disk
+      | default(openshift_cluster_vm_defaults.provisioning.reinitialize_root_disk)
+      | bool
+    - item.disks.root.path is not match('^/dev/')
+
+- name: Remove root logical volumes when reinitialization is requested
+  ansible.builtin.command:
+    argv:
+      - lvremove
+      - -fy
+      - "{{ item.disks.root.path }}"
+  loop: "{{ openshift_cluster_effective_nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - >-
+      item.provisioning.reinitialize_root_disk
+      | default(openshift_cluster_vm_defaults.provisioning.reinitialize_root_disk)
+      | bool
+    - item.disks.root.path is match('^/dev/')
+  changed_when: true
+  failed_when: false
 
 - name: Check whether the OpenShift node root disk files exist
   ansible.builtin.stat:
@@ -368,7 +409,26 @@
   loop: "{{ stakkr_openshift_cluster_root_disk_stat.results }}"
   loop_control:
     label: "{{ item.item.name }}"
-  when: not item.stat.exists
+  when:
+    - not item.stat.exists
+    - item.item.disks.root.path is not match('^/dev/')
+  changed_when: true
+
+- name: Create OpenShift root logical volumes when absent
+  ansible.builtin.command:
+    argv:
+      - lvcreate
+      - -L
+      - "{{ item.item.disks.root.size_gb | default(openshift_cluster_vm_defaults.disks.root.size_gb) }}G"
+      - -n
+      - "{{ item.item.disks.root.path | basename }}"
+      - "{{ item.item.disks.root.path | dirname | basename }}"
+  loop: "{{ stakkr_openshift_cluster_root_disk_stat.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when:
+    - not item.stat.exists
+    - item.item.disks.root.path is match('^/dev/')
   changed_when: true
 
 - name: Normalize OpenShift root disk ownership and mode for qemu access
@@ -381,6 +441,7 @@
   loop: "{{ openshift_cluster_effective_nodes }}"
   loop_control:
     label: "{{ item.name }}"
+  when: item.disks.root.path is not match('^/dev/')
 
 - name: Render virt-install command previews for each OpenShift node
   ansible.builtin.template:

@@ -28,7 +28,7 @@ openshift_cluster_vm_defaults:
     vnc_listen: 127.0.0.1
   disks:
     root:
-      format: qcow2
+      format: raw
       size_gb: 120
       bus: scsi
       cache: none
@@ -50,7 +50,7 @@ openshift_cluster_nodes:
       iothreads: 0
     disks:
       root:
-        path: /var/lib/libvirt/images/ocp-master-01.qcow2
+        path: /dev/ocptb/ocp-master-01
         serial: ocpmaster01root
 
   - name: ocp-master-02
@@ -64,7 +64,7 @@ openshift_cluster_nodes:
       iothreads: 0
     disks:
       root:
-        path: /var/lib/libvirt/images/ocp-master-02.qcow2
+        path: /dev/ocptb/ocp-master-02
         serial: ocpmaster02root
 
   - name: ocp-master-03
@@ -78,5 +78,5 @@ openshift_cluster_nodes:
       iothreads: 0
     disks:
       root:
-        path: /var/lib/libvirt/images/ocp-master-03.qcow2
+        path: /dev/ocptb/ocp-master-03
         serial: ocpmaster03root

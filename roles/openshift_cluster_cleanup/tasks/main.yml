@@ -59,4 +59,21 @@
   loop: "{{ openshift_cluster_cleanup_nodes }}"
   loop_control:
     label: "{{ item.name }}"
-  when: openshift_cluster_cleanup_remove_disk_files | bool
+  when:
+    - openshift_cluster_cleanup_remove_disk_files | bool
+    - item.disks.root.path is not match('^/dev/')
+
+- name: Remove OpenShift root logical volumes when requested
+  ansible.builtin.command:
+    argv:
+      - lvremove
+      - -fy
+      - "{{ item.disks.root.path }}"
+  loop: "{{ openshift_cluster_cleanup_nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - openshift_cluster_cleanup_remove_disk_files | bool
+    - item.disks.root.path is match('^/dev/')
+  changed_when: true
+  failed_when: false

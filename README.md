@@ -34,8 +34,8 @@ operating model.
   [guide](./docs/idm-local-bootstrap.md)
 - generic RHEL 10 VM bootstrap:
   [guide](./docs/rhel10-vm-bootstrap.md)
-- local OpenShift cluster scaffold:
-  [guide](./docs/openshift-local-cluster.md)
+- compact OpenShift cluster scaffold:
+  [guide](./docs/openshift-compact-cluster.md)
 - [Cockpit observer](./cockpit/stakkr-observer/README.md)
 
 > [!NOTE]
@@ -52,13 +52,12 @@ operating model.
 > - a local RHEL guest image in `qcow2` format
 
 > [!NOTE]
-> The local OpenShift path now has one canonical lifecycle entrypoint,
-> [site-openshift-cluster.yml](./playbooks/site-openshift-cluster.yml), with
-> topology wrappers for
-> [site-openshift-sno.yml](./playbooks/site-openshift-sno.yml) and
+> For normal compact installs, use
 > [site-openshift-compact.yml](./playbooks/site-openshift-compact.yml).
-> True SNO remains the live-validated path. Compact 3-node support follows the
-> Calabi control-plane shape with cluster-owned API and ingress VIPs.
+> For clean rebuilds, use
+> [site-openshift-compact-redeploy.yml](./playbooks/site-openshift-compact-redeploy.yml).
+> True SNO remains a separate path through
+> [site-openshift-sno.yml](./playbooks/site-openshift-sno.yml).
 
 
 ## Default Operating Model
