@@ -3,6 +3,11 @@
 `stakkr` is an on-prem KVM lab scaffold for OpenShift bring-up, supporting VM
 bootstrap, and host resource management on one libvirt host.
 
+[![License: GPL-3.0](https://img.shields.io/github/license/turbra/stakkr)](LICENSE)
+![OpenShift SNO + Compact](https://img.shields.io/badge/OpenShift-SNO%20%2B%20Compact-red)
+![KVM/libvirt](https://img.shields.io/badge/KVM-libvirt-blue)
+![RHEL 10](https://img.shields.io/badge/RHEL-10-red)
+
 - shared execution-pool performance domains
 - KSM memory oversubscription
 - local OpenShift SNO deployment with the Gold tier
