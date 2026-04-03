@@ -418,6 +418,9 @@
   ansible.builtin.command:
     argv:
       - lvcreate
+      - -y
+      - -W
+      - y
       - -L
       - "{{ item.item.disks.root.size_gb | default(openshift_cluster_vm_defaults.disks.root.size_gb) }}G"
       - -n
