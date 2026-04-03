@@ -612,6 +612,25 @@ def discover_managed_domains_from_cgroups() -> list[dict]:
                 "vcpus": 0,
                 "partition": f"/machine/{tier}",
             }
+    root_scope_base = "/sys/fs/cgroup/machine.slice"
+    if os.path.isdir(root_scope_base):
+        for entry in os.listdir(root_scope_base):
+            if not entry.startswith("machine-qemu") or not entry.endswith(".scope"):
+                continue
+            name = _unescape_scope_name(entry)
+            if not name or name in discovered:
+                continue
+            cpu_weight = read_scope_cpu_weight(name)
+            tier = classify_tier(name, "", cpu_weight)
+            if tier is None:
+                continue
+            discovered[name] = {
+                "name": name,
+                "tier": tier,
+                "memory_bytes": 0,
+                "vcpus": 0,
+                "partition": "/machine",
+            }
     return [discovered[name] for name in sorted(discovered)]
 
 
