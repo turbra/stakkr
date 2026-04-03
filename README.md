@@ -4,7 +4,7 @@
 bootstrap, and host resource management on one libvirt host.
 
 [![License: GPL-3.0](https://img.shields.io/github/license/turbra/stakkr)](LICENSE)
-![OpenShift SNO + Compact](https://img.shields.io/badge/OpenShift-SNO%20%2B%20Compact-red)
+![OpenShift 4.20](https://img.shields.io/badge/OpenShift-4.20-red)
 ![KVM/libvirt](https://img.shields.io/badge/KVM-libvirt-blue)
 ![Ansible](https://img.shields.io/badge/Ansible-driven-blue)
 ![RHEL 10](https://img.shields.io/badge/RHEL-10-red)
