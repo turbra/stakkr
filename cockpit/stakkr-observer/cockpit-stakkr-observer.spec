@@ -46,4 +46,3 @@ cp -a images/. %{buildroot}%{_datadir}/cockpit/stakkr-observer/images/
 
 %files
 %{_datadir}/cockpit/stakkr-observer/
-
