@@ -1,3 +1,10 @@
+---
+title: Shared Execution Pool With Weighted Performance Domains
+description: >-
+  Default Stakkr host CPU policy model covering host reserve, guest execution
+  pool, weighted performance domains, and operator order.
+---
+
 # Shared Execution Pool With Weighted Performance Domains
 
 This is the default operating path.
@@ -10,7 +17,7 @@ In plain terms:
 
 > [!IMPORTANT]
 > This is not the clock-tiering experiment. If you want dedicated worker lanes
-> with per-lane frequency caps, use [clock-frequency-tiering.md](./clock-frequency-tiering.md) instead.
+> with per-lane frequency caps, use [Clock Frequency Tiering]({{ '/clock-frequency-tiering.html' | relative_url }}) instead.
 
 ## Design Summary
 
@@ -75,11 +82,11 @@ flowchart LR
 
 Performance domain mapping:
 
-| VM | Tier | `CPUWeight` |
-| --- | --- | --- |
-| `kvm-worker-01` | Gold | `512` |
-| `kvm-worker-02` | Silver | `333` |
-| `kvm-worker-03` | Bronze | `167` |
+| VM              | Tier   | `CPUWeight` |
+| --------------- | ------ | ----------- |
+| `kvm-worker-01` | Gold   | `512`       |
+| `kvm-worker-02` | Silver | `333`       |
+| `kvm-worker-03` | Bronze | `167`       |
 
 Important behavior:
 
@@ -255,4 +262,4 @@ the live scope overrides.
 
 Measured weighted-domain results are summarized here:
 
-- [shared-execution-pool-validation.md](./shared-execution-pool-validation.md)
+- [Shared Execution Pool Validation]({{ '/shared-execution-pool-validation.html' | relative_url }})

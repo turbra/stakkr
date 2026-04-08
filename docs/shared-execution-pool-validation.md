@@ -1,3 +1,10 @@
+---
+title: Shared Execution Pool Validation
+description: >-
+  Validation findings for the default Stakkr shared execution-pool contention
+  model on local hardware.
+---
+
 # Shared Execution Pool Validation
 
 These results came from the shared-pool path after:
@@ -94,19 +101,19 @@ Practical note:
 
 Observed `cpu_time` deltas over 60 seconds:
 
-| VM | Delta |
-| --- | --- |
+| VM              | Delta          |
+| --------------- | -------------- |
 | `kvm-worker-01` | `292.815357 s` |
 | `kvm-worker-02` | `218.796768 s` |
-| `kvm-worker-03` | `90.227549 s` |
+| `kvm-worker-03` | `90.227549 s`  |
 
 Normalized view:
 
-| VM | Avg logical CPUs | `4 GHz`-equivalent | Shared-pool per-CPU equivalent |
-| --- | --- | --- | --- |
-| `kvm-worker-01` | `4.88` | `19.52 GHz` | `1.95 GHz` |
-| `kvm-worker-02` | `3.65` | `14.59 GHz` | `1.46 GHz` |
-| `kvm-worker-03` | `1.50` | `6.02 GHz` | `0.60 GHz` |
+| VM              | Avg logical CPUs | `4 GHz`-equivalent | Shared-pool per-CPU equivalent |
+| --------------- | ---------------- | ------------------ | ------------------------------ |
+| `kvm-worker-01` | `4.88`           | `19.52 GHz`        | `1.95 GHz`                     |
+| `kvm-worker-02` | `3.65`           | `14.59 GHz`        | `1.46 GHz`                     |
+| `kvm-worker-03` | `1.50`           | `6.02 GHz`         | `0.60 GHz`                     |
 
 Interpretation:
 
@@ -121,19 +128,19 @@ That is the expected rank order for `512 > 333 > 167`.
 
 Observed `cpu_time` deltas over 60 seconds:
 
-| VM | Delta |
-| --- | --- |
-| `kvm-worker-01` | `43.738443 s` |
+| VM              | Delta          |
+| --------------- | -------------- |
+| `kvm-worker-01` | `43.738443 s`  |
 | `kvm-worker-02` | `310.012859 s` |
 | `kvm-worker-03` | `246.153924 s` |
 
 Normalized view:
 
-| VM | Avg logical CPUs | `4 GHz`-equivalent | Shared-pool per-CPU equivalent |
-| --- | --- | --- | --- |
-| `kvm-worker-01` | `0.73` | `2.92 GHz` | `0.29 GHz` |
-| `kvm-worker-02` | `5.17` | `20.67 GHz` | `2.07 GHz` |
-| `kvm-worker-03` | `4.10` | `16.41 GHz` | `1.64 GHz` |
+| VM              | Avg logical CPUs | `4 GHz`-equivalent | Shared-pool per-CPU equivalent |
+| --------------- | ---------------- | ------------------ | ------------------------------ |
+| `kvm-worker-01` | `0.73`           | `2.92 GHz`         | `0.29 GHz`                     |
+| `kvm-worker-02` | `5.17`           | `20.67 GHz`        | `2.07 GHz`                     |
+| `kvm-worker-03` | `4.10`           | `16.41 GHz`        | `1.64 GHz`                     |
 
 Interpretation:
 
@@ -148,19 +155,19 @@ This shows that idle capacity is borrowable and not stranded.
 
 Observed `cpu_time` deltas over a `61`-second window:
 
-| VM | Delta |
-| --- | --- |
+| VM              | Delta          |
+| --------------- | -------------- |
 | `kvm-worker-01` | `357.285897 s` |
-| `kvm-worker-02` | `60.487454 s` |
-| `kvm-worker-03` | `45.766638 s` |
+| `kvm-worker-02` | `60.487454 s`  |
+| `kvm-worker-03` | `45.766638 s`  |
 
 Normalized view:
 
-| VM | Avg logical CPUs | `4 GHz`-equivalent | Shared-pool per-CPU equivalent |
-| --- | --- | --- | --- |
-| `kvm-worker-01` | `5.86` | `23.43 GHz` | `2.34 GHz` |
-| `kvm-worker-02` | `0.99` | `3.97 GHz` | `0.40 GHz` |
-| `kvm-worker-03` | `0.75` | `3.00 GHz` | `0.30 GHz` |
+| VM              | Avg logical CPUs | `4 GHz`-equivalent | Shared-pool per-CPU equivalent |
+| --------------- | ---------------- | ------------------ | ------------------------------ |
+| `kvm-worker-01` | `5.86`           | `23.43 GHz`        | `2.34 GHz`                     |
+| `kvm-worker-02` | `0.99`           | `3.97 GHz`         | `0.40 GHz`                     |
+| `kvm-worker-03` | `0.75`           | `3.00 GHz`         | `0.30 GHz`                     |
 
 Interpretation:
 
@@ -173,19 +180,19 @@ Interpretation:
 
 Observed `cpu_time` deltas over a `60`-second window:
 
-| VM | Delta |
-| --- | --- |
-| `kvm-worker-01` | `29.374517 s` |
+| VM              | Delta          |
+| --------------- | -------------- |
+| `kvm-worker-01` | `29.374517 s`  |
 | `kvm-worker-02` | `356.087829 s` |
-| `kvm-worker-03` | `44.523157 s` |
+| `kvm-worker-03` | `44.523157 s`  |
 
 Normalized view:
 
-| VM | Avg logical CPUs | `4 GHz`-equivalent | Shared-pool per-CPU equivalent |
-| --- | --- | --- | --- |
-| `kvm-worker-01` | `0.49` | `1.96 GHz` | `0.20 GHz` |
-| `kvm-worker-02` | `5.93` | `23.74 GHz` | `2.37 GHz` |
-| `kvm-worker-03` | `0.74` | `2.97 GHz` | `0.30 GHz` |
+| VM              | Avg logical CPUs | `4 GHz`-equivalent | Shared-pool per-CPU equivalent |
+| --------------- | ---------------- | ------------------ | ------------------------------ |
+| `kvm-worker-01` | `0.49`           | `1.96 GHz`         | `0.20 GHz`                     |
+| `kvm-worker-02` | `5.93`           | `23.74 GHz`        | `2.37 GHz`                     |
+| `kvm-worker-03` | `0.74`           | `2.97 GHz`         | `0.30 GHz`                     |
 
 Interpretation:
 
@@ -198,19 +205,19 @@ Interpretation:
 
 Observed `cpu_time` deltas over a `66`-second window:
 
-| VM | Delta |
-| --- | --- |
-| `kvm-worker-01` | `29.560951 s` |
-| `kvm-worker-02` | `45.712334 s` |
+| VM              | Delta          |
+| --------------- | -------------- |
+| `kvm-worker-01` | `29.560951 s`  |
+| `kvm-worker-02` | `45.712334 s`  |
 | `kvm-worker-03` | `357.396285 s` |
 
 Normalized view:
 
-| VM | Avg logical CPUs | `4 GHz`-equivalent | Shared-pool per-CPU equivalent |
-| --- | --- | --- | --- |
-| `kvm-worker-01` | `0.45` | `1.79 GHz` | `0.18 GHz` |
-| `kvm-worker-02` | `0.69` | `2.77 GHz` | `0.28 GHz` |
-| `kvm-worker-03` | `5.42` | `21.66 GHz` | `2.17 GHz` |
+| VM              | Avg logical CPUs | `4 GHz`-equivalent | Shared-pool per-CPU equivalent |
+| --------------- | ---------------- | ------------------ | ------------------------------ |
+| `kvm-worker-01` | `0.45`           | `1.79 GHz`         | `0.18 GHz`                     |
+| `kvm-worker-02` | `0.69`           | `2.77 GHz`         | `0.28 GHz`                     |
+| `kvm-worker-03` | `5.42`           | `21.66 GHz`        | `2.17 GHz`                     |
 
 Interpretation:
 

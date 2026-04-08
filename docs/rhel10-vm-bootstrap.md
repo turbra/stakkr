@@ -1,3 +1,10 @@
+---
+title: Generic RHEL 10 VM Bootstrap
+description: >-
+  Generic RHEL 10 guest bootstrap path using the same local host model and
+  tier-oriented resource patterns as the rest of Stakkr.
+---
+
 # Generic RHEL 10 VM Bootstrap
 
 This workflow deploys one, two, or many RHEL 10 guests from a structured
@@ -5,6 +12,7 @@ configuration file instead of a one-off playbook. It is modeled after the
 working IdM bootstrap, but it is not tied to IdM or any other workload.
 
 The guest definition stays generic:
+
 - guest identity
 - source qcow2 or raw image
 - disk target
@@ -31,7 +39,8 @@ to be reusable even if you later add a different provider-specific driver.
   - `inventory/group_vars/all/lab_credentials.yml`
 
 If you have not already done so, review:
-- [prerequisites.md](./prerequisites.md)
+
+- [Prerequisites]({{ '/prerequisites.html' | relative_url }})
 
 ## Configuration Pattern
 
@@ -49,6 +58,7 @@ Each entry in `rhel10_vms` represents one VM. You can keep one entry, remove
 entries, or add many more.
 
 The important fields per guest are:
+
 - `name`
 - `role`
 - `source_image`
@@ -59,6 +69,7 @@ The important fields per guest are:
 - `access.*`
 
 Optional fields:
+
 - `subscription.*`
 - `stakkr.*`
 - `cloud_init.runcmd`
@@ -85,6 +96,7 @@ ssh-add ~/.ssh/id_ed25519
 ## What The Playbook Does
 
 For each guest, the playbook:
+
 1. validates the requested image, network, and access data
 2. seeds or reuses the guest disk
 3. injects the requested admin user, SSH key, and optional password

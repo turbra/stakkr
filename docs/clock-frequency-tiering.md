@@ -1,3 +1,10 @@
+---
+title: Clock Frequency Tiering
+description: >-
+  Experimental Stakkr path for dedicated worker CPU lanes with per-lane
+  frequency controls, separate from the default shared execution pool.
+---
+
 # Clock Frequency Tiering
 
 This is the optional clock-tiering experiment.
@@ -42,11 +49,11 @@ flowchart LR
 
 Policy:
 
-| VM | vCPU cpuset | Emulator cpuset | Max frequency |
-| --- | --- | --- | --- |
-| `kvm-worker-01` | `2-4` | `0-1` | `3000000 kHz` |
-| `kvm-worker-02` | `5-7` | `0-1` | `2000000 kHz` |
-| `kvm-worker-03` | `8-11` | `0-1` | `1000000 kHz` |
+| VM              | vCPU cpuset | Emulator cpuset | Max frequency |
+| --------------- | ----------- | --------------- | ------------- |
+| `kvm-worker-01` | `2-4`       | `0-1`           | `3000000 kHz` |
+| `kvm-worker-02` | `5-7`       | `0-1`           | `2000000 kHz` |
+| `kvm-worker-03` | `8-11`      | `0-1`           | `1000000 kHz` |
 
 ## What `clock-apply` Does
 

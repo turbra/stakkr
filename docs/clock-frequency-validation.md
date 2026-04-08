@@ -1,3 +1,10 @@
+---
+title: Clock Frequency Tiering Validation
+description: >-
+  Validation findings for the separate Stakkr clock-frequency tiering
+  experiment and its deterministic per-worker lane behavior.
+---
+
 # Clock Frequency Tiering Validation
 
 These findings came from the optional clock-lane experiment after comparing a

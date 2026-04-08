@@ -1,3 +1,10 @@
+---
+title: Local IdM Bootstrap
+description: >-
+  Seeded-image local IdM bootstrap path for the Stakkr lab model, including
+  prerequisites and expected local inputs.
+---
+
 # Local IdM Bootstrap
 
 This is the local KVM-host path for deploying a FreeIPA / IdM server with
@@ -8,7 +15,7 @@ IdM server, and then removes the temporary cloud-init media.
 
 ## Before You Run It
 
-Review [prerequisites.md](./prerequisites.md).
+Review [Prerequisites]({{ '/prerequisites.html' | relative_url }}).
 
 The practical requirements are:
 

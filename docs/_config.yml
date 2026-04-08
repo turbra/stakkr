@@ -1,0 +1,19 @@
+title: "Stakkr"
+description: >-
+  On-prem KVM lab scaffold for OpenShift bring-up, VM bootstrap, and host
+  resource management on one libvirt host.
+url: "https://turbra.github.io"
+baseurl: "/stakkr"
+theme: jekyll-theme-primer
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+markdown: kramdown
+kramdown:
+  input: GFM
+defaults:
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: default

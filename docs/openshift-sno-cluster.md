@@ -1,8 +1,16 @@
+---
+title: SNO OpenShift Cluster Scaffold
+description: >-
+  True single-node OpenShift path for one libvirt host, including inputs,
+  ordered phases, and live install checks.
+---
+
 # SNO OpenShift Cluster Scaffold
 
 This guide is the true SNO OpenShift path for one libvirt host.
 
 The current validated shape is intentionally narrow:
+
 - `1` control-plane node
 - `0` workers
 - `platform_type: none`
@@ -11,6 +19,7 @@ The current validated shape is intentionally narrow:
 - `gold` performance-domain tier for `ocp-control-01`
 
 It covers:
+
 - installer binaries
 - `install-config.yaml`
 - `agent-config.yaml`
@@ -61,6 +70,7 @@ You need all of these before running any SNO deploy command:
   - or pre-provide an `openshift-install` binary in the configured tool path
 
 DNS must be updated before deploy:
+
 - `api.<cluster_name>.<base_domain>` -> the single control-plane node IP
 - `api-int.<cluster_name>.<base_domain>` -> the single control-plane node IP
 - `*.apps.<cluster_name>.<base_domain>` -> the single control-plane node IP
@@ -81,12 +91,14 @@ cp vars/guests/openshift_cluster_vm.yml.example vars/guests/openshift_cluster_vm
 ```
 
 The required files are:
+
 - SNO cluster metadata:
   [openshift_install_cluster.yml.example](../vars/cluster/openshift_install_cluster.yml.example)
 - SNO VM shell definitions:
   [openshift_cluster_vm.yml.example](../vars/guests/openshift_cluster_vm.yml.example)
 
 Populate them with:
+
 - cluster name and base domain
 - machine network, gateway, and DNS servers
 - the control-plane node IP and MAC address
@@ -96,6 +108,7 @@ Populate them with:
 > For this SNO path, `platform_type: none` is required.
 >
 > That means:
+>
 > - `api.<cluster_name>.<base_domain>` must resolve to the control-plane node IP
 > - `api-int.<cluster_name>.<base_domain>` must resolve to the control-plane node IP
 > - `*.apps.<cluster_name>.<base_domain>` must resolve to the control-plane node IP
@@ -245,6 +258,7 @@ oc --kubeconfig=generated/ocp/auth/kubeconfig get clusterversion
 ```
 
 Expected steady state after a successful install:
+
 - root disk on `sda`
 - empty CD-ROM device on `sdb`
 - boot order `hd` then `cdrom`

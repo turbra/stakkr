@@ -1,3 +1,10 @@
+---
+title: Prerequisites
+description: >-
+  Host, credential, image, and local-only file requirements before the first
+  Stakkr build, rebuild, or bootstrap.
+---
+
 # Prerequisites
 
 Read this before the first local build or rebuild.

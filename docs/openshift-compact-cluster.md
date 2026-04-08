@@ -1,8 +1,16 @@
+---
+title: Compact OpenShift Cluster Scaffold
+description: >-
+  Compact local OpenShift cluster path for the Stakkr host model, including
+  inputs, execution order, and cleanup flow.
+---
+
 # Compact OpenShift Cluster Scaffold
 
 This guide is the compact 3-node OpenShift path for one libvirt host.
 
 The current validated shape is intentionally narrow:
+
 - `3` control-plane nodes
 - `0` workers
 - `platform_type: baremetal`
@@ -12,6 +20,7 @@ The current validated shape is intentionally narrow:
 - raw root disks from a dedicated libvirt logical pool such as `/dev/ocptb`
 
 It covers:
+
 - installer binaries
 - `install-config.yaml`
 - `agent-config.yaml`
@@ -67,6 +76,7 @@ You need all of these before running any compact deploy command:
 - enough host CPU and memory for three control-plane VMs
 
 DNS must be updated before deploy:
+
 - `api.<cluster_name>.<base_domain>` -> `api_vip`
 - `api-int.<cluster_name>.<base_domain>` -> `api_vip`
 - `*.apps.<cluster_name>.<base_domain>` -> `ingress_vip`
@@ -87,12 +97,14 @@ cp vars/guests/openshift_cluster_vm.compact.yml.example vars/guests/openshift_cl
 ```
 
 The required files are:
+
 - compact cluster metadata:
   [openshift_install_cluster.compact.yml.example](../vars/cluster/openshift_install_cluster.compact.yml.example)
 - compact VM shell definitions:
   [openshift_cluster_vm.compact.yml.example](../vars/guests/openshift_cluster_vm.compact.yml.example)
 
 Populate them with:
+
 - cluster name and base domain
 - machine network, gateway, and DNS servers
 - `api_vip` and `ingress_vip`
@@ -107,6 +119,7 @@ Populate them with:
 > For this compact path, `platform_type: baremetal` is required.
 >
 > That means:
+>
 > - `api.<cluster_name>.<base_domain>` must resolve to `api_vip`
 > - `api-int.<cluster_name>.<base_domain>` must resolve to `api_vip`
 > - `*.apps.<cluster_name>.<base_domain>` must resolve to `ingress_vip`
@@ -170,7 +183,7 @@ Under the hood, it runs these phase playbooks in order:
 > [!NOTE]
 > True SNO has its own guide and entrypoints:
 >
-> - [openshift-sno-cluster.md](./openshift-sno-cluster.md)
+> - [SNO OpenShift Cluster Scaffold]({{ '/openshift-sno-cluster.html' | relative_url }})
 > - `playbooks/site-openshift-sno.yml`
 > - `playbooks/site-openshift-sno-redeploy.yml`
 
@@ -250,6 +263,7 @@ oc --kubeconfig=generated/ocp/auth/kubeconfig get clusterversion
 ```
 
 Expected steady state after a successful install:
+
 - root disk on `sda`
 - empty CD-ROM device on `sdb`
 - boot order `hd` then `cdrom`
