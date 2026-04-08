@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stakkr | OpenShift Lab Scaffold</title>
+    <meta
+      name="description"
+      content="Stakkr is an on-prem KVM lab scaffold for OpenShift bring-up, VM bootstrap, and host resource management on one libvirt host."
+    />
+    <link rel="icon" href="assets/stakkr-favicon.svg" type="image/svg+xml" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@rhds/tokens@3.0.2/css/global.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@rhds/elements@4.0.4/elements/rh-footer/rh-footer-lightdom.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@rhds/elements/": "https://cdn.jsdelivr.net/npm/@rhds/elements@4.0.4/elements/"
+        },
+        "scopes": {
+          "https://cdn.jsdelivr.net/npm/": {
+            "@floating-ui/core": "https://cdn.jsdelivr.net/npm/@floating-ui/core@/dist/floating-ui.core.mjs",
+            "@floating-ui/dom": "https://cdn.jsdelivr.net/npm/@floating-ui/dom@/dist/floating-ui.dom.mjs",
+            "@floating-ui/utils": "https://cdn.jsdelivr.net/npm/@floating-ui/utils@/dist/floating-ui.utils.mjs",
+            "@floating-ui/utils/dom": "https://cdn.jsdelivr.net/npm/@floating-ui/utils@/dist/floating-ui.utils.dom.mjs",
+            "@lit/context": "https://cdn.jsdelivr.net/npm/@lit/context@1.1.6/development/index.js",
+            "@lit/reactive-element": "https://cdn.jsdelivr.net/npm/@lit/reactive-element@2.1.2/reactive-element.js",
+            "@lit/reactive-element/decorators/": "https://cdn.jsdelivr.net/npm/@lit/reactive-element@2.1.2/decorators/",
+            "@patternfly/pfe-core": "https://cdn.jsdelivr.net/npm/@patternfly/pfe-core@5.0.7/core.js",
+            "@patternfly/pfe-core/": "https://cdn.jsdelivr.net/npm/@patternfly/pfe-core@5.0.7/",
+            "@rhds/elements/lib/": "https://cdn.jsdelivr.net/npm/@rhds/elements@4.0.4/lib/",
+            "@rhds/icons": "https://cdn.jsdelivr.net/npm/@rhds/icons@2.1.0/icons.js",
+            "@rhds/icons/": "https://cdn.jsdelivr.net/npm/@rhds/icons@2.1.0/",
+            "@rhds/tokens/media.js": "https://cdn.jsdelivr.net/npm/@rhds/tokens@3.0.2/js/media.js",
+            "@rhds/tokens/": "https://cdn.jsdelivr.net/npm/@rhds/tokens@3.0.2/",
+            "lit": "https://cdn.jsdelivr.net/npm/lit@3.3.2/index.js",
+            "lit/": "https://cdn.jsdelivr.net/npm/lit@3.3.2/",
+            "lit-element/lit-element.js": "https://cdn.jsdelivr.net/npm/lit-element@4.2.2/lit-element.js",
+            "lit-html": "https://cdn.jsdelivr.net/npm/lit-html@3.3.2/lit-html.js",
+            "lit-html/": "https://cdn.jsdelivr.net/npm/lit-html@3.3.2/",
+            "tslib": "https://cdn.jsdelivr.net/npm/tslib@2.8.1/tslib.es6.mjs"
+          }
+        }
+      }
+    </script>
+    <script type="module">
+      import "@rhds/elements/rh-card/rh-card.js";
+      import "@rhds/elements/rh-cta/rh-cta.js";
+      import "@rhds/elements/rh-footer/rh-footer.js";
+      import "@rhds/elements/rh-jump-links/rh-jump-links.js";
+      import "@rhds/elements/rh-skip-link/rh-skip-link.js";
+      import "@rhds/elements/rh-surface/rh-surface.js";
+      import "@rhds/elements/rh-tag/rh-tag.js";
+    </script>
+  </head>
+  <body id="top">
+    <rh-skip-link href="#main-content">Skip to main content</rh-skip-link>
+
+    <header class="site-header">
+      <div class="site-shell masthead">
+        <a class="brand" href="#top" aria-label="Stakkr home">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+          <span class="brand-text">Stakkr</span>
+        </a>
+        <nav aria-label="Primary">
+          <ul class="masthead-nav">
+            <li><a href="#start-here">Start here</a></li>
+            <li><a href="#workflow">Workflow</a></li>
+            <li><a href="#docs-map">Docs</a></li>
+            <li><a href="#observer">Observer</a></li>
+            <li><a href="https://github.com/turbra/stakkr">GitHub</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <rh-surface class="hero-surface" color-palette="darkest">
+        <section class="site-shell hero">
+          <div class="hero-copy">
+            <p class="eyebrow">OpenShift lab scaffold</p>
+            <h1>
+              Structured local bring-up for OpenShift, RHEL bootstrap, and host
+              policy on one KVM host.
+            </h1>
+            <p class="hero-lede">
+              Stakkr is an Ansible-driven on-prem lab scaffold for OpenShift
+              bring-up, VM bootstrap, and host resource management. The current
+              operator path is documentation-first, with the Cockpit observer as
+              the supported UI layer.
+            </p>
+            <div class="hero-tags">
+              <rh-tag>OpenShift 4.20</rh-tag>
+              <rh-tag>KVM / libvirt</rh-tag>
+              <rh-tag>Ansible-driven</rh-tag>
+              <rh-tag>RHEL 10</rh-tag>
+            </div>
+            <div class="hero-actions">
+              <rh-cta
+                ><a href="https://github.com/turbra/stakkr"
+                  >View repository</a
+                ></rh-cta
+              >
+              <rh-cta
+                ><a href="https://github.com/turbra/stakkr/blob/main/README.md"
+                  >Read the operator guide</a
+                ></rh-cta
+              >
+            </div>
+          </div>
+
+          <div class="hero-panels">
+            <rh-card class="hero-card">
+              <h2 slot="header">What Stakkr covers</h2>
+              <ul class="compact-list">
+                <li>Single-node and compact OpenShift deployment paths</li>
+                <li>
+                  Shared execution-pool performance domains with Gold, Silver,
+                  and Bronze tiers
+                </li>
+                <li>Host memory oversubscription and clock-lane experiments</li>
+                <li>Generic RHEL 10 and IdM bootstrap workflows</li>
+              </ul>
+            </rh-card>
+
+            <rh-card class="hero-card">
+              <h2 slot="header">Authoritative sources</h2>
+              <p>
+                Project behavior follows the repo README and workflow guides.
+                Visual implementation follows the public Red Hat Design System
+                references and the published
+                <code>@rhds/elements</code> packages.
+              </p>
+              <div class="panel-links" slot="footer">
+                <rh-cta
+                  ><a href="https://ux.redhat.com/">RHDS guidance</a></rh-cta
+                >
+                <rh-cta
+                  ><a href="https://github.com/RedHat-UX/red-hat-design-system"
+                    >RHDS source</a
+                  ></rh-cta
+                >
+              </div>
+            </rh-card>
+          </div>
+        </section>
+      </rh-surface>
+
+      <div class="site-shell page-layout">
+        <aside class="page-nav" aria-labelledby="page-sections">
+          <h2 id="page-sections">On this page</h2>
+          <rh-jump-links>
+            <rh-jump-link href="#start-here">Start here</rh-jump-link>
+            <rh-jump-link href="#workflow">Operator workflow</rh-jump-link>
+            <rh-jump-link href="#docs-map">Documentation map</rh-jump-link>
+            <rh-jump-link href="#observer">Observer</rh-jump-link>
+          </rh-jump-links>
+        </aside>
+
+        <div class="page-content">
+          <section id="start-here" class="section">
+            <div class="section-heading">
+              <p class="eyebrow">Start here</p>
+              <h2>Pick the path that matches the lab you are bringing up.</h2>
+              <p class="section-intro">
+                The repo already separates deployment flows by workload and
+                lifecycle. The site keeps that same shape so the project front
+                door stays aligned with the actual operator entrypoints.
+              </p>
+            </div>
+
+            <div class="card-grid">
+              <rh-card class="resource-card">
+                <h3 slot="header">Single-node OpenShift</h3>
+                <p>
+                  The documented SNO path for one libvirt host, including
+                  install artifacts, agent media, cluster creation, and install
+                  wait stages.
+                </p>
+                <div class="card-tags">
+                  <rh-tag>Guide</rh-tag>
+                  <rh-tag>OpenShift</rh-tag>
+                </div>
+                <div slot="footer">
+                  <rh-cta
+                    ><a
+                      href="https://github.com/turbra/stakkr/blob/main/docs/openshift-sno-cluster.md"
+                      >Open SNO guide</a
+                    ></rh-cta
+                  >
+                </div>
+              </rh-card>
+
+              <rh-card class="resource-card">
+                <h3 slot="header">Compact cluster</h3>
+                <p>
+                  A local compact deployment flow for teams that want more than
+                  SNO while keeping the same Stakkr orchestration model.
+                </p>
+                <div class="card-tags">
+                  <rh-tag>Guide</rh-tag>
+                  <rh-tag>Cluster</rh-tag>
+                </div>
+                <div slot="footer">
+                  <rh-cta
+                    ><a
+                      href="https://github.com/turbra/stakkr/blob/main/docs/openshift-compact-cluster.md"
+                      >Open compact guide</a
+                    ></rh-cta
+                  >
+                </div>
+              </rh-card>
+
+              <rh-card class="resource-card">
+                <h3 slot="header">Prerequisites</h3>
+                <p>
+                  Host package, credential, and local-image requirements for the
+                  supported lab flows, including the user-local files that stay
+                  out of version control.
+                </p>
+                <div class="card-tags">
+                  <rh-tag>Checklist</rh-tag>
+                  <rh-tag>Host setup</rh-tag>
+                </div>
+                <div slot="footer">
+                  <rh-cta
+                    ><a
+                      href="https://github.com/turbra/stakkr/blob/main/docs/prerequisites.md"
+                      >Review prerequisites</a
+                    ></rh-cta
+                  >
+                </div>
+              </rh-card>
+
+              <rh-card class="resource-card">
+                <h3 slot="header">Cockpit observer</h3>
+                <p>
+                  The supported UI path for checking whether the host resource
+                  policy is behaving as intended across CPU domains, KSM, THP,
+                  zram, and guest topology.
+                </p>
+                <div class="card-tags">
+                  <rh-tag>UI</rh-tag>
+                  <rh-tag>Observer</rh-tag>
+                </div>
+                <div slot="footer">
+                  <rh-cta
+                    ><a
+                      href="https://github.com/turbra/stakkr/blob/main/cockpit/stakkr-observer/README.md"
+                      >Open observer docs</a
+                    ></rh-cta
+                  >
+                </div>
+              </rh-card>
+            </div>
+          </section>
+
+          <section id="workflow" class="section">
+            <div class="section-heading">
+              <p class="eyebrow">Operator workflow</p>
+              <h2>
+                Keep the host foundation, live VM policy, and workload path
+                separate.
+              </h2>
+              <p class="section-intro">
+                The default operating model reserves CPUs <code>0-1</code> for
+                the host, places guest execution on <code>2-11</code>, and
+                applies weighted performance domains to the worker VMs in a
+                shared pool.
+              </p>
+            </div>
+
+            <div class="flow-grid">
+              <rh-card class="flow-card">
+                <h3 slot="header">1. Host foundation</h3>
+                <p>
+                  Apply CPU and memory policy first. This layer does not require
+                  the managed worker guests to exist yet.
+                </p>
+                <ul class="compact-list">
+                  <li><code>host-resource-management-apply</code></li>
+                  <li><code>host-memory-oversubscription-apply</code></li>
+                </ul>
+              </rh-card>
+
+              <rh-card class="flow-card">
+                <h3 slot="header">2. Live VM policy</h3>
+                <p>
+                  Apply the shared execution pool only after the worker domains
+                  are already present and running on the host.
+                </p>
+                <ul class="compact-list">
+                  <li><code>shared-execution-pool-apply</code></li>
+                  <li><code>shared-execution-pool-status</code></li>
+                </ul>
+              </rh-card>
+
+              <rh-card class="flow-card">
+                <h3 slot="header">3. Workload path</h3>
+                <p>
+                  Choose the deployment guide that matches the lab you are
+                  building: SNO, compact OpenShift, IdM, or generic RHEL
+                  bootstrap.
+                </p>
+                <ul class="compact-list">
+                  <li><code>site-openshift-sno.yml</code></li>
+                  <li><code>site-openshift-compact.yml</code></li>
+                </ul>
+              </rh-card>
+            </div>
+
+            <div class="command-panel">
+              <div>
+                <h3>Normal operator order</h3>
+                <p>
+                  The site mirrors the order documented in the repo README
+                  rather than inventing a new lifecycle.
+                </p>
+              </div>
+              <pre><code>./scripts/host-resource-management.sh host-resource-management-apply
+./scripts/host-resource-management.sh host-memory-oversubscription-apply
+./scripts/host-resource-management.sh shared-execution-pool-apply</code></pre>
+            </div>
+          </section>
+
+          <section id="docs-map" class="section">
+            <div class="section-heading">
+              <p class="eyebrow">Documentation map</p>
+              <h2>
+                The repo already has the right level of detail. The site points
+                to it directly.
+              </h2>
+              <p class="section-intro">
+                Rather than duplicating the operator docs into a second content
+                system, this front door routes readers into the current
+                authoritative guides and keeps GitHub Pages limited to project
+                overview, structure, and entry points.
+              </p>
+            </div>
+
+            <div class="card-grid">
+              <rh-card class="resource-card">
+                <h3 slot="header">Shared execution pool</h3>
+                <p>
+                  Method and live-shape documentation for weighted performance
+                  domains, placement, rollback, and validation.
+                </p>
+                <div slot="footer">
+                  <rh-cta
+                    ><a
+                      href="https://github.com/turbra/stakkr/blob/main/docs/shared-execution-pool-performance-domains.md"
+                      >Open method</a
+                    ></rh-cta
+                  >
+                </div>
+              </rh-card>
+
+              <rh-card class="resource-card">
+                <h3 slot="header">Execution-pool validation</h3>
+                <p>
+                  Observed results and practical findings for the shared
+                  execution-pool model on local hardware.
+                </p>
+                <div slot="footer">
+                  <rh-cta
+                    ><a
+                      href="https://github.com/turbra/stakkr/blob/main/docs/shared-execution-pool-validation.md"
+                      >Open findings</a
+                    ></rh-cta
+                  >
+                </div>
+              </rh-card>
+
+              <rh-card class="resource-card">
+                <h3 slot="header">IdM bootstrap</h3>
+                <p>
+                  The local IdM path for seeded guest images, bridge networking,
+                  and the prerequisites that govern that bootstrap flow.
+                </p>
+                <div slot="footer">
+                  <rh-cta
+                    ><a
+                      href="https://github.com/turbra/stakkr/blob/main/docs/idm-local-bootstrap.md"
+                      >Open IdM guide</a
+                    ></rh-cta
+                  >
+                </div>
+              </rh-card>
+
+              <rh-card class="resource-card">
+                <h3 slot="header">RHEL 10 bootstrap</h3>
+                <p>
+                  Generic VM bootstrap guidance for RHEL 10 with the same
+                  tier-driven resource model used throughout the repo.
+                </p>
+                <div slot="footer">
+                  <rh-cta
+                    ><a
+                      href="https://github.com/turbra/stakkr/blob/main/docs/rhel10-vm-bootstrap.md"
+                      >Open bootstrap guide</a
+                    ></rh-cta
+                  >
+                </div>
+              </rh-card>
+
+              <rh-card class="resource-card">
+                <h3 slot="header">Clock-lane experiment</h3>
+                <p>
+                  Separate documentation for the clock-frequency path, including
+                  how it differs from the normal shared execution-pool model.
+                </p>
+                <div slot="footer">
+                  <rh-cta
+                    ><a
+                      href="https://github.com/turbra/stakkr/blob/main/docs/clock-frequency-tiering.md"
+                      >Open method</a
+                    ></rh-cta
+                  >
+                </div>
+              </rh-card>
+
+              <rh-card class="resource-card">
+                <h3 slot="header">Clock-lane validation</h3>
+                <p>
+                  Validation notes showing what the deterministic per-worker
+                  clock lane experiment actually confirmed.
+                </p>
+                <div slot="footer">
+                  <rh-cta
+                    ><a
+                      href="https://github.com/turbra/stakkr/blob/main/docs/clock-frequency-validation.md"
+                      >Open findings</a
+                    ></rh-cta
+                  >
+                </div>
+              </rh-card>
+            </div>
+          </section>
+
+          <section id="observer" class="section">
+            <rh-surface class="observer-band" color-palette="lighter">
+              <div class="observer-grid">
+                <div>
+                  <p class="eyebrow">Observer</p>
+                  <h2>
+                    The supported UI path for Stakkr is the Cockpit observer.
+                  </h2>
+                  <p class="section-intro">
+                    The observer condenses host CPU policy, guest topology, KSM,
+                    THP, and zram state into a live Cockpit view so operators do
+                    not need to manually walk through low-level host checks
+                    every time.
+                  </p>
+                  <ul class="compact-list">
+                    <li>CPU performance domains</li>
+                    <li>CPU pool topology</li>
+                    <li>Memory overview</li>
+                    <li>Memory management overhead</li>
+                  </ul>
+                </div>
+
+                <div class="observer-panel">
+                  <h3>Install path</h3>
+                  <pre><code>sudo dnf install -y \
+  ./cockpit/stakkr-observer/rpmbuild/RPMS/noarch/\
+  cockpit-stakkr-observer-1.0.0-1.el10.noarch.rpm</code></pre>
+                  <rh-cta
+                    ><a
+                      href="https://github.com/turbra/stakkr/blob/main/cockpit/stakkr-observer/README.md"
+                      >Open observer README</a
+                    ></rh-cta
+                  >
+                </div>
+              </div>
+            </rh-surface>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <rh-footer class="site-footer">
+      <a slot="logo" class="footer-logo" href="#top" aria-label="Back to top">
+        <span class="brand-mark footer-brand-mark" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+        <span class="footer-logo-text">Stakkr</span>
+      </a>
+
+      <h2 slot="links">Project</h2>
+      <ul slot="links">
+        <li><a href="https://github.com/turbra/stakkr">Repository</a></li>
+        <li>
+          <a href="https://github.com/turbra/stakkr/blob/main/README.md"
+            >README</a
+          >
+        </li>
+        <li><a href="https://github.com/turbra/stakkr/issues">Issues</a></li>
+      </ul>
+
+      <h2 slot="links">Workflows</h2>
+      <ul slot="links">
+        <li>
+          <a
+            href="https://github.com/turbra/stakkr/blob/main/docs/openshift-sno-cluster.md"
+            >SNO OpenShift</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://github.com/turbra/stakkr/blob/main/docs/openshift-compact-cluster.md"
+            >Compact OpenShift</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://github.com/turbra/stakkr/blob/main/docs/rhel10-vm-bootstrap.md"
+            >RHEL 10 bootstrap</a
+          >
+        </li>
+      </ul>
+
+      <h2 slot="links">Host policy</h2>
+      <ul slot="links">
+        <li>
+          <a
+            href="https://github.com/turbra/stakkr/blob/main/docs/shared-execution-pool-performance-domains.md"
+            >Shared execution pool</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://github.com/turbra/stakkr/blob/main/docs/shared-execution-pool-validation.md"
+            >Validation</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://github.com/turbra/stakkr/blob/main/docs/clock-frequency-tiering.md"
+            >Clock lanes</a
+          >
+        </li>
+      </ul>
+
+      <rh-footer-block slot="main-secondary">
+        <h2 slot="header">About Stakkr</h2>
+        <p>
+          Stakkr focuses on local, on-prem lab bring-up for OpenShift and
+          adjacent VM workflows on a single libvirt host. The structure on this
+          page follows the repo’s current operator model instead of inventing a
+          parallel one.
+        </p>
+      </rh-footer-block>
+
+      <rh-footer-block slot="main-secondary">
+        <h2 slot="header">Design and implementation</h2>
+        <p>
+          This site is built as a static GitHub Pages package with RHDS tokens
+          and web components loaded from the public <code>@rhds</code> packages.
+        </p>
+        <rh-cta
+          ><a href="https://ux.redhat.com/get-started/developers/installation/"
+            >View RHDS install docs</a
+          ></rh-cta
+        >
+      </rh-footer-block>
+    </rh-footer>
+  </body>
+</html>
