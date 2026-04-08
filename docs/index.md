@@ -58,15 +58,27 @@ is not the same thing as the separate clock-tiering experiment.
 
 ## Main Workflow Paths
 
-| Need                                     | First page                                                                   | Why              |
-| ---------------------------------------- | ---------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------ |
-| Host setup and local requirements        | [Prerequisites]({{ '/prerequisites.html'                                     | relative_url }}) | package, credential, image, and local-only file checks |
-| Default host CPU and VM contention model | [Shared Execution Pool]({{ '/shared-execution-pool-performance-domains.html' | relative_url }}) | host foundation, live VM policy, and validation order  |
-| Single-node local OpenShift              | [SNO OpenShift Cluster Scaffold]({{ '/openshift-sno-cluster.html'            | relative_url }}) | true SNO path for one libvirt host                     |
-| Compact local OpenShift                  | [Compact OpenShift Cluster Scaffold]({{ '/openshift-compact-cluster.html'    | relative_url }}) | compact cluster lifecycle for the same host model      |
-| Generic guest bootstrap                  | [Generic RHEL 10 VM Bootstrap]({{ '/rhel10-vm-bootstrap.html'                | relative_url }}) | base VM bring-up outside the OpenShift-specific flows  |
-| Local IdM lab bring-up                   | [Local IdM Bootstrap]({{ '/idm-local-bootstrap.html'                         | relative_url }}) | seeded image and bridge-based local IdM bootstrap      |
-| Separate CPU lane experiment             | [Clock Frequency Tiering]({{ '/clock-frequency-tiering.html'                 | relative_url }}) | experimental path, not the default operating model     |
+- Host setup and local requirements:
+  <a href="{{ '/prerequisites.html' | relative_url }}">Prerequisites</a> for
+  package, credential, image, and local-only file checks
+- Default host CPU and VM contention model:
+  <a href="{{ '/shared-execution-pool-performance-domains.html' | relative_url }}">Shared Execution Pool</a>
+  for host foundation, live VM policy, and validation order
+- Single-node local OpenShift:
+  <a href="{{ '/openshift-sno-cluster.html' | relative_url }}">SNO OpenShift Cluster Scaffold</a>
+  for the true SNO path on one libvirt host
+- Compact local OpenShift:
+  <a href="{{ '/openshift-compact-cluster.html' | relative_url }}">Compact OpenShift Cluster Scaffold</a>
+  for compact-cluster lifecycle on the same host model
+- Generic guest bootstrap:
+  <a href="{{ '/rhel10-vm-bootstrap.html' | relative_url }}">Generic RHEL 10 VM Bootstrap</a>
+  for base VM bring-up outside the OpenShift-specific flows
+- Local IdM lab bring-up:
+  <a href="{{ '/idm-local-bootstrap.html' | relative_url }}">Local IdM Bootstrap</a>
+  for seeded image and bridge-based local IdM bootstrap
+- Separate CPU lane experiment:
+  <a href="{{ '/clock-frequency-tiering.html' | relative_url }}">Clock Frequency Tiering</a>
+  for the experimental path, not the default operating model
 
 ## Observer
 
