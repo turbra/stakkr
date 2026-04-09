@@ -13,70 +13,63 @@
   </head>
   <body>
     <a class="stakkr-skip-link" href="#main-content">Skip to content</a>
-    <header class="stakkr-site-header">
-      <div class="stakkr-shell stakkr-site-header-row">
-        <a class="stakkr-site-title" href="{{ '/' | relative_url }}">Stakkr</a>
-        <nav class="stakkr-site-nav" aria-label="Primary">
-          <a
-            href="{{ '/' | relative_url }}"
-            {% if page.url == '/' or page.url == '/index.html' %}
-            aria-current="page"
-            {% endif %}
-            >Home</a
-          >
-          <a
-            href="{{ '/documentation-map.html' | relative_url }}"
-            {% if page.url == '/documentation-map.html' %}
-            aria-current="page"
-            {% endif %}
-            >Docs Map</a
-          >
-          <a
-            href="{{ '/stakkr-observer.html' | relative_url }}"
-            {% if page.url == '/stakkr-observer.html' %}
-            aria-current="page"
-            {% endif %}
-            >Observer</a
-          >
-          <a href="https://github.com/turbra/stakkr">GitHub</a>
-        </nav>
-      </div>
-    </header>
+    <div class="stakkr-site-shell">
+      <header class="stakkr-site-header">
+        <div class="stakkr-site-header-inner">
+          <p class="stakkr-eyebrow">Stakkr Documentation</p>
+          <div class="stakkr-site-brand">
+            <div>
+              <p class="stakkr-site-brand-title">
+                <a href="{{ '/' | relative_url }}">Stakkr</a>
+              </p>
+              <p class="stakkr-site-brand-tagline">
+                {{ site.description }}
+              </p>
+            </div>
+          </div>
+          <div class="stakkr-site-header-actions">
+            {% unless page.url == '/' or page.url == '/index.html' %}
+            <a href="{{ '/' | relative_url }}"><kbd>DOCS HOME</kbd></a>
+            {% endunless %}
+            {% unless page.url == '/documentation-map.html' %}
+            <a href="{{ '/documentation-map.html' | relative_url }}"
+              ><kbd>DOCS MAP</kbd></a
+            >
+            {% endunless %}
+            {% unless page.url == '/stakkr-observer.html' %}
+            <a href="{{ '/stakkr-observer.html' | relative_url }}"
+              ><kbd>OBSERVER</kbd></a
+            >
+            {% endunless %}
+            <a href="https://github.com/turbra/stakkr"><kbd>REPOSITORY</kbd></a>
+          </div>
+        </div>
+      </header>
 
-    <main id="main-content" class="stakkr-shell stakkr-main">
-      <article class="markdown-body">
-        {% unless page.url == '/' or page.url == '/index.html' %}
-        <p class="stakkr-breadcrumbs">
-          <a href="{{ '/' | relative_url }}">Stakkr</a>
-          <span>/</span>
-          <span>{{ page.title }}</span>
-        </p>
+      <main id="main-content" class="stakkr-page-shell">
+        <div class="stakkr-content-column">
+          <article class="markdown-body">
+            {{ content }}
+          </article>
+        </div>
 
-        <nav class="stakkr-page-actions" aria-label="Page actions">
-          <a href="{{ '/' | relative_url }}">Home</a>
-          <a href="{{ '/documentation-map.html' | relative_url }}">Docs Map</a>
-          <a href="{{ '/stakkr-observer.html' | relative_url }}">Observer</a>
-          <a href="https://github.com/turbra/stakkr">Repository</a>
-        </nav>
-        {% endunless %}
+        <aside class="stakkr-side-column">
+          <section class="stakkr-page-toc" id="stakkr-page-toc" hidden>
+            <h2 class="stakkr-page-toc-title" id="stakkr-on-this-page-title">
+              On This Page
+            </h2>
+            <ol
+              class="stakkr-toc-list"
+              id="stakkr-toc-list"
+              aria-labelledby="stakkr-on-this-page-title"
+            ></ol>
+          </section>
+        </aside>
+      </main>
 
-        {{ content }}
-      </article>
-
-      <aside class="stakkr-page-toc" id="stakkr-page-toc" hidden>
-        <nav aria-labelledby="stakkr-on-this-page-title">
-          <p class="stakkr-page-toc-title" id="stakkr-on-this-page-title">
-            On This Page
-          </p>
-          <ol class="stakkr-toc-list" id="stakkr-toc-list"></ol>
-        </nav>
-      </aside>
-    </main>
-
-    <footer class="stakkr-site-footer">
-      <div class="stakkr-shell">
+      <footer class="stakkr-site-footer">
         Generated from repository docs on {{ site.time | date: "%Y-%m-%d" }}.
-      </div>
-    </footer>
+      </footer>
+    </div>
   </body>
 </html>

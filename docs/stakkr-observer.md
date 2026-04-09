@@ -13,9 +13,14 @@ description: >-
 </p>
 
 <div class="stakkr-cta-row">
-  <a href="https://github.com/turbra/stakkr/tree/main/cockpit/stakkr-observer">SOURCE</a>
-  <a href="https://github.com/turbra/stakkr/blob/main/cockpit/stakkr-observer/README.md">README</a>
-  <a href="{{ '/' | relative_url }}">DOCS HOME</a>
+  <a href="https://github.com/turbra/stakkr/tree/main/cockpit/stakkr-observer"
+    ><kbd>SOURCE</kbd></a
+  >
+  <a
+    href="https://github.com/turbra/stakkr/blob/main/cockpit/stakkr-observer/README.md"
+    ><kbd>README</kbd></a
+  >
+  <a href="{{ '/' | relative_url }}"><kbd>DOCS HOME</kbd></a>
 </div>
 
 <div class="stakkr-badge-row">
