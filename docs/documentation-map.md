@@ -44,7 +44,7 @@ pages from drifting into operator instructions.
 
 ### I only need the supported UI path
 
-1. <a href="https://github.com/turbra/stakkr/blob/main/cockpit/stakkr-observer/README.md"><kbd>COCKPIT OBSERVER</kbd></a>
+1. <a href="{{ '/stakkr-observer.html' | relative_url }}"><kbd>COCKPIT OBSERVER</kbd></a>
 2. return to the relevant workflow page if the observer surfaces a specific host-policy issue
 
 ## Main Workflow Paths
@@ -99,7 +99,7 @@ pages from drifting into operator instructions.
 
 ### Live UI and host inspection
 
-- [Cockpit observer README](https://github.com/turbra/stakkr/blob/main/cockpit/stakkr-observer/README.md)
+- [Stakkr Observer]({{ '/stakkr-observer.html' | relative_url }})
 
 ## Keep The Flow Clean
 

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="{{ site.lang | default: 'en-US' }}">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {% seo %}
+    <link
+      rel="stylesheet"
+      href="{{ '/assets/css/style.css' | relative_url }}"
+    />
+    {% include head-custom.html %}
+  </head>
+  <body>
+    <a class="stakkr-skip-link" href="#main-content">Skip to content</a>
+    <header class="stakkr-site-header">
+      <div class="stakkr-shell stakkr-site-header-row">
+        <a class="stakkr-site-title" href="{{ '/' | relative_url }}">Stakkr</a>
+        <nav class="stakkr-site-nav" aria-label="Primary">
+          <a
+            href="{{ '/' | relative_url }}"
+            {% if page.url == '/' or page.url == '/index.html' %}
+            aria-current="page"
+            {% endif %}
+            >Home</a
+          >
+          <a
+            href="{{ '/documentation-map.html' | relative_url }}"
+            {% if page.url == '/documentation-map.html' %}
+            aria-current="page"
+            {% endif %}
+            >Docs Map</a
+          >
+          <a
+            href="{{ '/stakkr-observer.html' | relative_url }}"
+            {% if page.url == '/stakkr-observer.html' %}
+            aria-current="page"
+            {% endif %}
+            >Observer</a
+          >
+          <a href="https://github.com/turbra/stakkr">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main-content" class="stakkr-shell stakkr-main">
+      <article class="markdown-body">
+        {% unless page.url == '/' or page.url == '/index.html' %}
+        <p class="stakkr-breadcrumbs">
+          <a href="{{ '/' | relative_url }}">Stakkr</a>
+          <span>/</span>
+          <span>{{ page.title }}</span>
+        </p>
+
+        <nav class="stakkr-page-actions" aria-label="Page actions">
+          <a href="{{ '/' | relative_url }}">Home</a>
+          <a href="{{ '/documentation-map.html' | relative_url }}">Docs Map</a>
+          <a href="{{ '/stakkr-observer.html' | relative_url }}">Observer</a>
+          <a href="https://github.com/turbra/stakkr">Repository</a>
+        </nav>
+        {% endunless %}
+
+        {{ content }}
+      </article>
+
+      <aside class="stakkr-page-toc" id="stakkr-page-toc" hidden>
+        <nav aria-labelledby="stakkr-on-this-page-title">
+          <p class="stakkr-page-toc-title" id="stakkr-on-this-page-title">
+            On This Page
+          </p>
+          <ol class="stakkr-toc-list" id="stakkr-toc-list"></ol>
+        </nav>
+      </aside>
+    </main>
+
+    <footer class="stakkr-site-footer">
+      <div class="stakkr-shell">
+        Generated from repository docs on {{ site.time | date: "%Y-%m-%d" }}.
+      </div>
+    </footer>
+  </body>
+</html>

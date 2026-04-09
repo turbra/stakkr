@@ -1,7 +1,11 @@
 :root {
   color-scheme: light;
-  --stakkr-max-width: 71rem;
+  --stakkr-max-width: 78rem;
   --stakkr-body-width: 49.3125rem;
+  --stakkr-surface: #ffffff;
+  --stakkr-surface-alt: #f7f7f7;
+  --stakkr-border: var(--rh-color-border-subtle-on-light);
+  --stakkr-accent: var(--rh-color-brand-red-on-light);
 }
 
 html {
@@ -10,6 +14,7 @@ html {
 }
 
 body {
+  margin: 0;
   background: var(--rh-color-surface-lightest);
   color: var(--rh-color-text-primary-on-light);
   font-family: var(--rh-font-family-body-text);
@@ -33,9 +38,112 @@ a:focus {
   padding-left: 2rem !important;
 }
 
-.markdown-body {
-  max-width: var(--stakkr-body-width);
+.stakkr-shell {
+  width: min(100%, var(--stakkr-max-width));
   margin: 0 auto;
+  padding-right: 2rem;
+  padding-left: 2rem;
+}
+
+.stakkr-skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  color: var(--rh-color-text-primary-on-dark);
+  background: var(--stakkr-accent);
+  text-decoration: none;
+}
+
+.stakkr-skip-link:focus {
+  top: 1rem;
+}
+
+.stakkr-site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid var(--stakkr-border);
+  backdrop-filter: blur(10px);
+}
+
+.stakkr-site-header-row {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 4.5rem;
+}
+
+.stakkr-site-title {
+  color: var(--rh-color-text-primary-on-light);
+  font-family: var(--rh-font-family-heading);
+  font-size: 1.5rem;
+  font-weight: var(--rh-font-weight-heading-medium);
+  letter-spacing: -0.03em;
+  text-decoration: none;
+}
+
+.stakkr-site-title:hover,
+.stakkr-site-title:focus {
+  color: var(--rh-color-text-brand-on-light);
+}
+
+.stakkr-site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.stakkr-site-nav a,
+.stakkr-page-actions a,
+.stakkr-cta-row a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.9rem;
+  color: var(--rh-color-text-primary-on-light);
+  background: var(--stakkr-surface);
+  border: 1px solid var(--rh-color-border-strong-on-light);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    color 120ms ease-in-out,
+    background 120ms ease-in-out,
+    border-color 120ms ease-in-out,
+    transform 120ms ease-in-out;
+}
+
+.stakkr-site-nav a:hover,
+.stakkr-site-nav a:focus,
+.stakkr-page-actions a:hover,
+.stakkr-page-actions a:focus,
+.stakkr-cta-row a:hover,
+.stakkr-cta-row a:focus,
+.stakkr-site-nav a[aria-current="page"] {
+  color: var(--rh-color-text-primary-on-dark);
+  background: var(--stakkr-accent);
+  border-color: var(--stakkr-accent);
+}
+
+.stakkr-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16rem;
+  gap: 3rem;
+  align-items: start;
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+}
+
+.markdown-body {
+  max-width: min(100%, var(--stakkr-body-width));
+  margin: 0;
   color: var(--rh-color-text-primary-on-light);
   background: var(--rh-color-surface-lightest);
   font-family: var(--rh-font-family-body-text);
@@ -58,9 +166,9 @@ a:focus {
 
 .markdown-body h1 {
   margin-top: 0;
-  margin-bottom: 1.25rem;
-  padding-top: 1.75rem;
-  border-top: 4px solid var(--rh-color-brand-red-on-light);
+  margin-bottom: 1rem;
+  padding-top: 0;
+  border-top: 0;
   border-bottom: 0;
   font-size: clamp(2.25rem, 5vw, 4rem);
   font-weight: var(--rh-font-weight-heading-medium);
@@ -179,8 +287,8 @@ a:focus {
 .markdown-body kbd:hover,
 .markdown-body kbd:focus {
   color: var(--rh-color-text-primary-on-dark);
-  background: var(--rh-color-brand-red-on-light);
-  border-color: var(--rh-color-brand-red-on-light);
+  background: var(--stakkr-accent);
+  border-color: var(--stakkr-accent);
 }
 
 .stakkr-callout {
@@ -232,6 +340,95 @@ a:focus {
   height: auto;
 }
 
+.stakkr-breadcrumbs {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  margin: 0 0 1rem;
+  color: var(--rh-color-text-secondary-on-light);
+  font-size: 0.92rem;
+}
+
+.stakkr-page-actions,
+.stakkr-cta-row,
+.stakkr-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.stakkr-page-actions {
+  margin-bottom: 1.75rem;
+}
+
+.stakkr-cta-row {
+  margin: 1.5rem 0 1rem;
+}
+
+.stakkr-badge-row {
+  margin: 0 0 1.75rem;
+}
+
+.stakkr-badge-row a {
+  display: inline-flex;
+}
+
+.stakkr-badge-row img {
+  height: 20px;
+}
+
+.stakkr-lead {
+  margin-bottom: 0;
+  color: var(--rh-color-text-secondary-on-light);
+  font-size: 1.15rem;
+  line-height: 1.55;
+}
+
+.stakkr-page-toc {
+  position: sticky;
+  top: 6rem;
+  padding: 1rem 1.1rem;
+  background: var(--stakkr-surface);
+  border: 1px solid var(--stakkr-border);
+}
+
+.stakkr-page-toc-title {
+  margin: 0 0 0.85rem;
+  font-family: var(--rh-font-family-heading);
+  font-size: 0.95rem;
+  font-weight: var(--rh-font-weight-heading-bold);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.stakkr-toc-list {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.stakkr-toc-list li + li {
+  margin-top: 0.5rem;
+}
+
+.stakkr-toc-list a {
+  color: var(--rh-color-text-secondary-on-light);
+  text-decoration: none;
+}
+
+.stakkr-toc-list a:hover,
+.stakkr-toc-list a:focus {
+  color: var(--rh-color-text-brand-on-light);
+  text-decoration: underline;
+}
+
+.stakkr-site-footer {
+  padding: 1.4rem 0 2rem;
+  color: var(--rh-color-text-secondary-on-light);
+  border-top: 1px solid var(--stakkr-border);
+  font-size: 0.92rem;
+}
+
 @media (max-width: 768px) {
   .container-lg,
   .container-md {
@@ -239,11 +436,40 @@ a:focus {
     padding-left: 1rem !important;
   }
 
+  .stakkr-shell {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+
+  .stakkr-site-header-row {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+  }
+
+  .stakkr-main {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding-top: 1.5rem;
+  }
+
+  .stakkr-page-toc {
+    position: static;
+  }
+
   .markdown-body {
     max-width: 100%;
   }
 
-  .markdown-body h1 {
-    padding-top: 1.25rem;
+  .stakkr-site-nav {
+    width: 100%;
+  }
+
+  .stakkr-site-nav a,
+  .stakkr-page-actions a,
+  .stakkr-cta-row a {
+    flex: 1 1 11rem;
   }
 }
