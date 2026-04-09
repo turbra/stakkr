@@ -93,9 +93,9 @@ cp vars/guests/openshift_cluster_vm.yml.example vars/guests/openshift_cluster_vm
 The required files are:
 
 - SNO cluster metadata:
-  [openshift_install_cluster.yml.example](../vars/cluster/openshift_install_cluster.yml.example)
+  [openshift_install_cluster.yml.example](https://github.com/turbra/stakkr/blob/main/vars/cluster/openshift_install_cluster.yml.example)
 - SNO VM shell definitions:
-  [openshift_cluster_vm.yml.example](../vars/guests/openshift_cluster_vm.yml.example)
+  [openshift_cluster_vm.yml.example](https://github.com/turbra/stakkr/blob/main/vars/guests/openshift_cluster_vm.yml.example)
 
 Populate them with:
 

@@ -25,7 +25,7 @@ function upgradeAdmonitions() {
 
     const text = firstParagraph.textContent.trim();
     const match = text.match(
-      /^\[!(NOTE|IMPORTANT|TIP|WARNING|CAUTION)\]\s*(.*)$/,
+      /^\[!(NOTE|IMPORTANT|TIP|WARNING|CAUTION)\]\s*([\s\S]*)$/,
     );
     if (!match) {
       continue;
@@ -154,6 +154,14 @@ async function initializeDocs() {
   await renderMermaid();
 }
 
-initializeDocs().catch((error) => {
-  console.error("[stakkr-docs]", error);
-});
+function startDocs() {
+  initializeDocs().catch((error) => {
+    console.error("[stakkr-docs]", error);
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", startDocs, { once: true });
+} else {
+  startDocs();
+}

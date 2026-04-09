@@ -99,9 +99,9 @@ cp vars/guests/openshift_cluster_vm.compact.yml.example vars/guests/openshift_cl
 The required files are:
 
 - compact cluster metadata:
-  [openshift_install_cluster.compact.yml.example](../vars/cluster/openshift_install_cluster.compact.yml.example)
+  [openshift_install_cluster.compact.yml.example](https://github.com/turbra/stakkr/blob/main/vars/cluster/openshift_install_cluster.compact.yml.example)
 - compact VM shell definitions:
-  [openshift_cluster_vm.compact.yml.example](../vars/guests/openshift_cluster_vm.compact.yml.example)
+  [openshift_cluster_vm.compact.yml.example](https://github.com/turbra/stakkr/blob/main/vars/guests/openshift_cluster_vm.compact.yml.example)
 
 Populate them with:
 

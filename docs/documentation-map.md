@@ -100,11 +100,3 @@ pages from drifting into operator instructions.
 ### Live UI and host inspection
 
 - [Stakkr Observer]({{ '/stakkr-observer.html' | relative_url }})
-
-## Keep The Flow Clean
-
-To avoid circular writing:
-
-- keep operator commands in the workflow pages that own them
-- keep findings and confirmed behavior in the validation pages
-- keep the Pages home and this map focused on navigation, not duplicated procedure
