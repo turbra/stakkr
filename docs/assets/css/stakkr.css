@@ -1,9 +1,24 @@
 :root {
   color-scheme: light;
-  --stakkr-max-width: 78rem;
+  --stakkr-red: #ee0000;
+  --stakkr-red-dark: #a30000;
+  --stakkr-red-soft: #fce3e3;
+  --stakkr-amber-soft: #fff4e5;
+  --stakkr-blue: #0066cc;
+  --stakkr-ink: #151515;
+  --stakkr-ink-muted: #4d4d4d;
+  --stakkr-ink-soft: #6a6e73;
+  --stakkr-border: #e0e0e0;
+  --stakkr-border-strong: #c7c7c7;
   --stakkr-surface: #ffffff;
-  --stakkr-border: var(--rh-color-border-subtle-on-light);
-  --stakkr-accent: var(--rh-color-brand-red-on-light);
+  --stakkr-surface-alt: #f5f5f5;
+  --stakkr-max-width: 1360px;
+  --stakkr-body-width: 820px;
+  --stakkr-sidebar-width: 260px;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 html {
@@ -13,20 +28,24 @@ html {
 
 body {
   margin: 0;
-  background: var(--rh-color-surface-lightest);
-  color: var(--rh-color-text-primary-on-light);
-  font-family: var(--rh-font-family-body-text);
+  background:
+    radial-gradient(circle at top right, rgba(238, 0, 0, 0.06), transparent 28rem),
+    linear-gradient(180deg, #fffdfb 0, #ffffff 18rem);
+  color: var(--stakkr-ink);
+  font-family: "Red Hat Text", "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
 }
 
 a {
-  color: var(--rh-color-interactive-primary-default-on-light);
+  color: var(--stakkr-blue);
   text-decoration: underline;
+  text-decoration-thickness: 0.08em;
   text-underline-offset: 0.12em;
 }
 
 a:hover,
 a:focus {
-  color: var(--rh-color-interactive-primary-hover-on-light);
+  color: var(--stakkr-red-dark);
 }
 
 .container-lg,
@@ -40,10 +59,10 @@ a:focus {
   position: absolute;
   top: -100%;
   left: 1rem;
-  z-index: 100;
+  z-index: 20;
   padding: 0.75rem 1rem;
-  color: var(--rh-color-text-primary-on-dark);
-  background: var(--stakkr-accent);
+  color: #ffffff;
+  background: var(--stakkr-red);
   text-decoration: none;
 }
 
@@ -53,18 +72,21 @@ a:focus {
 
 .stakkr-site-shell {
   min-height: 100vh;
+  position: relative;
 }
 
 .stakkr-site-header {
-  border-top: 4px solid var(--stakkr-accent);
+  position: relative;
+  border-top: 4px solid var(--stakkr-red);
   border-bottom: 1px solid var(--stakkr-border);
-  background: var(--stakkr-surface);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
 }
 
 .stakkr-site-header-inner,
 .stakkr-page-shell,
 .stakkr-site-footer {
-  width: min(100%, var(--stakkr-max-width));
+  max-width: var(--stakkr-max-width);
   margin: 0 auto;
   padding-right: 2rem;
   padding-left: 2rem;
@@ -76,9 +98,9 @@ a:focus {
 }
 
 .stakkr-eyebrow {
-  margin: 0 0 0.45rem;
-  color: var(--rh-color-text-secondary-on-light);
-  font-size: 0.82rem;
+  margin: 0 0 0.5rem;
+  color: var(--stakkr-ink-soft);
+  font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -94,28 +116,29 @@ a:focus {
 
 .stakkr-site-brand-title {
   margin: 0;
-  font-family: var(--rh-font-family-heading);
-  font-size: clamp(2.1rem, 4vw, 3.5rem);
-  font-weight: var(--rh-font-weight-heading-medium);
-  letter-spacing: -0.04em;
-  line-height: 1.05;
+  font-family: "Red Hat Display", "Red Hat Text", Arial, sans-serif;
+  font-size: clamp(2.2rem, 4vw, 3.7rem);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
 }
 
 .stakkr-site-brand-title a {
-  color: var(--rh-color-text-primary-on-light);
+  color: inherit;
   text-decoration: none;
 }
 
 .stakkr-site-brand-title a:hover,
 .stakkr-site-brand-title a:focus {
-  color: var(--rh-color-text-brand-on-light);
+  color: var(--stakkr-red-dark);
 }
 
 .stakkr-site-brand-tagline {
-  max-width: 60rem;
-  margin: 0.35rem 0 0;
-  color: var(--rh-color-text-secondary-on-light);
+  max-width: 66ch;
+  margin: 0.45rem 0 0;
+  color: var(--stakkr-ink-muted);
   font-size: 1.05rem;
+  line-height: 1.5;
 }
 
 .stakkr-site-header-actions,
@@ -128,7 +151,7 @@ a:focus {
 }
 
 .stakkr-site-header-actions {
-  margin-top: 0.8rem;
+  margin-top: 0.85rem;
 }
 
 .stakkr-site-header-actions a,
@@ -145,16 +168,21 @@ a:focus {
   justify-content: center;
   min-height: 2.35rem;
   margin: 0.2rem 0.35rem 0.2rem 0;
-  padding: 0.42rem 0.78rem;
-  color: var(--rh-color-text-primary-on-light);
+  padding: 0.42rem 0.82rem;
+  color: var(--stakkr-ink);
   background: var(--stakkr-surface);
-  border: 1px solid var(--rh-color-border-strong-on-light);
+  border: 1px solid var(--stakkr-ink-muted);
   border-radius: 0;
   box-shadow: none;
-  font-family: var(--rh-font-family-body-text);
+  font-family: "Red Hat Text", Arial, sans-serif;
   font-size: 0.92rem;
   font-weight: 600;
+  line-height: 1.2;
   white-space: normal;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease,
+    border-color 140ms ease;
 }
 
 .stakkr-site-header-actions kbd:hover,
@@ -165,24 +193,23 @@ a:focus {
 .markdown-body a kbd:focus,
 .markdown-body kbd:hover,
 .markdown-body kbd:focus {
-  color: var(--rh-color-text-primary-on-dark);
-  background: var(--stakkr-accent);
-  border-color: var(--stakkr-accent);
+  color: #ffffff;
+  background: var(--stakkr-red);
+  border-color: var(--stakkr-red);
 }
 
 .stakkr-page-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 16rem;
-  gap: 2.5rem;
+  grid-template-columns:
+    minmax(0, var(--stakkr-body-width))
+    minmax(220px, var(--stakkr-sidebar-width));
+  gap: 3rem;
   align-items: start;
   padding-top: 2rem;
-  padding-bottom: 3rem;
+  padding-bottom: 4rem;
 }
 
-.stakkr-content-column {
-  min-width: 0;
-}
-
+.stakkr-content-column,
 .stakkr-side-column {
   min-width: 0;
 }
@@ -190,11 +217,13 @@ a:focus {
 .markdown-body {
   max-width: 100%;
   margin: 0;
-  color: var(--rh-color-text-primary-on-light);
-  background: var(--rh-color-surface-lightest);
-  font-family: var(--rh-font-family-body-text);
-  font-size: 1rem;
-  line-height: var(--rh-line-height-body-text);
+  color: var(--stakkr-ink);
+  background: transparent;
+  font-family: "Red Hat Text", "Helvetica Neue", Arial, sans-serif;
+}
+
+.markdown-body > :first-child {
+  margin-top: 0;
 }
 
 .markdown-body h1,
@@ -203,35 +232,33 @@ a:focus {
 .markdown-body h4,
 .markdown-body h5,
 .markdown-body h6 {
-  color: var(--rh-color-text-primary-on-light);
-  font-family: var(--rh-font-family-heading);
-  font-weight: var(--rh-font-weight-heading-medium);
+  color: var(--stakkr-ink);
+  font-family: "Red Hat Display", "Red Hat Text", Arial, sans-serif;
+  font-weight: 500;
   letter-spacing: -0.03em;
-  line-height: var(--rh-line-height-heading);
+  line-height: 1.25;
 }
 
 .markdown-body h1 {
   margin-top: 0;
-  margin-bottom: 1rem;
-  padding-top: 0;
-  border-top: 0;
-  border-bottom: 0;
-  font-size: clamp(2.25rem, 5vw, 4rem);
-  font-weight: var(--rh-font-weight-heading-medium);
-  line-height: 1.08;
+  margin-bottom: 1.2rem;
+  padding-top: 0.3rem;
+  border: 0;
+  font-size: clamp(2.35rem, 5vw, 4rem);
+  line-height: 1.06;
 }
 
 .markdown-body h2 {
   margin-top: 2.5rem;
   margin-bottom: 1rem;
-  padding-bottom: 0;
-  border-bottom: 0;
-  color: var(--rh-color-text-brand-on-light);
-  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  padding: 0;
+  border: 0;
+  color: var(--stakkr-red);
+  font-size: clamp(1.65rem, 3vw, 2.25rem);
 }
 
 .markdown-body h3 {
-  margin-top: 2rem;
+  margin-top: 1.9rem;
   font-size: 1.3rem;
 }
 
@@ -240,7 +267,20 @@ a:focus {
 .markdown-body td,
 .markdown-body th {
   font-size: 1rem;
-  line-height: var(--rh-line-height-body-text);
+  line-height: 1.6;
+}
+
+.markdown-body p,
+.markdown-body ul,
+.markdown-body ol,
+.markdown-body table,
+.markdown-body pre,
+.markdown-body blockquote,
+.stakkr-callout,
+.stakkr-mermaid,
+.stakkr-cta-row,
+.stakkr-badge-row {
+  margin-bottom: 1.25rem;
 }
 
 .markdown-body ul,
@@ -248,10 +288,14 @@ a:focus {
   padding-left: 1.25rem;
 }
 
+.markdown-body li + li {
+  margin-top: 0.25rem;
+}
+
 .markdown-body hr {
   height: 1px;
   margin: 2rem 0;
-  background: var(--rh-color-border-subtle-on-light);
+  background: var(--stakkr-border);
   border: 0;
 }
 
@@ -264,34 +308,36 @@ a:focus {
 .markdown-body table th,
 .markdown-body table td {
   padding: 0.75rem 0.9rem;
-  border: 1px solid var(--rh-color-border-subtle-on-light);
+  border: 1px solid var(--stakkr-border);
+  vertical-align: top;
 }
 
 .markdown-body table th {
-  background: var(--rh-color-surface-lighter);
-  font-weight: var(--rh-font-weight-heading-bold);
+  background: var(--stakkr-surface-alt);
+  font-weight: 700;
   text-align: left;
 }
 
 .markdown-body code,
 .markdown-body pre,
 .markdown-body tt {
-  font-family: var(--rh-font-family-code);
+  font-family: "Red Hat Mono", Consolas, monospace;
 }
 
 .markdown-body code {
   padding: 0.08rem 0.28rem;
-  background: var(--rh-color-surface-lighter);
-  border: 1px solid var(--rh-color-border-subtle-on-light);
+  background: var(--stakkr-surface-alt);
+  border: 1px solid var(--stakkr-border);
   border-radius: 0;
+  font-size: 0.94em;
 }
 
 .markdown-body pre {
   padding: 1rem;
   overflow: auto;
-  border: 1px solid var(--rh-color-border-subtle-on-light);
+  border: 1px solid var(--stakkr-border);
   border-radius: 0;
-  background: var(--rh-color-surface-lighter);
+  background: var(--stakkr-surface-alt);
 }
 
 .markdown-body pre code {
@@ -301,16 +347,14 @@ a:focus {
 }
 
 .markdown-body blockquote {
-  margin: 1.25rem 0;
   padding: 0.75rem 1rem;
-  color: var(--rh-color-text-secondary-on-light);
-  border-left: 0.35rem solid var(--rh-color-border-subtle-on-light);
+  color: var(--stakkr-ink-muted);
+  border-left: 0.35rem solid var(--stakkr-border-strong);
 }
 
 .stakkr-callout {
-  margin: 1.25rem 0;
   padding: 0.85rem 1rem;
-  border-left: 0.35rem solid var(--rh-color-border-subtle-on-light);
+  border-left: 0.35rem solid var(--stakkr-border-strong);
   border-radius: 0;
 }
 
@@ -321,32 +365,32 @@ a:focus {
 .stakkr-callout-title {
   display: block;
   margin-bottom: 0.4rem;
-  font-weight: var(--rh-font-weight-heading-bold);
+  font-weight: 700;
+  letter-spacing: 0.03em;
 }
 
 .stakkr-callout.is-note,
 .stakkr-callout.is-tip {
-  background: var(--rh-color-surface-lighter);
-  border-left-color: var(--rh-color-interactive-primary-default-on-light);
+  background: var(--stakkr-surface-alt);
+  border-left-color: var(--stakkr-blue);
 }
 
 .stakkr-callout.is-important {
-  background: #fff4e5;
+  background: var(--stakkr-amber-soft);
   border-left-color: #f56a00;
 }
 
 .stakkr-callout.is-warning,
 .stakkr-callout.is-caution {
-  background: #fce3e3;
-  border-left-color: var(--rh-color-brand-red-on-light);
+  background: var(--stakkr-red-soft);
+  border-left-color: var(--stakkr-red);
 }
 
 .stakkr-mermaid {
   max-width: 100%;
-  margin: 1.5rem 0;
   overflow-x: auto;
-  border: 1px solid var(--rh-color-border-subtle-on-light);
-  background: var(--rh-color-surface-lightest);
+  border: 1px solid var(--stakkr-border);
+  background: var(--stakkr-surface);
   padding: 0.85rem;
 }
 
@@ -356,8 +400,15 @@ a:focus {
   height: auto;
 }
 
+.stakkr-mermaid svg text,
+.stakkr-mermaid svg tspan,
+.stakkr-mermaid svg foreignObject,
+.stakkr-mermaid svg foreignObject div {
+  font-family: "Red Hat Text", "Helvetica Neue", Arial, sans-serif !important;
+}
+
 .stakkr-badge-row {
-  margin: 0 0 1.75rem;
+  margin-top: 0;
 }
 
 .stakkr-badge-row a {
@@ -369,27 +420,26 @@ a:focus {
 }
 
 .stakkr-lead {
-  margin-bottom: 0;
-  color: var(--rh-color-text-secondary-on-light);
+  margin-top: 0;
+  color: var(--stakkr-ink-muted);
   font-size: 1.15rem;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 .stakkr-page-toc {
   position: sticky;
   top: 2rem;
-  padding: 1rem 1.1rem;
-  background: var(--stakkr-surface);
-  border: 1px solid var(--stakkr-border);
+  padding-top: 1rem;
+  border-top: 1px solid var(--stakkr-border);
 }
 
 .stakkr-page-toc-title {
-  margin: 0 0 0.85rem;
-  font-family: var(--rh-font-family-heading);
-  font-size: 0.95rem;
-  font-weight: var(--rh-font-weight-heading-bold);
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
+  margin: 0 0 0.6rem;
+  color: var(--stakkr-ink);
+  font-family: "Red Hat Display", "Red Hat Text", Arial, sans-serif;
+  font-size: 1.08rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 .stakkr-toc-list {
@@ -397,26 +447,43 @@ a:focus {
   padding-left: 1rem;
 }
 
-.stakkr-toc-list li + li {
-  margin-top: 0.5rem;
+.stakkr-toc-list li {
+  margin: 0.3rem 0;
 }
 
 .stakkr-toc-list a {
-  color: var(--rh-color-text-secondary-on-light);
+  color: var(--stakkr-ink-soft);
   text-decoration: none;
 }
 
 .stakkr-toc-list a:hover,
 .stakkr-toc-list a:focus {
-  color: var(--rh-color-text-brand-on-light);
+  color: var(--stakkr-red-dark);
   text-decoration: underline;
 }
 
 .stakkr-site-footer {
-  padding: 1.4rem 0 2rem;
-  color: var(--rh-color-text-secondary-on-light);
+  padding: 1.4rem 2rem 2rem;
+  color: var(--stakkr-ink-soft);
   border-top: 1px solid var(--stakkr-border);
   font-size: 0.92rem;
+}
+
+.markdown-body img,
+.markdown-body svg {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 960px) {
+  .stakkr-page-shell {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .stakkr-page-toc {
+    position: static;
+  }
 }
 
 @media (max-width: 768px) {
@@ -434,17 +501,17 @@ a:focus {
   }
 
   .stakkr-page-shell {
-    grid-template-columns: 1fr;
-    gap: 2rem;
     padding-top: 1.5rem;
+    padding-bottom: 3rem;
   }
 
-  .stakkr-page-toc {
-    position: static;
+  .stakkr-site-brand-title {
+    font-size: clamp(2rem, 12vw, 3rem);
   }
 
-  .markdown-body {
-    max-width: 100%;
+  .stakkr-site-brand-tagline,
+  .stakkr-lead {
+    font-size: 1rem;
   }
 
   .stakkr-site-header-actions,

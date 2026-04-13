@@ -10,12 +10,18 @@ description: >-
   resource policy on one libvirt host.
 </p>
 
+<div class="stakkr-cta-row">
+  <a href="{{ '/documentation-map.html' | relative_url }}"><kbd>DOCS MAP</kbd></a>
+  <a href="{{ '/prerequisites.html' | relative_url }}"><kbd>PREREQUISITES</kbd></a>
+  <a href="{{ '/stakkr-observer.html' | relative_url }}"><kbd>OBSERVER</kbd></a>
+</div>
+
 <div class="stakkr-badge-row">
-  <a href="https://github.com/turbra/stakkr/blob/main/LICENSE"><img alt="License: GPL-3.0" src="https://img.shields.io/github/license/turbra/stakkr?style=flat-square" /></a>
-  <img alt="OpenShift 4.20" src="https://img.shields.io/badge/OpenShift-4.20-EE0000?style=flat-square" />
-  <img alt="KVM and libvirt" src="https://img.shields.io/badge/KVM-libvirt-0066CC?style=flat-square" />
-  <img alt="Ansible driven" src="https://img.shields.io/badge/Ansible-driven-1A1A1A?style=flat-square" />
-  <img alt="RHEL 10" src="https://img.shields.io/badge/RHEL-10-EE0000?style=flat-square" />
+  <a href="https://github.com/turbra/stakkr/blob/main/LICENSE"><img alt="License: GPL-3.0" src="https://img.shields.io/github/license/turbra/stakkr" /></a>
+  <img alt="OpenShift 4.20" src="https://img.shields.io/badge/OpenShift-4.20-red" />
+  <img alt="KVM and libvirt" src="https://img.shields.io/badge/KVM-libvirt-blue" />
+  <img alt="Ansible driven" src="https://img.shields.io/badge/Ansible-driven-blue" />
+  <img alt="RHEL 10" src="https://img.shields.io/badge/RHEL-10-red" />
 </div>
 
 Stakkr keeps the repo's operator entrypoints, execution order, and validation
