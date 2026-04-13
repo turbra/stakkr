@@ -24,10 +24,10 @@ description: >-
 </div>
 
 <div class="stakkr-badge-row">
-  <img alt="Cockpit plugin" src="https://img.shields.io/badge/Cockpit-plugin-004080?style=flat-square" />
-  <img alt="RPM installable" src="https://img.shields.io/badge/RPM-installable-EE0000?style=flat-square" />
-  <img alt="Python 3 backend" src="https://img.shields.io/badge/Python-3-3776AB?style=flat-square" />
-  <img alt="Plain JavaScript frontend" src="https://img.shields.io/badge/Frontend-plain%20JavaScript-1A1A1A?style=flat-square" />
+  <img alt="Cockpit plugin" src="https://img.shields.io/badge/Cockpit-plugin-blue" />
+  <img alt="RPM installable" src="https://img.shields.io/badge/RPM-installable-red" />
+  <img alt="Python 3 backend" src="https://img.shields.io/badge/Python-3-blue" />
+  <img alt="Plain JavaScript frontend" src="https://img.shields.io/badge/Frontend-plain%20JavaScript-lightgrey" />
 </div>
 
 The observer is the supported Stakkr UI path. It answers the live-state
