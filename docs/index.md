@@ -5,17 +5,6 @@ description: >-
   resource policy workflows on one libvirt host.
 ---
 
-<p class="stakkr-lead">
-  On-prem KVM lab scaffolding for OpenShift bring-up, VM bootstrap, and host
-  resource policy on one libvirt host.
-</p>
-
-<div class="stakkr-cta-row">
-  <a href="{{ '/documentation-map.html' | relative_url }}"><kbd>DOCS MAP</kbd></a>
-  <a href="{{ '/prerequisites.html' | relative_url }}"><kbd>PREREQUISITES</kbd></a>
-  <a href="{{ '/stakkr-observer.html' | relative_url }}"><kbd>OBSERVER</kbd></a>
-</div>
-
 <div class="stakkr-badge-row">
   <a href="https://github.com/turbra/stakkr/blob/main/LICENSE"><img alt="License: GPL-3.0" src="https://img.shields.io/github/license/turbra/stakkr" /></a>
   <img alt="OpenShift 4.20" src="https://img.shields.io/badge/OpenShift-4.20-red" />
