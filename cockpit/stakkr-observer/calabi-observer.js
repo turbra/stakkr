@@ -1231,12 +1231,29 @@ function appendVmEffectiveClock(container, curr, deltas) {
 function renderECC(curr, deltas) {
     var container = clearEl("ecc-content");
     if (!container) return;
+
+    var eccPanel = document.getElementById("ecc-panel");
+    if (eccPanel && !eccPanel.getAttribute("data-help")) {
+        eccPanel.setAttribute("data-help", "Effective Constrained Clock: how many GHz each domain is actually receiving, factoring in guest-pool CPU frequency and the domain’s observed CPU delivery rate.");
+    }
+
     if (!state.domains || !state.domains.length) {
-        container.appendChild(el("div", { className: "panel-placeholder", textContent: "No domain data available." }));
+        var msg = curr.fast_mode
+            ? "Domain data available after first full collection (~60 s after service start)."
+            : "No domain data — check that libvirt domains are running.";
+        container.appendChild(el("div", { className: "panel-placeholder", textContent: msg }));
         return;
     }
 
     var avgGuestGhz = averagePoolFrequencyGhz(curr, "guest_domain");
+    if (!avgGuestGhz) {
+        container.appendChild(el("div", {
+            className: "panel-placeholder",
+            textContent: "CPU pool assignment unavailable — ECC requires at least one completed full collection with running domains.",
+        }));
+        return;
+    }
+
     var totalWeight = 0;
     var tierWeights = {};
     if (curr.tier_cgroups) {
@@ -1259,7 +1276,7 @@ function renderECC(curr, deltas) {
             document.createTextNode(" " + floorGhz.toFixed(2) + " GHz"),
         ]));
     }
-    container.appendChild(el("div", { className: "ecc-slo-context" }, contextItems));
+    container.appendChild(el("div", { className: "ecc-slo-context", "data-help": "Pool freq: average MHz of CPUs assigned to guest domains. Tier floor: minimum GHz target for each tier based on its cgroup CPU weight share." }, contextItems));
 
     var domainRows = state.domains.map(function (domain) {
         var domainCpuPct = deltas && deltas.domain_cpu ? deltas.domain_cpu[domain.name] || 0 : 0;
@@ -1276,7 +1293,7 @@ function renderECC(curr, deltas) {
         var canvas = el("canvas", { className: "sparkline-canvas vm-ecc-sparkline", "data-ecc-domain": row.domain.name });
         var vcpuFraction = row.domain.vcpus > 0 ? row.cpuPct / (row.domain.vcpus * 100) : 0;
         var tierBadge = el("span", { className: "tier-badge tier-badge-" + (row.domain.tier || "unknown"), textContent: row.domain.tier || "?" });
-        grid.appendChild(el("div", { className: "vm-ecc-card" }, [
+        grid.appendChild(el("div", { className: "vm-ecc-card", "data-help": "Delivered GHz = avg guest-pool frequency × (domain CPU% ÷ vCPU count). Low-utilization domains show low ECC even on a healthy host. The dashed reference line marks this tier's SLO floor." }, [
             el("div", { className: "vm-ecc-name" }, [
                 document.createTextNode(shortDomainName(row.domain.name) + " "),
                 tierBadge,
@@ -1492,6 +1509,11 @@ function renderCPUMap(curr, deltas) {
     var topology = curr.cpu_topology;
     var perCpu = deltas ? deltas.per_cpu_pct || {} : {};
     var cpuFreq = curr.cpu_freq || {};
+
+    var cpuMapPanel = document.getElementById("cpu-map-panel");
+    if (cpuMapPanel && !cpuMapPanel.getAttribute("data-help")) {
+        cpuMapPanel.setAttribute("data-help", "NUMA-aware CPU pool topology. Color bands show which physical CPUs are assigned to guest domains (gold/silver/bronze tiers), host emulator threads, and the housekeeping/reserved pool. Brightness reflects current utilization.");
+    }
 
     if (!poolMap || !topology || !topology.socket_map) {
         container.appendChild(el("div", { className: "panel-placeholder",

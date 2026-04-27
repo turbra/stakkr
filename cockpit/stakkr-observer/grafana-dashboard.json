@@ -27,7 +27,7 @@
   "timezone": "browser",
   "title": "Stakkr Observer — KVM Hypervisor",
   "uid": "stakkr-observer-mvp",
-  "version": 2,
+  "version": 3,
   "templating": {
     "list": [
       {
@@ -493,6 +493,56 @@
       "targets": [
         {"expr": "rate(calabi_vmstat_pgfault{host=~\"$host\"}[$__rate_interval])",    "legendFormat": "pgfault/s (minor)"},
         {"expr": "rate(calabi_vmstat_pgmajfault{host=~\"$host\"}[$__rate_interval])", "legendFormat": "pgmajfault/s (major, disk)"}
+      ]
+    },
+
+    { "type": "row", "id": 110, "title": "Effective Clock (Approximation)", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 97} },
+
+    {
+      "type": "stat", "id": 111, "title": "Avg Host CPU Frequency",
+      "description": "Average current MHz across all host CPUs. Used as baseline for ECC approximation — guest-pool CPUs typically track this closely.",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 98},
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area", "orientation": "auto"},
+      "fieldConfig": {"defaults": {"unit": "megahertz", "decimals": 0, "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [
+        {"color": "red", "value": null},
+        {"color": "yellow", "value": 1000},
+        {"color": "green", "value": 2000}
+      ]}}},
+      "targets": [
+        {"expr": "avg(calabi_cpu_frequency_mhz{host=~\"$host\"})", "legendFormat": "avg MHz"}
+      ]
+    },
+
+    {
+      "type": "timeseries", "id": 112, "title": "Per-Domain ECC Approximation (GHz)",
+      "description": "Approximates Effective Constrained Clock per domain: (user+system CPU rate ÷ vCPUs) × avg host freq ÷ 1000. Measures delivered GHz, not available GHz — idle domains show low ECC.",
+      "gridPos": {"h": 9, "w": 18, "x": 6, "y": 98},
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
+      "fieldConfig": {"defaults": {"unit": "none", "decimals": 2, "custom": {"lineWidth": 2, "fillOpacity": 6},
+        "displayName": "${__series.name}"}},
+      "targets": [
+        {
+          "expr": "(\n  rate(calabi_domain_cpu_user_seconds{host=~\"$host\"}[$__rate_interval])\n  + rate(calabi_domain_cpu_system_seconds{host=~\"$host\"}[$__rate_interval])\n) / calabi_domain_vcpus{host=~\"$host\"}\n* avg(calabi_cpu_frequency_mhz{host=~\"$host\"}) / 1000",
+          "legendFormat": "{{domain}} ({{tier}})"
+        }
+      ]
+    },
+
+    {
+      "type": "timeseries", "id": 113, "title": "Per-Tier vCPU Delivery Ratio",
+      "description": "Sum of (user+system) CPU rate divided by total vCPUs per tier. 1.0 = fully saturated tier; < 0.3 = idle tier with ECC headroom.",
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 102},
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
+      "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1, "custom": {"lineWidth": 2, "fillOpacity": 10},
+        "color": {"mode": "palette-classic"}}},
+      "targets": [
+        {
+          "expr": "sum by (tier) (\n  rate(calabi_domain_cpu_user_seconds{host=~\"$host\"}[$__rate_interval])\n  + rate(calabi_domain_cpu_system_seconds{host=~\"$host\"}[$__rate_interval])\n) / sum by (tier) (calabi_domain_vcpus{host=~\"$host\"})",
+          "legendFormat": "{{tier}}"
+        }
       ]
     }
 
