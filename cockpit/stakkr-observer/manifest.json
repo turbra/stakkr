@@ -10,9 +10,9 @@
             "keywords": [
                 {
                     "matches": [
-                        "stakkr", "observer", "ksm", "zram", "memory",
-                        "thp", "cgroup", "cpu", "gold", "silver", "bronze",
-                        "cockpit", "kvm", "tiering"
+                        "stakkr", "observer", "ksm", "memory", "overcommit",
+                        "cgroup", "tier", "gold", "silver", "bronze", "zram",
+                        "kvm", "thp", "cpu", "performance", "domain", "tiering"
                     ]
                 }
             ]

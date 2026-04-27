@@ -1,0 +1,24 @@
+[Unit]
+Description=Stakkr Observer Prometheus exporter
+Documentation=https://github.com/turbra/stakkr
+Wants=network-online.target
+After=network-online.target libvirtd.service
+
+[Service]
+Type=simple
+ExecStart=/usr/share/cockpit/stakkr-observer/stakkr_exporter.py
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/run/stakkr-observer
+ReadOnlyPaths=/proc /sys /run/libvirt /var/run/libvirt /etc/stakkr-observer
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+UMask=0022
+
+[Install]
+WantedBy=multi-user.target

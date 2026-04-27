@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SPEC_NAME="cockpit-stakkr-observer"
-VERSION="1.0.0"
+VERSION="1.2.3"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD_ROOT="${SCRIPT_DIR}/rpmbuild"
 
@@ -14,7 +14,9 @@ echo "==> Creating source tarball"
 TARBALL_DIR="${SPEC_NAME}-${VERSION}"
 WORK="$(mktemp -d)"
 mkdir -p "${WORK}/${TARBALL_DIR}"
-cp "${SCRIPT_DIR}"/{manifest.json,index.html,stakkr-observer.js,stakkr-observer.css,sparkline.js,collector.py,README.md,INTERPRETING.md} \
+cp "${SCRIPT_DIR}"/{manifest.json,index.html,stakkr-observer.js,stakkr-observer.css,collector.py,stakkr_exporter.py,prometheus_exporter.py,prometheus_control.py,README.md,INTERPRETING.md} \
+   "${WORK}/${TARBALL_DIR}/"
+cp "${SCRIPT_DIR}"/{stakkr-exporter.service,stakkr-node-exporter.service,stakkr-observer-prometheus.tmpfiles,prometheus.json} \
    "${WORK}/${TARBALL_DIR}/"
 cp -r "${SCRIPT_DIR}/images" "${WORK}/${TARBALL_DIR}/"
 tar czf "${BUILD_ROOT}/SOURCES/${SPEC_NAME}-${VERSION}.tar.gz" -C "${WORK}" "${TARBALL_DIR}"
