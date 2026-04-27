@@ -1,104 +1,123 @@
 # Stakkr Observer
 
-Cockpit plugin for watching the Stakkr host resource model from the Cockpit web
-console.
+Cockpit plugin that provides real-time observability for Calabi host resource
+management.
 
-It follows the same observer pattern used by `calabi-observer`, but it is
-adapted to the smaller Stakkr host shape.
-
-<a href="../../docs/shared-execution-pool-performance-domains.md"><kbd>&nbsp;&nbsp;SHARED EXECUTION POOL&nbsp;&nbsp;</kbd></a>
-<a href="../../docs/clock-frequency-tiering.md"><kbd>&nbsp;&nbsp;CLOCK-TIERING&nbsp;&nbsp;</kbd></a>
-<a href="./INTERPRETING.md"><kbd>&nbsp;&nbsp;INTERPRETING&nbsp;&nbsp;</kbd></a>
+<a href="../../aws-metal-openshift-demo/docs/host-resource-management.md"><kbd>&nbsp;&nbsp;RESOURCE MANAGEMENT&nbsp;&nbsp;</kbd></a>
+<a href="../../aws-metal-openshift-demo/docs/host-memory-oversubscription.md"><kbd>&nbsp;&nbsp;HOST MEMORY&nbsp;&nbsp;</kbd></a>
+<a href="../../aws-metal-openshift-demo/docs/README.md"><kbd>&nbsp;&nbsp;DOCS MAP&nbsp;&nbsp;</kbd></a>
 
 ## Contents
 
 - [What It Does](#what-it-does)
-- [Panels](#panels)
+- [Navigation](#navigation)
+- [Panel Screenshots](#panel-screenshots)
 - [Architecture](#architecture)
 - [Files](#files)
 - [Data Sources](#data-sources)
 - [Installation](#installation)
-- [Building The RPM](#building-the-rpm)
 - [Requirements](#requirements)
 - [Usage](#usage)
 - [Security Posture](#security-posture)
 - [Tier Colors](#tier-colors)
+- [CPU Pool Colors](#cpu-pool-colors)
 
 ## What It Does
 
-The observer answers one question: **is the host resource policy working right
-now?**
+The observer answers one question: **is the tiered resource management system
+working?** It collects kernel, cgroup, and libvirt metrics every 5 seconds and
+renders them as tabbed live cards in the Cockpit web console.
 
-Without it, you have to cross-check `systemctl show`, `virsh vcpupin`,
-`virsh emulatorpin`, `/proc/stat`, `/proc/meminfo`, KSM state, THP state, and
-zram state by hand. The observer pulls those pieces together into a live Cockpit
-view so the current host state is obvious at a glance.
+Without this plugin, answering that question requires reading a dozen sysfs
+files, parsing `virsh` XML, diffing `/proc/stat` samples by hand, and mentally
+correlating the results. The observer automates that correlation and adds
+cost-benefit verdicts so you can tell at a glance whether KSM, zram, and the
+CPU tier model are earning their keep.
 
-For Stakkr, that means showing whether the host is in:
+## Navigation
 
-- `stock`
-- `shared execution pool`
-- `clock-tiering`
-- `mixed`
-
-The observer updates automatically when new managed guests are added.
-
-## Panels
-
-| Panel | Purpose |
+| Tab | Cards |
 | --- | --- |
-| **Current State** | Current host policy state, host reserve, emulator placement, guest domain placement |
-| **CPU Performance Domains** | Per-VM scope weights, allowed CPUs, live vCPU cpusets, emulator cpusets |
-| **CPU Pool Topology** | Per-CPU role map with live CPU utilization and current frequency |
-| **Memory Overview** | Host memory totals, available memory, THP state, KSM savings, zram state, swap usage |
-| **Memory Management Overhead** | CPU overhead for `ksmd`, `kswapd*`, and `kcompactd*` |
+| **CPU** | CPU overview, overhead/disposition, performance domains, CPU pool topology, effective constrained clock |
+| **Memory** | Memory overview, memory-management overhead, KSM cost-benefit, zram cost-benefit, per-VM attribution |
+| **Configuration** | Direct exporter status, bind/firewall settings, node_exporter migration status |
 
 ## Panel Screenshots
 
+### KSM Cost-Benefit
+
+![KSM Cost-Benefit](images/observer_ksm_cost_benefit.png)
+
 ### CPU Performance Domains
 
-![CPU Performance Domains](./images/observer_cpu_performance_domains.png)
+![CPU Performance Domains](images/observer_cpu_performance_domains.png)
 
 ### CPU Pool Topology
 
-![CPU Pool Topology](./images/observer_cpu_pool_topology.png)
+![CPU Pool Topology](images/observer_cpu_pool_topology.png)
 
 ### Memory Overview
 
-![Memory Overview](./images/observer_memory_overview.png)
+![Memory Overview](images/observer_memory_overview.png)
 
-### Memory Management Overhead
+### zram Cost-Benefit
 
-![Memory Management Overhead](./images/observer_memory_management_overhead.png)
+![zram Cost-Benefit](images/observer_zram_cost_benefit.png)
+
+### Memory Overview Overheads
+
+![Memory Management Overhead](images/observer_memory_management_overhead.png)
 
 ## Architecture
 
-```text
+```
 ┌───────────────────────────────────────────────────────┐
 │  Browser (Cockpit web console)                        │
 │  ┌─────────────────────────────────────────────────┐  │
 │  │  stakkr-observer.js                             │  │
-│  │  - polls collector.py via cockpit.spawn()       │  │
+│  │  - watches /run/stakkr-observer/metrics.json    │  │
 │  │  - computes deltas between samples              │  │
 │  │  - renders DOM + canvas sparklines              │  │
 │  └──────────────────────┬──────────────────────────┘  │
 └─────────────────────────┼─────────────────────────────┘
                           │ cockpit-ws / cockpit-bridge
 ┌─────────────────────────┼─────────────────────────────┐
-│  KVM host (as root)     │                             │
+│  host (as root)         │                             │
+│  ┌──────────────────────▼──────────────────────────┐  │
+│  │  stakkr-exporter.service                        │  │
+│  │  - persistent daemon owns collection cadence     │  │
+│  │  - writes Cockpit JSON snapshot                  │  │
+│  │  - serves cached Prometheus metrics on :9910     │  │
+│  └──────────────────────┬──────────────────────────┘  │
 │  ┌──────────────────────▼──────────────────────────┐  │
 │  │  collector.py                                   │  │
-│  │  - reads procfs, sysfs, and cgroup state        │  │
-│  │  - reads libvirt vCPU and emulator pinning      │  │
-│  │  - reads systemd scope properties               │  │
-│  │  - emits one JSON snapshot to stdout            │  │
+│  │  - reads /proc/meminfo, /proc/stat, /proc/vmstat│  │
+│  │  - reads /sys/kernel/mm/ksm/*, /sys/block/zram* │  │
+│  │  - reads cgroup v2 cpu.stat per tier and domain │  │
+│  │  - reads /proc/<pid>/stat for kernel threads    │  │
+│  │  - (full mode) runs virsh list + virsh dumpxml  │  │
+│  │  - returns a metrics dictionary to the daemon    │  │
 │  └─────────────────────────────────────────────────┘  │
 └───────────────────────────────────────────────────────┘
 ```
 
-The frontend polls every 5 seconds by default. Delta computation happens in the
-browser. The collector emits cumulative counters and the frontend diffs
-consecutive samples to produce rates and CPU utilization.
+The direct Calabi exporter uses a **two-speed collection model**:
+
+- **Fast collection** (default 5s): reads only sysfs, procfs, and cgroups. Completes
+  in ~50ms. Provides CPU, memory, KSM, zram, and cached per-domain attribution
+  without touching libvirt.
+- **Full collection** (60s): full collection including `virsh list` + `virsh dumpxml`
+  for each running domain. Takes 1-2s. Refreshes the domain list, tier
+  assignments, vCPU counts, and memory commitments.
+
+Prometheus scrapes read cached output from `GET /metrics`; scrapes do not
+trigger collection. Cockpit reads the same latest sample from
+`/run/stakkr-observer/metrics.json`.
+
+Delta computation happens in the browser. The collector emits cumulative
+counters (CPU ticks, cgroup `usage_usec`, KSM `full_scans`); the frontend watches
+the daemon snapshot, diffs
+consecutive samples and divides by elapsed time to produce rates.
 
 ## Files
 
@@ -106,146 +125,158 @@ consecutive samples to produce rates and CPU utilization.
 | --- | --- |
 | `manifest.json` | Cockpit sidebar registration and CSP policy |
 | `index.html` | HTML shell with panel structure |
-| `collector.py` | Backend metrics collector, runs as root via `cockpit.spawn()` |
-| `stakkr-observer.js` | Frontend polling, delta computation, DOM rendering |
-| `stakkr-observer.css` | Observer styling for cards, tables, gauges, and topology tiles |
-| `sparkline.js` | Canvas sparkline helper |
-| `build-rpm.sh` | Builds a noarch Cockpit RPM from the observer sources |
-| `cockpit-stakkr-observer.spec` | RPM packaging metadata |
-| `INTERPRETING.md` | Operator notes on reading each panel |
+| `collector.py` | Backend metrics collector used by the persistent exporter |
+| `stakkr_exporter.py` | Direct exporter that writes the Cockpit snapshot and serves cached `/metrics` |
+| `prometheus_control.py` | Narrow privileged control surface for direct exporter settings |
+| `stakkr-observer.js` | Frontend: snapshot watching, delta computation, DOM rendering |
+| `sparkline.js` | Canvas sparkline and stacked bar renderer (~170 lines) |
+| `stakkr-observer.css` | Styling: cards, gauges, bars, tables, heatmap cells |
+| `cockpit-stakkr-observer.spec` | RPM spec file |
+| `build-rpm.sh` | RPM build script |
 
-No build step. No bundler. Plain HTML, CSS, JavaScript, and Python.
+No build step. No React. No bundler. Vanilla JS + PatternFly CSS classes from
+Cockpit's `base1`.
 
 ## Data Sources
 
-| Source | What |
-| --- | --- |
-| `systemctl list-units` + `systemctl show` | live VM scope names, `AllowedCPUs`, `CPUWeight` |
-| `virsh vcpupin` | live guest vCPU pinning |
-| `virsh emulatorpin` | live emulator thread pinning |
-| Per-scope cgroup `cpu.stat` | per-VM cgroup CPU usage |
-| `/proc/stat` | host-wide and per-CPU jiffies |
-| `/proc/cpuinfo` | current CPU frequency in MHz |
-| `/proc/meminfo` | host memory totals and availability |
-| `/proc/vmstat` | swap activity counters |
-| `/proc/<pid>/stat` | kernel thread CPU cost for `ksmd`, `kswapd*`, `kcompactd*` |
-| `/sys/kernel/mm/ksm/*` | KSM sharing, scanning, and saved memory |
-| `/sys/kernel/mm/transparent_hugepage/*` | THP enabled and defrag mode |
-| `zramctl --bytes` | zram size, usage, compression, and RAM cost |
-| `swapon --bytes` | swap device size and usage |
+| Source | What | Poll mode |
+| --- | --- | --- |
+| `/proc/meminfo` | MemTotal, MemAvailable, Cached, AnonPages, Slab, etc. | fast + full |
+| `/proc/stat` | host-wide and per-CPU jiffies (user, system, idle, iowait, steal) | fast + full |
+| `/proc/vmstat` | pswpin, pswpout, pgsteal, pgscan counters | fast + full |
+| `/proc/cpuinfo` | per-CPU clock frequency in MHz | fast + full |
+| `/sys/kernel/mm/ksm/*` | pages_shared, pages_sharing, pages_volatile, full_scans, ksm_zero_pages | fast + full |
+| `/sys/kernel/mm/transparent_hugepage/*` | enabled mode, defrag mode | fast + full |
+| `/sys/block/zram*/mm_stat` | orig_data, compr_data, mem_used, same_pages, pages_compacted | fast + full |
+| `/sys/block/zram*/io_stat` | failed_reads, failed_writes, invalid_io | fast + full |
+| `/sys/block/zram*/stat` | block device I/O counters (reads, writes, in-progress) | fast + full |
+| `/sys/block/zram*/{disksize,mm_stat,comp_algorithm,max_comp_streams,bd_stat,backing_dev}` | zram size, compression, writeback, and backing-device state | fast + full |
+| `/proc/swaps` | per-device swap size, used bytes, and priority | fast + full |
+| `/proc/<pid>/stat` for ksmd, kswapd0/1, kcompactd0/1 | cumulative utime+stime ticks | fast + full |
+| `/proc/<qemu-pid>/ksm_stat` and `/proc/<qemu-pid>/status` | per-VM KSM profit and swap pressure attribution | fast with cached domains + full |
+| `/sys/fs/cgroup/machine.slice/machine-{gold,silver,bronze}.slice/cpu.stat` | usage_usec, nr_throttled, throttled_usec | fast + full |
+| Per-domain cgroup `cpu.stat` | per-VM usage_usec (discovered by scanning cgroup tree) | fast + full |
+| `virsh list` + `virsh dumpxml` | CPU pool detection, per-domain memory, vcpus, UUID, partition, tier classification | full only |
 
 ## Installation
 
-### From source
-
-```bash
-sudo mkdir -p /usr/share/cockpit/stakkr-observer
-sudo rsync -av /path/to/stakkr/cockpit/stakkr-observer/ /usr/share/cockpit/stakkr-observer/
-```
-
-Cockpit picks up new plugins on page load. No service restart is required.
-
 ### From RPM
 
-Build the RPM first:
+```bash
+scp rpmbuild/RPMS/noarch/cockpit-stakkr-observer-1.2.3-1.el10.noarch.rpm <host>:
+ssh <host> 'sudo dnf install -y ./cockpit-stakkr-observer-1.2.3-1.el10.noarch.rpm'
+```
+
+### From source (rsync)
 
 ```bash
-cd /path/to/stakkr/cockpit/stakkr-observer
+rsync -av /path/to/cockpit/stakkr-observer/ <host>:/opt/cockpit-stakkr-observer/
+ssh <host> 'ln -snf /opt/cockpit-stakkr-observer /usr/share/cockpit/stakkr-observer'
+```
+
+Cockpit picks up new plugins on page load. No service restart needed.
+
+### Migration from the textfile exporter
+
+Calabi-specific Prometheus metrics now come from the direct exporter:
+
+```text
+http://127.0.0.1:9910/metrics
+```
+
+The old v1 path exposed Stakkr metrics through node_exporter's textfile
+collector on port `9100`. This refactor intentionally separates those concerns:
+`stakkr-exporter.service` serves Stakkr metrics on `9910`, while node_exporter
+may still run on `9100` for generic host metrics. Prometheus jobs that used to
+scrape one combined `:9100` endpoint should add a second scrape target for
+`:9910` or relabel the new Calabi job accordingly.
+
+### Building the RPM
+
+```bash
 ./build-rpm.sh
+# Output: rpmbuild/RPMS/noarch/cockpit-stakkr-observer-*.noarch.rpm
+#         rpmbuild/SRPMS/cockpit-stakkr-observer-*.src.rpm
 ```
 
-Then install it from the same directory:
-
-```bash
-sudo dnf install -y ./rpmbuild/RPMS/noarch/cockpit-stakkr-observer-1.0.0-1.el10.noarch.rpm
-```
-
-If you are standing at the repo root instead, use:
-
-```bash
-cd /path/to/stakkr
-sudo dnf install -y ./cockpit/stakkr-observer/rpmbuild/RPMS/noarch/cockpit-stakkr-observer-1.0.0-1.el10.noarch.rpm
-```
-
-> [!IMPORTANT]
-> Use `./...rpm` so `dnf` treats the target as a local file path.
-
-> [!NOTE]
-> Prefer a normal SSH shell for the RPM install step. If the Cockpit terminal
-> session drops, rerun the same `dnf install` command over SSH.
-
-## Building The RPM
-
-Install the packaging tool once on the build host:
-
-```bash
-sudo dnf install -y rpm-build
-```
-
-Then build from the observer directory:
-
-```bash
-cd /path/to/stakkr/cockpit/stakkr-observer
-./build-rpm.sh
-```
-
-Build output:
-
-- `rpmbuild/RPMS/noarch/cockpit-stakkr-observer-*.noarch.rpm`
-- `rpmbuild/SRPMS/cockpit-stakkr-observer-*.src.rpm`
+`rpmbuild/` is generated output and intentionally ignored by git. Do not
+commit built RPMs or generated source tarballs.
 
 ## Requirements
 
-- `cockpit-system` and `cockpit-bridge`
+- `cockpit-system` and `cockpit-bridge` (Cockpit 219+)
 - `python3`
-- `libvirt-client` for `virsh`
-- root access through Cockpit's privilege escalation path
-
-The collector reads sysfs, procfs, cgroups, and live libvirt state, so it must
-run with root privileges.
+- `libvirt-client` (provides `virsh`)
+- `firewalld` when using the Cockpit firewall exposure toggle
+- Root access (collector reads sysfs, procfs, and cgroups; virsh requires
+  system connection)
 
 ## Usage
 
 Navigate to **Stakkr Observer** in the Cockpit sidebar. The plugin starts
-polling immediately.
+watching the daemon snapshot immediately.
 
 Controls:
 
-- **Interval selector**: change the poll interval to `2s`, `5s`, `10s`, or `30s`
-- **Pause / Resume**: stop and resume polling
-- **Status dot**:
-  - green: healthy
-  - amber: paused
-  - red: collection error
+- **Pause/Resume**: stop and resume snapshot watching
+- **Collection interval**: configured in the Calabi Prometheus Export panel; this controls how often the exporter writes new samples
+- **Status dot**: green = healthy, amber = paused, red = collection error
+
+Append `?debug=1` to the URL to enable console logging of each sample.
 
 ## Tier Colors
 
-Consistent across the observer:
+Consistent across all panels:
 
 | Tier | Color | Hex |
 | --- | --- | --- |
-| Gold | gold | `#c9b037` |
-| Silver | silver | `#a8a9ad` |
-| Bronze | bronze | `#cd7f32` |
+| Gold | yellow | `#c9b037` |
+| Silver | grey | `#a8a9ad` |
+| Bronze | copper | `#cd7f32` |
+
+## CPU Pool Colors
+
+Used in the CPU Pool Topology heatmap:
+
+| Pool | Color | Hex |
+| --- | --- | --- |
+| Host Housekeeping | blue | `#1565c0` |
+| Host Emulator | purple | `#7b1fa2` |
+| Guest Domain | green | `#2e7d32` |
 
 ## Security Posture
 
-The plugin stays inside Cockpit's existing authentication and authorization
-boundary. It does not open a port, add a second login flow, or accept arbitrary
-input from outside Cockpit.
+The UI runs inside Cockpit's existing authentication and authorization
+boundary. The direct Prometheus exporter binds to `127.0.0.1:9910` by default
+and keeps the firewall closed unless the operator explicitly changes both the
+listen address and firewall policy. TLS/basic auth for direct network exposure
+is intentionally deferred.
+
+**Rating: A-**
+
+> [!NOTE]
+> The only residual finding is `script-src 'unsafe-inline'` in the Content
+> Security Policy. This is required by the Cockpit framework itself — all
+> Cockpit plugins inherit it. The plugin's own code never uses `eval()`,
+> `innerHTML`, or inline event handlers. Removing `unsafe-inline` would
+> require an upstream Cockpit platform change.
 
 Strengths:
 
 | Area | Detail |
 | --- | --- |
-| No shell interpolation | `collector.py` uses `subprocess.run()` with list arguments |
-| Read-only collector | The collector reads host state. It does not write to the host |
-| No external dependencies | Only Python standard library and Cockpit's bundled runtime are used |
-| DOM safety | The frontend uses DOM APIs and `textContent`, not arbitrary HTML injection |
-| Auth delegation | Privilege escalation is handled by Cockpit's own `superuser: "require"` path |
+| No command injection | `collector.py` uses `subprocess.run()` with list arguments exclusively. No shell expansion, no string interpolation into commands. |
+| XSS resistant | All DOM content is set via `textContent` and `setAttribute`. The frontend never assigns `innerHTML` from collected data. |
+| No external dependencies | Zero third-party Python or JS libraries. The collector uses only the Python standard library; the frontend uses only Cockpit's `base1` and native browser APIs. |
+| Read-only collector | The collector reads sysfs, procfs, cgroups, and virsh XML. It never writes to the host. |
+| Input validation | The collector uses `argparse` for CLI argument parsing. The only accepted flag is `--fast`. |
+| Auth delegation | Authentication and session management are handled entirely by Cockpit. The plugin declares `superuser: "require"` in `manifest.json`, so Cockpit enforces privilege escalation through its own sudo bridge. |
 
-Residual note:
+Residual notes:
 
-> [!NOTE]
-> The collector runs as root because the data it reads requires it. That is the
-> same trust boundary Cockpit already uses for privileged host operations.
+- The collector runs as root (via Cockpit's superuser channel) because the data
+  sources it reads — `/sys/kernel/mm/ksm/*`, cgroup `cpu.stat` files, `virsh`
+  system connection — require root privileges. The collector does not drop
+  privileges after startup because every read path requires them.
+- Error messages from the collector are written to stderr as JSON
+  (`{"error": "..."}`) and are not rendered into the DOM.
