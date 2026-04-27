@@ -173,11 +173,11 @@ def format_metrics(payload: dict[str, Any]) -> str:
                 if "-" in part:
                     s, e = part.split("-", 1)
                     for cid in range(int(s), int(e) + 1):
-                        v = cpu_freq.get(str(cid))
+                        v = cpu_freq.get(f"cpu{cid}")
                         if v is not None:
                             guest_mhz.append(float(v))
                 else:
-                    v = cpu_freq.get(part.strip())
+                    v = cpu_freq.get(f"cpu{part}")
                     if v is not None:
                         guest_mhz.append(float(v))
         if guest_mhz:

@@ -728,33 +728,38 @@ def parse_domain_cgroups(domains: list[dict] | None = None) -> dict:
     """
     result: dict = {}
 
+    _MACHINE_SLICE = "/sys/fs/cgroup/machine.slice"
+
     if domains:
         # Targeted lookup from known domain list
         for domain in domains:
             name = domain["name"]
             tier = domain["tier"]
+            cpu_stat = None
             if tier in TIER_NAMES:
-                scope_base = f"/sys/fs/cgroup/machine.slice/machine-{tier}.slice"
+                scope_base = f"{_MACHINE_SLICE}/machine-{tier}.slice"
                 cpu_stat = _find_domain_cgroup(scope_base, name)
-            else:
-                cpu_stat = None
+            if cpu_stat is None:
                 for candidate in TIER_NAMES:
-                    scope_base = f"/sys/fs/cgroup/machine.slice/machine-{candidate}.slice"
+                    scope_base = f"{_MACHINE_SLICE}/machine-{candidate}.slice"
                     cpu_stat = _find_domain_cgroup(scope_base, name)
                     if cpu_stat is not None:
                         break
+            # Fallback: VMs may be scoped directly under machine.slice
+            if cpu_stat is None:
+                cpu_stat = _find_domain_cgroup(_MACHINE_SLICE, name)
             result[name] = cpu_stat
     else:
-        # Discovery mode: scan all tier slices for QEMU scopes
-        for tier in TIER_NAMES:
-            scope_base = f"/sys/fs/cgroup/machine.slice/machine-{tier}.slice"
+        # Discovery mode: scan tier slices then machine.slice directly
+        scan_bases = [
+            f"{_MACHINE_SLICE}/machine-{tier}.slice" for tier in TIER_NAMES
+        ] + [_MACHINE_SLICE]
+        for scope_base in scan_bases:
             for scope_dir in glob.glob(f"{scope_base}/machine-qemu*.scope"):
                 cpu_stat = parse_cgroup_cpu_stat(f"{scope_dir}/cpu.stat")
-                # Extract domain name from scope dir name
-                # Format: machine-qemu\x2d<N>\x2d<escaped-name>.scope
                 dirname = os.path.basename(scope_dir)
                 name = _unescape_scope_name(dirname)
-                if name and cpu_stat is not None:
+                if name and cpu_stat is not None and name not in result:
                     result[name] = cpu_stat
 
     return result
@@ -871,14 +876,13 @@ def parse_domain_swap(domains: list[dict], by_uuid: dict[str, int] | None = None
 
 
 def _find_domain_cgroup(scope_base: str, name: str) -> dict | None:
-    """Find and read cpu.stat for a specific domain under a tier slice."""
+    """Find and read cpu.stat for a specific domain under a given cgroup base."""
     escaped = systemd_escape(name)
     pattern = f"{scope_base}/machine-qemu*{escaped}.scope"
     for match in glob.glob(pattern):
         cpu_stat = parse_cgroup_cpu_stat(f"{match}/cpu.stat")
         if cpu_stat is not None:
             return cpu_stat
-    # Fallback: libvirt/qemu/<name>.scope
     return parse_cgroup_cpu_stat(
         f"{scope_base}/libvirt/qemu/{name}.scope/cpu.stat"
     )
