@@ -14,7 +14,7 @@ echo "==> Creating source tarball"
 TARBALL_DIR="${SPEC_NAME}-${VERSION}"
 WORK="$(mktemp -d)"
 mkdir -p "${WORK}/${TARBALL_DIR}"
-cp "${SCRIPT_DIR}"/{manifest.json,index.html,calabi-observer.js,calabi-observer.css,collector.py,calabi_exporter.py,prometheus_exporter.py,prometheus_control.py,README.md,INTERPRETING.md} \
+cp "${SCRIPT_DIR}"/{manifest.json,index.html,sparkline.js,calabi-observer.js,calabi-observer.css,collector.py,calabi_exporter.py,prometheus_exporter.py,prometheus_control.py,README.md,INTERPRETING.md} \
    "${WORK}/${TARBALL_DIR}/"
 cp "${SCRIPT_DIR}"/{calabi-exporter.service,calabi-node-exporter.service,calabi-observer-prometheus.tmpfiles,prometheus.json} \
    "${WORK}/${TARBALL_DIR}/"
