@@ -9,12 +9,42 @@
     }
   ],
   "__requires": [
-    {"type": "grafana",    "id": "grafana",    "name": "Grafana",    "version": "10.0.0"},
-    {"type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0"},
-    {"type": "panel", "id": "stat",       "name": "Stat",       "version": ""},
-    {"type": "panel", "id": "timeseries", "name": "Time series","version": ""},
-    {"type": "panel", "id": "bargauge",   "name": "Bar gauge",  "version": ""},
-    {"type": "panel", "id": "gauge",      "name": "Gauge",      "version": ""}
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "10.0.0"
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "bargauge",
+      "name": "Bar gauge",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "gauge",
+      "name": "Gauge",
+      "version": ""
+    }
   ],
   "description": "Stakkr KVM hypervisor: memory oversubscription, CPU pool topology, KSM/zram efficiency, per-domain breakdown",
   "editable": true,
@@ -22,12 +52,19 @@
   "id": null,
   "refresh": "30s",
   "schemaVersion": 38,
-  "tags": ["stakkr", "kvm", "calabi"],
-  "time": {"from": "now-1h", "to": "now"},
+  "tags": [
+    "stakkr",
+    "kvm",
+    "calabi"
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
   "timezone": "browser",
-  "title": "Stakkr Observer — KVM Hypervisor",
+  "title": "Stakkr Observer \u2014 KVM Hypervisor",
   "uid": "stakkr-observer-mvp",
-  "version": 3,
+  "version": 4,
   "templating": {
     "list": [
       {
@@ -42,9 +79,15 @@
         "name": "host",
         "label": "Host",
         "type": "query",
-        "datasource": {"type": "prometheus", "uid": "${datasource}"},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
         "definition": "label_values(calabi_observer_up, host)",
-        "query": {"query": "label_values(calabi_observer_up, host)", "refId": "A"},
+        "query": {
+          "query": "label_values(calabi_observer_up, host)",
+          "refId": "A"
+        },
         "refresh": 2,
         "sort": 1,
         "multi": false,
@@ -54,497 +97,2542 @@
     ]
   },
   "panels": [
-
-    { "type": "row", "id": 100, "title": "Overview", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0} },
-
     {
-      "type": "stat", "id": 1, "title": "Observer Status",
-      "gridPos": {"h": 4, "w": 3, "x": 0, "y": 1},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "short", "mappings": [{"type": "value", "options": {"0": {"text": "DOWN", "color": "red", "index": 0}, "1": {"text": "UP", "color": "green", "index": 1}}}], "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}},
-      "targets": [{"expr": "calabi_observer_up{host=~\"$host\"}", "legendFormat": "status", "instant": true}]
+      "type": "row",
+      "id": 100,
+      "title": "Overview",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      }
     },
     {
-      "type": "stat", "id": 2, "title": "Collect Error",
-      "gridPos": {"h": 4, "w": 3, "x": 3, "y": 1},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "short", "mappings": [{"type": "value", "options": {"0": {"text": "OK", "color": "green", "index": 0}, "1": {"text": "FAIL", "color": "red", "index": 1}}}], "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}},
-      "targets": [{"expr": "calabi_observer_collect_error{host=~\"$host\"}", "legendFormat": "error", "instant": true}]
-    },
-    {
-      "type": "stat", "id": 3, "title": "Host Memory",
-      "gridPos": {"h": 4, "w": 3, "x": 6, "y": 1},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "value", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "bytes", "color": {"mode": "fixed", "fixedColor": "blue"}, "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}}},
-      "targets": [{"expr": "calabi_memory_memtotal_bytes{host=~\"$host\"}", "legendFormat": "total", "instant": true}]
-    },
-    {
-      "type": "stat", "id": 4, "title": "Memory Available",
-      "gridPos": {"h": 4, "w": 3, "x": 9, "y": 1},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "percentunit", "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 0.1}, {"color": "green", "value": 0.25}]}}},
-      "targets": [{"expr": "calabi_memory_memavailable_bytes{host=~\"$host\"} / calabi_memory_memtotal_bytes{host=~\"$host\"}", "legendFormat": "available%", "instant": true}]
-    },
-    {
-      "type": "stat", "id": 5, "title": "Memory Overcommit",
-      "gridPos": {"h": 4, "w": 3, "x": 12, "y": 1},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "short", "decimals": 2, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1.2}, {"color": "red", "value": 1.5}]}}},
-      "targets": [{"expr": "calabi_guest_memory_committed_bytes{host=~\"$host\"} / calabi_memory_memtotal_bytes{host=~\"$host\"}", "legendFormat": "ratio", "instant": true}]
-    },
-    {
-      "type": "stat", "id": 6, "title": "vCPU Overcommit",
-      "gridPos": {"h": 4, "w": 3, "x": 15, "y": 1},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "short", "decimals": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 4}, {"color": "red", "value": 8}]}}},
-      "targets": [{"expr": "calabi_guest_vcpus{host=~\"$host\"} / calabi_host_cpu_count{host=~\"$host\"}", "legendFormat": "ratio", "instant": true}]
-    },
-    {
-      "type": "stat", "id": 7, "title": "KSM Saved",
-      "gridPos": {"h": 4, "w": 3, "x": 18, "y": 1},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "value", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "bytes", "color": {"mode": "fixed", "fixedColor": "teal"}, "thresholds": {"mode": "absolute", "steps": [{"color": "teal", "value": null}]}}},
-      "targets": [{"expr": "calabi_ksm_estimated_saved_bytes{host=~\"$host\"}", "legendFormat": "KSM saved", "instant": true}]
-    },
-    {
-      "type": "stat", "id": 8, "title": "zram Saved",
-      "gridPos": {"h": 4, "w": 3, "x": 21, "y": 1},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "value", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "bytes", "color": {"mode": "fixed", "fixedColor": "purple"}, "thresholds": {"mode": "absolute", "steps": [{"color": "purple", "value": null}]}}},
-      "targets": [{"expr": "calabi_zram_estimated_saved_bytes_total{host=~\"$host\"}", "legendFormat": "zram saved", "instant": true}]
-    },
-
-    { "type": "row", "id": 101, "title": "CPU", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5} },
-
-    {
-      "type": "timeseries", "id": 10, "title": "Host CPU Usage",
-      "gridPos": {"h": 8, "w": 16, "x": 0, "y": 6},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
-      "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1, "custom": {"lineWidth": 1, "fillOpacity": 12}}},
-      "targets": [
-        {"expr": "rate(calabi_host_cpu_user_ticks{host=~\"$host\"}[$__rate_interval]) / (rate(calabi_host_cpu_user_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_nice_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_system_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_irq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval]))", "legendFormat": "user"},
-        {"expr": "rate(calabi_host_cpu_system_ticks{host=~\"$host\"}[$__rate_interval]) / (rate(calabi_host_cpu_user_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_nice_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_system_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_irq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval]))", "legendFormat": "system"},
-        {"expr": "rate(calabi_host_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval]) / (rate(calabi_host_cpu_user_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_nice_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_system_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_irq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval]))", "legendFormat": "iowait"},
-        {"expr": "rate(calabi_host_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval]) / (rate(calabi_host_cpu_user_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_nice_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_system_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_irq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval]))", "legendFormat": "steal"},
-        {"expr": "rate(calabi_host_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval]) / (rate(calabi_host_cpu_user_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_nice_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_system_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_irq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval]))", "legendFormat": "softirq"},
-        {"expr": "rate(calabi_host_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval]) / (rate(calabi_host_cpu_user_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_nice_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_system_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_irq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval]))", "legendFormat": "idle"}
-      ]
-    },
-    {
-      "type": "bargauge", "id": 11, "title": "CPU Pool Sizes (logical CPUs)",
-      "gridPos": {"h": 4, "w": 8, "x": 16, "y": 6},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "orientation": "horizontal", "displayMode": "gradient", "valueMode": "color"},
-      "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}}},
-      "targets": [{"expr": "calabi_cpu_pool_size{host=~\"$host\"}", "legendFormat": "{{pool}}", "instant": true}]
-    },
-    {
-      "type": "timeseries", "id": 12, "title": "Memory Management Thread CPU Cost",
-      "gridPos": {"h": 4, "w": 8, "x": 16, "y": 10},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi"}, "legend": {"displayMode": "list", "placement": "bottom"}},
-      "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "custom": {"lineWidth": 1, "fillOpacity": 10}}},
-      "targets": [{"expr": "rate(calabi_kernel_thread_cpu_seconds{host=~\"$host\"}[$__rate_interval])", "legendFormat": "{{thread}}"}]
-    },
-    {
-      "type": "timeseries", "id": 13, "title": "Per-CPU Busy % (all cores)",
-      "gridPos": {"h": 7, "w": 12, "x": 0, "y": 14},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "right"}},
-      "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1, "custom": {"lineWidth": 1, "fillOpacity": 0}}},
-      "targets": [{
-        "expr": "1 - (rate(calabi_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval]) / (rate(calabi_cpu_user_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_cpu_nice_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_cpu_system_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_cpu_irq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval])))",
-        "legendFormat": "{{cpu}}"
-      }]
-    },
-    {
-      "type": "timeseries", "id": 14, "title": "Per-CPU Frequency (MHz)",
-      "gridPos": {"h": 7, "w": 12, "x": 12, "y": 14},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "right"}},
-      "fieldConfig": {"defaults": {"unit": "none", "custom": {"lineWidth": 1, "fillOpacity": 0}, "decimals": 0}},
-      "targets": [{"expr": "calabi_cpu_frequency_mhz{host=~\"$host\"}", "legendFormat": "{{cpu}}"}]
-    },
-
-    { "type": "row", "id": 102, "title": "Memory", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 21} },
-
-    {
-      "type": "timeseries", "id": 20, "title": "Memory Waterfall",
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 22},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
-      "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"lineWidth": 1, "fillOpacity": 8}}},
-      "targets": [
-        {"expr": "calabi_memory_memtotal_bytes{host=~\"$host\"}", "legendFormat": "total"},
-        {"expr": "calabi_guest_memory_committed_bytes{host=~\"$host\"}", "legendFormat": "guest committed"},
-        {"expr": "calabi_memory_memavailable_bytes{host=~\"$host\"}", "legendFormat": "available"},
-        {"expr": "calabi_memory_active_bytes{host=~\"$host\"}", "legendFormat": "active"},
-        {"expr": "calabi_memory_inactive_bytes{host=~\"$host\"}", "legendFormat": "inactive"},
-        {"expr": "calabi_memory_cached_bytes{host=~\"$host\"}", "legendFormat": "cached"},
-        {"expr": "calabi_memory_buffers_bytes{host=~\"$host\"}", "legendFormat": "buffers"},
-        {"expr": "calabi_memory_memfree_bytes{host=~\"$host\"}", "legendFormat": "free"}
-      ]
-    },
-    {
-      "type": "timeseries", "id": 21, "title": "Memory Components",
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 22},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
-      "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"lineWidth": 1, "fillOpacity": 6}}},
-      "targets": [
-        {"expr": "calabi_memory_anonpages_bytes{host=~\"$host\"}", "legendFormat": "AnonPages (anon dirty)"},
-        {"expr": "calabi_memory_slab_bytes{host=~\"$host\"}", "legendFormat": "Slab (kernel)"},
-        {"expr": "calabi_memory_kreclaimable_bytes{host=~\"$host\"}", "legendFormat": "KReclaimable"},
-        {"expr": "calabi_memory_shmem_bytes{host=~\"$host\"}", "legendFormat": "Shmem (tmpfs)"},
-        {"expr": "calabi_memory_pagetables_bytes{host=~\"$host\"}", "legendFormat": "PageTables"},
-        {"expr": "calabi_memory_kernelstack_bytes{host=~\"$host\"}", "legendFormat": "KernelStack"},
-        {"expr": "calabi_memory_swapcached_bytes{host=~\"$host\"}", "legendFormat": "SwapCached"}
-      ]
-    },
-    {
-      "type": "bargauge", "id": 22, "title": "Domain Memory Committed",
-      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 30},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "orientation": "horizontal", "displayMode": "gradient", "valueMode": "color"},
-      "fieldConfig": {"defaults": {"unit": "bytes", "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}}},
-      "targets": [{"expr": "calabi_domain_memory_bytes{host=~\"$host\"}", "legendFormat": "{{domain}} ({{tier}})", "instant": true}]
-    },
-    {
-      "type": "bargauge", "id": 23, "title": "Domain vCPUs",
-      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 30},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "orientation": "horizontal", "displayMode": "gradient", "valueMode": "color"},
-      "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 8}, {"color": "red", "value": 16}]}}},
-      "targets": [{"expr": "calabi_domain_vcpus{host=~\"$host\"}", "legendFormat": "{{domain}} ({{tier}})", "instant": true}]
-    },
-
-    { "type": "row", "id": 103, "title": "KSM — Kernel Samepage Merging", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 36} },
-
-    {
-      "type": "stat", "id": 30, "title": "KSM Run State",
-      "gridPos": {"h": 3, "w": 4, "x": 0, "y": 37},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "short", "mappings": [{"type": "value", "options": {"0": {"text": "STOPPED", "color": "red", "index": 0}, "1": {"text": "RUNNING", "color": "green", "index": 1}, "2": {"text": "ADVISORY", "color": "orange", "index": 2}}}], "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}},
-      "targets": [{"expr": "calabi_ksm_run{host=~\"$host\"}", "legendFormat": "state", "instant": true}]
-    },
-    {
-      "type": "stat", "id": 31, "title": "KSM Sharing Density",
-      "gridPos": {"h": 3, "w": 4, "x": 4, "y": 37},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "short", "decimals": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 1.5}, {"color": "green", "value": 2}]}}},
-      "targets": [{"expr": "calabi_ksm_pages_sharing{host=~\"$host\"} / calabi_ksm_pages_shared{host=~\"$host\"}", "legendFormat": "sharing:shared", "instant": true}]
-    },
-    {
-      "type": "stat", "id": 32, "title": "KSM Scan Interval",
-      "gridPos": {"h": 3, "w": 4, "x": 8, "y": 37},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "value", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "ms", "color": {"mode": "fixed", "fixedColor": "blue"}, "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}}},
-      "targets": [{"expr": "calabi_ksm_sleep_millisecs{host=~\"$host\"}", "legendFormat": "sleep_ms", "instant": true}]
-    },
-    {
-      "type": "stat", "id": 33, "title": "KSM Pages/Scan",
-      "gridPos": {"h": 3, "w": 4, "x": 12, "y": 37},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "value", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "fixed", "fixedColor": "blue"}, "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}}},
-      "targets": [{"expr": "calabi_ksm_pages_to_scan{host=~\"$host\"}", "legendFormat": "pages/scan", "instant": true}]
-    },
-    {
-      "type": "stat", "id": 34, "title": "KSM Full Scans",
-      "gridPos": {"h": 3, "w": 4, "x": 16, "y": 37},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "value", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "fixed", "fixedColor": "teal"}, "thresholds": {"mode": "absolute", "steps": [{"color": "teal", "value": null}]}}},
-      "targets": [{"expr": "calabi_ksm_full_scans{host=~\"$host\"}", "legendFormat": "scans", "instant": true}]
-    },
-    {
-      "type": "stat", "id": 35, "title": "KSM Stable Chains",
-      "gridPos": {"h": 3, "w": 4, "x": 20, "y": 37},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "value", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "fixed", "fixedColor": "purple"}, "thresholds": {"mode": "absolute", "steps": [{"color": "purple", "value": null}]}}},
-      "targets": [{"expr": "calabi_ksm_stable_node_chains{host=~\"$host\"}", "legendFormat": "chains", "instant": true}]
-    },
-
-    {
-      "type": "timeseries", "id": 36, "title": "KSM Page Population",
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 40},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
-      "fieldConfig": {
-        "defaults": {"unit": "short", "custom": {"lineWidth": 1, "fillOpacity": 6}},
-        "overrides": [{"matcher": {"id": "byName", "options": "estimated saved"}, "properties": [{"id": "unit", "value": "bytes"}, {"id": "custom.axisPlacement", "value": "right"}]}]
+      "type": "stat",
+      "id": 1,
+      "title": "Observer Status",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 1
       },
-      "targets": [
-        {"expr": "calabi_ksm_pages_sharing{host=~\"$host\"}", "legendFormat": "sharing (consumers)"},
-        {"expr": "calabi_ksm_pages_shared{host=~\"$host\"}", "legendFormat": "shared (unique pages)"},
-        {"expr": "calabi_ksm_pages_unshared{host=~\"$host\"}", "legendFormat": "unshared (checked, not merged)"},
-        {"expr": "calabi_ksm_pages_volatile{host=~\"$host\"}", "legendFormat": "volatile (changed during scan)"},
-        {"expr": "calabi_ksm_estimated_saved_bytes{host=~\"$host\"}", "legendFormat": "estimated saved"}
-      ]
-    },
-    {
-      "type": "timeseries", "id": 37, "title": "KSM Cost vs Benefit (ksmd CPU vs Savings)",
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 40},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi"}, "legend": {"displayMode": "list", "placement": "bottom"}},
-      "fieldConfig": {
-        "defaults": {"unit": "bytes", "custom": {"lineWidth": 1, "fillOpacity": 6}},
-        "overrides": [{"matcher": {"id": "byName", "options": "ksmd CPU%"}, "properties": [{"id": "unit", "value": "percentunit"}, {"id": "custom.axisPlacement", "value": "right"}]}]
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
       },
-      "targets": [
-        {"expr": "calabi_ksm_estimated_saved_bytes{host=~\"$host\"}", "legendFormat": "estimated saved"},
-        {"expr": "rate(calabi_kernel_thread_cpu_seconds{host=~\"$host\",thread=\"ksmd\"}[$__rate_interval])", "legendFormat": "ksmd CPU%"}
-      ]
-    },
-    {
-      "type": "bargauge", "id": 38, "title": "Per-Domain KSM Profit",
-      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 48},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "orientation": "horizontal", "displayMode": "gradient", "valueMode": "color"},
-      "fieldConfig": {"defaults": {"unit": "bytes", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}}},
-      "targets": [{"expr": "calabi_domain_ksm_profit_bytes{host=~\"$host\"}", "legendFormat": "{{domain}} ({{tier}})", "instant": true}]
-    },
-    {
-      "type": "bargauge", "id": 39, "title": "Per-Domain KSM Dependency Ratio",
-      "gridPos": {"h": 6, "w": 8, "x": 8, "y": 48},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "orientation": "horizontal", "displayMode": "gradient", "valueMode": "color"},
-      "fieldConfig": {"defaults": {"unit": "percentunit", "decimals": 2, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.3}, {"color": "red", "value": 0.5}]}}},
-      "targets": [{"expr": "calabi_domain_ksm_dependency_ratio{host=~\"$host\"}", "legendFormat": "{{domain}} ({{tier}})", "instant": true}]
-    },
-    {
-      "type": "bargauge", "id": 40, "title": "Per-Domain KSM Merge Density",
-      "gridPos": {"h": 6, "w": 8, "x": 16, "y": 48},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "orientation": "horizontal", "displayMode": "gradient", "valueMode": "color"},
-      "fieldConfig": {"defaults": {"unit": "percentunit", "decimals": 2, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.5}, {"color": "red", "value": 0.8}]}}},
-      "targets": [{"expr": "calabi_domain_ksm_merge_density{host=~\"$host\"}", "legendFormat": "{{domain}} ({{tier}})", "instant": true}]
-    },
-
-    { "type": "row", "id": 104, "title": "zram", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 54} },
-
-    {
-      "type": "stat", "id": 41, "title": "THP Mode",
-      "gridPos": {"h": 3, "w": 4, "x": 0, "y": 55},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "value", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "fixed", "fixedColor": "blue"}, "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}}},
-      "targets": [{"expr": "calabi_thp_enabled{host=~\"$host\"}", "legendFormat": "{{mode}}", "instant": true}]
-    },
-    {
-      "type": "stat", "id": 42, "title": "zram Writeback Attached",
-      "gridPos": {"h": 3, "w": 4, "x": 4, "y": 55},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "short", "mappings": [{"type": "value", "options": {"0": {"text": "NO", "color": "orange", "index": 0}, "1": {"text": "YES", "color": "green", "index": 1}}}], "thresholds": {"mode": "absolute", "steps": [{"color": "orange", "value": null}, {"color": "green", "value": 1}]}}},
-      "targets": [{"expr": "calabi_zram_writeback_attached{host=~\"$host\"}", "legendFormat": "{{device}}", "instant": true}]
-    },
-    {
-      "type": "stat", "id": 43, "title": "zram Writeback Limit",
-      "gridPos": {"h": 3, "w": 4, "x": 8, "y": 55},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
-      "fieldConfig": {"defaults": {"unit": "short", "mappings": [{"type": "value", "options": {"0": {"text": "DISABLED", "color": "orange", "index": 0}, "1": {"text": "ENABLED", "color": "green", "index": 1}}}], "thresholds": {"mode": "absolute", "steps": [{"color": "orange", "value": null}, {"color": "green", "value": 1}]}}},
-      "targets": [{"expr": "calabi_zram_writeback_limit_enabled{host=~\"$host\"}", "legendFormat": "{{device}}", "instant": true}]
-    },
-
-    {
-      "type": "timeseries", "id": 44, "title": "zram Data: Original vs Compressed vs Used",
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 58},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
-      "fieldConfig": {
-        "defaults": {"unit": "bytes", "custom": {"lineWidth": 1, "fillOpacity": 8}},
-        "overrides": [{"matcher": {"id": "byName", "options": "compression ratio"}, "properties": [{"id": "unit", "value": "short"}, {"id": "custom.axisPlacement", "value": "right"}, {"id": "custom.fillOpacity", "value": 0}]}]
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
       },
-      "targets": [
-        {"expr": "sum by (device,host) (calabi_zram_mm_orig_data_size{host=~\"$host\"})", "legendFormat": "{{device}} orig"},
-        {"expr": "sum by (device,host) (calabi_zram_mm_compr_data_size{host=~\"$host\"})", "legendFormat": "{{device}} compressed"},
-        {"expr": "sum by (device,host) (calabi_zram_mem_used_bytes{host=~\"$host\"})", "legendFormat": "{{device}} mem_used"},
-        {"expr": "sum by (device,host) (calabi_zram_mm_compr_data_size{host=~\"$host\"}) / sum by (device,host) (calabi_zram_mm_orig_data_size{host=~\"$host\"})", "legendFormat": "compression ratio"}
-      ]
-    },
-    {
-      "type": "timeseries", "id": 45, "title": "zram Writeback Activity",
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 58},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
-      "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"lineWidth": 1, "fillOpacity": 6}}},
-      "targets": [
-        {"expr": "calabi_zram_writeback_backed_bytes{host=~\"$host\"}", "legendFormat": "{{device}} backed"},
-        {"expr": "calabi_zram_writeback_written_bytes{host=~\"$host\"}", "legendFormat": "{{device}} written"},
-        {"expr": "calabi_zram_writeback_read_bytes{host=~\"$host\"}", "legendFormat": "{{device}} read"},
-        {"expr": "calabi_zram_disksize_bytes{host=~\"$host\"}", "legendFormat": "{{device}} disksize ({{algorithm}})"},
-        {"expr": "calabi_zram_estimated_saved_bytes{host=~\"$host\"}", "legendFormat": "{{device}} estimated saved"}
-      ]
-    },
-
-    { "type": "row", "id": 105, "title": "Tier Breakdown", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 66} },
-
-    {
-      "type": "bargauge", "id": 50, "title": "Domains per Tier",
-      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 67},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "orientation": "horizontal", "displayMode": "gradient", "valueMode": "color"},
-      "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 5}, {"color": "red", "value": 10}]}}},
-      "targets": [{"expr": "calabi_tier_domain_count{host=~\"$host\"}", "legendFormat": "{{tier}}", "instant": true}]
-    },
-    {
-      "type": "bargauge", "id": 51, "title": "vCPUs per Tier",
-      "gridPos": {"h": 6, "w": 8, "x": 8, "y": 67},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "orientation": "horizontal", "displayMode": "gradient", "valueMode": "color"},
-      "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 16}, {"color": "red", "value": 32}]}}},
-      "targets": [{"expr": "calabi_tier_vcpus{host=~\"$host\"}", "legendFormat": "{{tier}}", "instant": true}]
-    },
-    {
-      "type": "bargauge", "id": 52, "title": "Memory Committed per Tier",
-      "gridPos": {"h": 6, "w": 8, "x": 16, "y": 67},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "orientation": "horizontal", "displayMode": "gradient", "valueMode": "color"},
-      "fieldConfig": {"defaults": {"unit": "bytes", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}}},
-      "targets": [{"expr": "calabi_tier_memory_committed_bytes{host=~\"$host\"}", "legendFormat": "{{tier}}", "instant": true}]
-    },
-    {
-      "type": "timeseries", "id": 53, "title": "Per-Domain KSM Profit Over Time",
-      "gridPos": {"h": 7, "w": 12, "x": 0, "y": 73},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
-      "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"lineWidth": 1, "fillOpacity": 8}}},
-      "targets": [{"expr": "calabi_domain_ksm_profit_bytes{host=~\"$host\"}", "legendFormat": "{{domain}} ({{tier}})"}]
-    },
-    {
-      "type": "timeseries", "id": 54, "title": "Per-Domain Swap Dependency",
-      "gridPos": {"h": 7, "w": 12, "x": 12, "y": 73},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
       "fieldConfig": {
-        "defaults": {"unit": "bytes", "custom": {"lineWidth": 1, "fillOpacity": 8}},
-        "overrides": [{"matcher": {"id": "byRegexp", "options": "ratio.*"}, "properties": [{"id": "unit", "value": "percentunit"}, {"id": "custom.axisPlacement", "value": "right"}, {"id": "custom.fillOpacity", "value": 0}]}]
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "DOWN",
+                  "color": "red",
+                  "index": 0
+                },
+                "1": {
+                  "text": "UP",
+                  "color": "green",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        }
       },
-      "targets": [
-        {"expr": "calabi_domain_swap_bytes{host=~\"$host\"}", "legendFormat": "{{domain}} swap bytes"},
-        {"expr": "calabi_domain_swap_dependency_ratio{host=~\"$host\"}", "legendFormat": "ratio {{domain}} ({{tier}})"}
-      ]
-    },
-
-    { "type": "row", "id": 106, "title": "Swap & Memory Pressure", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 80} },
-
-    {
-      "type": "timeseries", "id": 60, "title": "Swap Usage by Device",
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 81},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
-      "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"lineWidth": 1, "fillOpacity": 10}}},
-      "targets": [
-        {"expr": "calabi_swap_used_bytes_total{host=~\"$host\"}", "legendFormat": "total used"},
-        {"expr": "calabi_swap_used_bytes{host=~\"$host\"}", "legendFormat": "{{device}} (pri={{priority}})"},
-        {"expr": "calabi_memory_swapcached_bytes{host=~\"$host\"}", "legendFormat": "swap cached"}
-      ]
-    },
-    {
-      "type": "timeseries", "id": 61, "title": "Page Reclaim: kswapd vs Direct, anon vs file",
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 81},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
-      "fieldConfig": {"defaults": {"unit": "short", "custom": {"lineWidth": 1, "fillOpacity": 6}}},
-      "targets": [
-        {"expr": "rate(calabi_vmstat_pgscan_kswapd{host=~\"$host\"}[$__rate_interval])", "legendFormat": "pgscan_kswapd"},
-        {"expr": "rate(calabi_vmstat_pgscan_direct{host=~\"$host\"}[$__rate_interval])", "legendFormat": "pgscan_direct (pressure!)"},
-        {"expr": "rate(calabi_vmstat_pgsteal_kswapd{host=~\"$host\"}[$__rate_interval])", "legendFormat": "pgsteal_kswapd"},
-        {"expr": "rate(calabi_vmstat_pgsteal_direct{host=~\"$host\"}[$__rate_interval])", "legendFormat": "pgsteal_direct"},
-        {"expr": "rate(calabi_vmstat_pgscan_anon{host=~\"$host\"}[$__rate_interval])", "legendFormat": "pgscan_anon"},
-        {"expr": "rate(calabi_vmstat_pgscan_file{host=~\"$host\"}[$__rate_interval])", "legendFormat": "pgscan_file"},
-        {"expr": "rate(calabi_vmstat_pgsteal_anon{host=~\"$host\"}[$__rate_interval])", "legendFormat": "pgsteal_anon"},
-        {"expr": "rate(calabi_vmstat_pgsteal_file{host=~\"$host\"}[$__rate_interval])", "legendFormat": "pgsteal_file"}
-      ]
-    },
-    {
-      "type": "timeseries", "id": 62, "title": "Swap In / Out Rate & Major Faults",
-      "gridPos": {"h": 7, "w": 12, "x": 0, "y": 89},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
-      "fieldConfig": {"defaults": {"unit": "short", "custom": {"lineWidth": 1, "fillOpacity": 10}}},
-      "targets": [
-        {"expr": "rate(calabi_vmstat_pswpin{host=~\"$host\"}[$__rate_interval])",     "legendFormat": "pswpin (pages/s in)"},
-        {"expr": "rate(calabi_vmstat_pswpout{host=~\"$host\"}[$__rate_interval])",    "legendFormat": "pswpout (pages/s out)"},
-        {"expr": "rate(calabi_vmstat_pgmajfault{host=~\"$host\"}[$__rate_interval])", "legendFormat": "pgmajfault/s"}
-      ]
-    },
-    {
-      "type": "timeseries", "id": 63, "title": "Minor & Major Page Faults",
-      "gridPos": {"h": 7, "w": 12, "x": 12, "y": 89},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
-      "fieldConfig": {"defaults": {"unit": "short", "custom": {"lineWidth": 1, "fillOpacity": 6}}},
-      "targets": [
-        {"expr": "rate(calabi_vmstat_pgfault{host=~\"$host\"}[$__rate_interval])",    "legendFormat": "pgfault/s (minor)"},
-        {"expr": "rate(calabi_vmstat_pgmajfault{host=~\"$host\"}[$__rate_interval])", "legendFormat": "pgmajfault/s (major, disk)"}
-      ]
-    },
-
-    { "type": "row", "id": 110, "title": "Effective Clock (Approximation)", "collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 97} },
-
-    {
-      "type": "stat", "id": 111, "title": "Avg Host CPU Frequency",
-      "description": "Average current MHz across all host CPUs. Used as baseline for ECC approximation — guest-pool CPUs typically track this closely.",
-      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 98},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area", "orientation": "auto"},
-      "fieldConfig": {"defaults": {"unit": "megahertz", "decimals": 0, "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [
-        {"color": "red", "value": null},
-        {"color": "yellow", "value": 1000},
-        {"color": "green", "value": 2000}
-      ]}}},
-      "targets": [
-        {"expr": "avg(calabi_cpu_frequency_mhz{host=~\"$host\"})", "legendFormat": "avg MHz"}
-      ]
-    },
-
-    {
-      "type": "timeseries", "id": 112, "title": "Per-Domain ECC Approximation (GHz)",
-      "description": "Approximates Effective Constrained Clock per domain: (user+system CPU rate ÷ vCPUs) × avg host freq ÷ 1000. Measures delivered GHz, not available GHz — idle domains show low ECC.",
-      "gridPos": {"h": 9, "w": 18, "x": 6, "y": 98},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
-      "fieldConfig": {"defaults": {"unit": "none", "decimals": 2, "custom": {"lineWidth": 2, "fillOpacity": 6},
-        "displayName": "${__series.name}"}},
       "targets": [
         {
-          "expr": "(\n  rate(calabi_domain_cpu_user_seconds{host=~\"$host\"}[$__rate_interval])\n  + rate(calabi_domain_cpu_system_seconds{host=~\"$host\"}[$__rate_interval])\n) / calabi_domain_vcpus{host=~\"$host\"}\n* avg(calabi_cpu_frequency_mhz{host=~\"$host\"}) / 1000",
+          "expr": "calabi_observer_up{host=~\"$host\"}",
+          "legendFormat": "status",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 2,
+      "title": "Collect Error",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 3,
+        "y": 1
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "OK",
+                  "color": "green",
+                  "index": 0
+                },
+                "1": {
+                  "text": "FAIL",
+                  "color": "red",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_observer_collect_error{host=~\"$host\"}",
+          "legendFormat": "error",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 3,
+      "title": "Host Memory",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 6,
+        "y": 1
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_memory_memtotal_bytes{host=~\"$host\"}",
+          "legendFormat": "total",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 4,
+      "title": "Memory Available",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 9,
+        "y": 1
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.1
+              },
+              {
+                "color": "green",
+                "value": 0.25
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_memory_memavailable_bytes{host=~\"$host\"} / calabi_memory_memtotal_bytes{host=~\"$host\"}",
+          "legendFormat": "available%",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 5,
+      "title": "Memory Overcommit",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 12,
+        "y": 1
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1.2
+              },
+              {
+                "color": "red",
+                "value": 1.5
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_guest_memory_committed_bytes{host=~\"$host\"} / calabi_memory_memtotal_bytes{host=~\"$host\"}",
+          "legendFormat": "ratio",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 6,
+      "title": "vCPU Overcommit",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 15,
+        "y": 1
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 4
+              },
+              {
+                "color": "red",
+                "value": 8
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_guest_vcpus{host=~\"$host\"} / calabi_host_cpu_count{host=~\"$host\"}",
+          "legendFormat": "ratio",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 7,
+      "title": "KSM Saved",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 18,
+        "y": 1
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "teal"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "teal",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_ksm_estimated_saved_bytes{host=~\"$host\"}",
+          "legendFormat": "KSM saved",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 8,
+      "title": "zram Saved",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 21,
+        "y": 1
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_zram_estimated_saved_bytes_total{host=~\"$host\"}",
+          "legendFormat": "zram saved",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "id": 101,
+      "title": "CPU",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 10,
+      "title": "Host CPU Usage",
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 0,
+        "y": 6
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 12
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(calabi_host_cpu_user_ticks{host=~\"$host\"}[$__rate_interval]) / (rate(calabi_host_cpu_user_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_nice_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_system_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_irq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval]))",
+          "legendFormat": "user"
+        },
+        {
+          "expr": "rate(calabi_host_cpu_system_ticks{host=~\"$host\"}[$__rate_interval]) / (rate(calabi_host_cpu_user_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_nice_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_system_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_irq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval]))",
+          "legendFormat": "system"
+        },
+        {
+          "expr": "rate(calabi_host_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval]) / (rate(calabi_host_cpu_user_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_nice_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_system_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_irq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval]))",
+          "legendFormat": "iowait"
+        },
+        {
+          "expr": "rate(calabi_host_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval]) / (rate(calabi_host_cpu_user_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_nice_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_system_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_irq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval]))",
+          "legendFormat": "steal"
+        },
+        {
+          "expr": "rate(calabi_host_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval]) / (rate(calabi_host_cpu_user_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_nice_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_system_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_irq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval]))",
+          "legendFormat": "softirq"
+        },
+        {
+          "expr": "rate(calabi_host_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval]) / (rate(calabi_host_cpu_user_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_nice_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_system_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_irq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_host_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval]))",
+          "legendFormat": "idle"
+        }
+      ]
+    },
+    {
+      "type": "bargauge",
+      "id": 11,
+      "title": "CPU Pool Sizes (logical CPUs)",
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 6
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "valueMode": "color"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_cpu_pool_size{host=~\"$host\"}",
+          "legendFormat": "{{pool}}",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 12,
+      "title": "Memory Management Thread CPU Cost",
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 10
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(calabi_kernel_thread_cpu_seconds{host=~\"$host\"}[$__rate_interval])",
+          "legendFormat": "{{thread}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 13,
+      "title": "Per-CPU Busy % (all cores)",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "right"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "1 - (rate(calabi_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval]) / (rate(calabi_cpu_user_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_cpu_nice_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_cpu_system_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_cpu_idle_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_cpu_iowait_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_cpu_irq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_cpu_softirq_ticks{host=~\"$host\"}[$__rate_interval])+rate(calabi_cpu_steal_ticks{host=~\"$host\"}[$__rate_interval])))",
+          "legendFormat": "{{cpu}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 14,
+      "title": "Per-CPU Frequency (MHz)",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "right"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0
+          },
+          "decimals": 0
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_cpu_frequency_mhz{host=~\"$host\"}",
+          "legendFormat": "{{cpu}}"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "id": 102,
+      "title": "Memory",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 20,
+      "title": "Memory Waterfall",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 22
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 8
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_memory_memtotal_bytes{host=~\"$host\"}",
+          "legendFormat": "total"
+        },
+        {
+          "expr": "calabi_guest_memory_committed_bytes{host=~\"$host\"}",
+          "legendFormat": "guest committed"
+        },
+        {
+          "expr": "calabi_memory_memavailable_bytes{host=~\"$host\"}",
+          "legendFormat": "available"
+        },
+        {
+          "expr": "calabi_memory_active_bytes{host=~\"$host\"}",
+          "legendFormat": "active"
+        },
+        {
+          "expr": "calabi_memory_inactive_bytes{host=~\"$host\"}",
+          "legendFormat": "inactive"
+        },
+        {
+          "expr": "calabi_memory_cached_bytes{host=~\"$host\"}",
+          "legendFormat": "cached"
+        },
+        {
+          "expr": "calabi_memory_buffers_bytes{host=~\"$host\"}",
+          "legendFormat": "buffers"
+        },
+        {
+          "expr": "calabi_memory_memfree_bytes{host=~\"$host\"}",
+          "legendFormat": "free"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 21,
+      "title": "Memory Components",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 22
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 6
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_memory_anonpages_bytes{host=~\"$host\"}",
+          "legendFormat": "AnonPages (anon dirty)"
+        },
+        {
+          "expr": "calabi_memory_slab_bytes{host=~\"$host\"}",
+          "legendFormat": "Slab (kernel)"
+        },
+        {
+          "expr": "calabi_memory_kreclaimable_bytes{host=~\"$host\"}",
+          "legendFormat": "KReclaimable"
+        },
+        {
+          "expr": "calabi_memory_shmem_bytes{host=~\"$host\"}",
+          "legendFormat": "Shmem (tmpfs)"
+        },
+        {
+          "expr": "calabi_memory_pagetables_bytes{host=~\"$host\"}",
+          "legendFormat": "PageTables"
+        },
+        {
+          "expr": "calabi_memory_kernelstack_bytes{host=~\"$host\"}",
+          "legendFormat": "KernelStack"
+        },
+        {
+          "expr": "calabi_memory_swapcached_bytes{host=~\"$host\"}",
+          "legendFormat": "SwapCached"
+        }
+      ]
+    },
+    {
+      "type": "bargauge",
+      "id": 22,
+      "title": "Domain Memory Committed",
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 30
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "valueMode": "color"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_domain_memory_bytes{host=~\"$host\"}",
+          "legendFormat": "{{domain}} ({{tier}})",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "bargauge",
+      "id": 23,
+      "title": "Domain vCPUs",
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 30
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "valueMode": "color"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 8
+              },
+              {
+                "color": "red",
+                "value": 16
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_domain_vcpus{host=~\"$host\"}",
+          "legendFormat": "{{domain}} ({{tier}})",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "id": 103,
+      "title": "KSM \u2014 Kernel Samepage Merging",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      }
+    },
+    {
+      "type": "stat",
+      "id": 30,
+      "title": "KSM Run State",
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 0,
+        "y": 37
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "STOPPED",
+                  "color": "red",
+                  "index": 0
+                },
+                "1": {
+                  "text": "RUNNING",
+                  "color": "green",
+                  "index": 1
+                },
+                "2": {
+                  "text": "ADVISORY",
+                  "color": "orange",
+                  "index": 2
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_ksm_run{host=~\"$host\"}",
+          "legendFormat": "state",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 31,
+      "title": "KSM Sharing Density",
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 4,
+        "y": 37
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1.5
+              },
+              {
+                "color": "green",
+                "value": 2
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_ksm_pages_sharing{host=~\"$host\"} / calabi_ksm_pages_shared{host=~\"$host\"}",
+          "legendFormat": "sharing:shared",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 32,
+      "title": "KSM Scan Interval",
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 8,
+        "y": 37
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_ksm_sleep_millisecs{host=~\"$host\"}",
+          "legendFormat": "sleep_ms",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 33,
+      "title": "KSM Pages/Scan",
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 12,
+        "y": 37
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_ksm_pages_to_scan{host=~\"$host\"}",
+          "legendFormat": "pages/scan",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 34,
+      "title": "KSM Full Scans",
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 16,
+        "y": 37
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "teal"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "teal",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_ksm_full_scans{host=~\"$host\"}",
+          "legendFormat": "scans",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 35,
+      "title": "KSM Stable Chains",
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 20,
+        "y": 37
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_ksm_stable_node_chains{host=~\"$host\"}",
+          "legendFormat": "chains",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 36,
+      "title": "KSM Page Population",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 40
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 6
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "estimated saved"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "expr": "calabi_ksm_pages_sharing{host=~\"$host\"}",
+          "legendFormat": "sharing (consumers)"
+        },
+        {
+          "expr": "calabi_ksm_pages_shared{host=~\"$host\"}",
+          "legendFormat": "shared (unique pages)"
+        },
+        {
+          "expr": "calabi_ksm_pages_unshared{host=~\"$host\"}",
+          "legendFormat": "unshared (checked, not merged)"
+        },
+        {
+          "expr": "calabi_ksm_pages_volatile{host=~\"$host\"}",
+          "legendFormat": "volatile (changed during scan)"
+        },
+        {
+          "expr": "calabi_ksm_estimated_saved_bytes{host=~\"$host\"}",
+          "legendFormat": "estimated saved"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 37,
+      "title": "KSM Cost vs Benefit (ksmd CPU vs Savings)",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 40
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 6
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ksmd CPU%"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "expr": "calabi_ksm_estimated_saved_bytes{host=~\"$host\"}",
+          "legendFormat": "estimated saved"
+        },
+        {
+          "expr": "rate(calabi_kernel_thread_cpu_seconds{host=~\"$host\",thread=\"ksmd\"}[$__rate_interval])",
+          "legendFormat": "ksmd CPU%"
+        }
+      ]
+    },
+    {
+      "type": "bargauge",
+      "id": 38,
+      "title": "Per-Domain KSM Profit",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 48
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "valueMode": "color"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_domain_ksm_profit_bytes{host=~\"$host\"}",
+          "legendFormat": "{{domain}} ({{tier}})",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "bargauge",
+      "id": 39,
+      "title": "Per-Domain KSM Dependency Ratio",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 48
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "valueMode": "color"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.3
+              },
+              {
+                "color": "red",
+                "value": 0.5
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_domain_ksm_dependency_ratio{host=~\"$host\"}",
+          "legendFormat": "{{domain}} ({{tier}})",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "bargauge",
+      "id": 40,
+      "title": "Per-Domain KSM Merge Density",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 48
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "valueMode": "color"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.5
+              },
+              {
+                "color": "red",
+                "value": 0.8
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_domain_ksm_merge_density{host=~\"$host\"}",
+          "legendFormat": "{{domain}} ({{tier}})",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "id": 104,
+      "title": "zram",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      }
+    },
+    {
+      "type": "stat",
+      "id": 41,
+      "title": "THP Mode",
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 0,
+        "y": 55
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_thp_enabled{host=~\"$host\"}",
+          "legendFormat": "{{mode}}",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 42,
+      "title": "zram Writeback Attached",
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 4,
+        "y": 55
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "NO",
+                  "color": "orange",
+                  "index": 0
+                },
+                "1": {
+                  "text": "YES",
+                  "color": "green",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_zram_writeback_attached{host=~\"$host\"}",
+          "legendFormat": "{{device}}",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 43,
+      "title": "zram Writeback Limit",
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 8,
+        "y": 55
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "DISABLED",
+                  "color": "orange",
+                  "index": 0
+                },
+                "1": {
+                  "text": "ENABLED",
+                  "color": "green",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_zram_writeback_limit_enabled{host=~\"$host\"}",
+          "legendFormat": "{{device}}",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 44,
+      "title": "zram Data: Original vs Compressed vs Used",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 58
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 8
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "compression ratio"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "expr": "sum by (device,host) (calabi_zram_mm_orig_data_size{host=~\"$host\"})",
+          "legendFormat": "{{device}} orig"
+        },
+        {
+          "expr": "sum by (device,host) (calabi_zram_mm_compr_data_size{host=~\"$host\"})",
+          "legendFormat": "{{device}} compressed"
+        },
+        {
+          "expr": "sum by (device,host) (calabi_zram_mem_used_bytes{host=~\"$host\"})",
+          "legendFormat": "{{device}} mem_used"
+        },
+        {
+          "expr": "sum by (device,host) (calabi_zram_mm_compr_data_size{host=~\"$host\"}) / sum by (device,host) (calabi_zram_mm_orig_data_size{host=~\"$host\"})",
+          "legendFormat": "compression ratio"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 45,
+      "title": "zram Writeback Activity",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 58
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 6
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_zram_writeback_backed_bytes{host=~\"$host\"}",
+          "legendFormat": "{{device}} backed"
+        },
+        {
+          "expr": "calabi_zram_writeback_written_bytes{host=~\"$host\"}",
+          "legendFormat": "{{device}} written"
+        },
+        {
+          "expr": "calabi_zram_writeback_read_bytes{host=~\"$host\"}",
+          "legendFormat": "{{device}} read"
+        },
+        {
+          "expr": "calabi_zram_disksize_bytes{host=~\"$host\"}",
+          "legendFormat": "{{device}} disksize ({{algorithm}})"
+        },
+        {
+          "expr": "calabi_zram_estimated_saved_bytes{host=~\"$host\"}",
+          "legendFormat": "{{device}} estimated saved"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "id": 105,
+      "title": "Tier Breakdown",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 66
+      }
+    },
+    {
+      "type": "bargauge",
+      "id": 50,
+      "title": "Domains per Tier",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 67
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "valueMode": "color"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_tier_domain_count{host=~\"$host\"}",
+          "legendFormat": "{{tier}}",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "bargauge",
+      "id": 51,
+      "title": "vCPUs per Tier",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 67
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "valueMode": "color"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 16
+              },
+              {
+                "color": "red",
+                "value": 32
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_tier_vcpus{host=~\"$host\"}",
+          "legendFormat": "{{tier}}",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "bargauge",
+      "id": 52,
+      "title": "Memory Committed per Tier",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 67
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "valueMode": "color"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_tier_memory_committed_bytes{host=~\"$host\"}",
+          "legendFormat": "{{tier}}",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 53,
+      "title": "Per-Domain KSM Profit Over Time",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 73
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 8
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_domain_ksm_profit_bytes{host=~\"$host\"}",
           "legendFormat": "{{domain}} ({{tier}})"
         }
       ]
     },
-
     {
-      "type": "timeseries", "id": 113, "title": "Per-Tier vCPU Delivery Ratio",
-      "description": "Sum of (user+system) CPU rate divided by total vCPUs per tier. 1.0 = fully saturated tier; < 0.3 = idle tier with ECC headroom.",
-      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 102},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "list", "placement": "bottom"}},
-      "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1, "custom": {"lineWidth": 2, "fillOpacity": 10},
-        "color": {"mode": "palette-classic"}}},
+      "type": "timeseries",
+      "id": 54,
+      "title": "Per-Domain Swap Dependency",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 73
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 8
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "ratio.*"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
       "targets": [
         {
-          "expr": "sum by (tier) (\n  rate(calabi_domain_cpu_user_seconds{host=~\"$host\"}[$__rate_interval])\n  + rate(calabi_domain_cpu_system_seconds{host=~\"$host\"}[$__rate_interval])\n) / sum by (tier) (calabi_domain_vcpus{host=~\"$host\"})",
+          "expr": "calabi_domain_swap_bytes{host=~\"$host\"}",
+          "legendFormat": "{{domain}} swap bytes"
+        },
+        {
+          "expr": "calabi_domain_swap_dependency_ratio{host=~\"$host\"}",
+          "legendFormat": "ratio {{domain}} ({{tier}})"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "id": 106,
+      "title": "Swap & Memory Pressure",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 80
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 60,
+      "title": "Swap Usage by Device",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 81
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_swap_used_bytes_total{host=~\"$host\"}",
+          "legendFormat": "total used"
+        },
+        {
+          "expr": "calabi_swap_used_bytes{host=~\"$host\"}",
+          "legendFormat": "{{device}} (pri={{priority}})"
+        },
+        {
+          "expr": "calabi_memory_swapcached_bytes{host=~\"$host\"}",
+          "legendFormat": "swap cached"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 61,
+      "title": "Page Reclaim: kswapd vs Direct, anon vs file",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 81
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 6
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(calabi_vmstat_pgscan_kswapd{host=~\"$host\"}[$__rate_interval])",
+          "legendFormat": "pgscan_kswapd"
+        },
+        {
+          "expr": "rate(calabi_vmstat_pgscan_direct{host=~\"$host\"}[$__rate_interval])",
+          "legendFormat": "pgscan_direct (pressure!)"
+        },
+        {
+          "expr": "rate(calabi_vmstat_pgsteal_kswapd{host=~\"$host\"}[$__rate_interval])",
+          "legendFormat": "pgsteal_kswapd"
+        },
+        {
+          "expr": "rate(calabi_vmstat_pgsteal_direct{host=~\"$host\"}[$__rate_interval])",
+          "legendFormat": "pgsteal_direct"
+        },
+        {
+          "expr": "rate(calabi_vmstat_pgscan_anon{host=~\"$host\"}[$__rate_interval])",
+          "legendFormat": "pgscan_anon"
+        },
+        {
+          "expr": "rate(calabi_vmstat_pgscan_file{host=~\"$host\"}[$__rate_interval])",
+          "legendFormat": "pgscan_file"
+        },
+        {
+          "expr": "rate(calabi_vmstat_pgsteal_anon{host=~\"$host\"}[$__rate_interval])",
+          "legendFormat": "pgsteal_anon"
+        },
+        {
+          "expr": "rate(calabi_vmstat_pgsteal_file{host=~\"$host\"}[$__rate_interval])",
+          "legendFormat": "pgsteal_file"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 62,
+      "title": "Swap In / Out Rate & Major Faults",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 89
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(calabi_vmstat_pswpin{host=~\"$host\"}[$__rate_interval])",
+          "legendFormat": "pswpin (pages/s in)"
+        },
+        {
+          "expr": "rate(calabi_vmstat_pswpout{host=~\"$host\"}[$__rate_interval])",
+          "legendFormat": "pswpout (pages/s out)"
+        },
+        {
+          "expr": "rate(calabi_vmstat_pgmajfault{host=~\"$host\"}[$__rate_interval])",
+          "legendFormat": "pgmajfault/s"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 63,
+      "title": "Minor & Major Page Faults",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 89
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 6
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(calabi_vmstat_pgfault{host=~\"$host\"}[$__rate_interval])",
+          "legendFormat": "pgfault/s (minor)"
+        },
+        {
+          "expr": "rate(calabi_vmstat_pgmajfault{host=~\"$host\"}[$__rate_interval])",
+          "legendFormat": "pgmajfault/s (major, disk)"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "id": 110,
+      "title": "Effective Clock (Approximation)",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 97
+      }
+    },
+    {
+      "type": "stat",
+      "id": 111,
+      "title": "Avg Guest Pool CPU Frequency",
+      "description": "Average current MHz of CPUs assigned to the guest_domain pool. Used as the frequency baseline for ECC approximation. Falls back to avg(calabi_cpu_frequency_mhz) if the pool metric is absent.",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 98
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "orientation": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "megahertz",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1000
+              },
+              {
+                "color": "green",
+                "value": 2000
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "calabi_avg_guest_pool_frequency_mhz{host=~\"$host\"}",
+          "legendFormat": "guest pool MHz"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 112,
+      "title": "Per-Domain ECC Approximation (GHz)",
+      "description": "Approximates Effective Constrained Clock per domain: (CPU usage rate \u00f7 vCPUs) \u00d7 guest-pool freq \u00f7 1000. Measures delivered GHz, not available GHz \u2014 idle domains show low ECC.",
+      "gridPos": {
+        "h": 9,
+        "w": 18,
+        "x": 6,
+        "y": 98
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 2,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 6
+          },
+          "displayName": "${__series.name}"
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(calabi_domain_cpu_usage_usec{host=~\"$host\"}[$__rate_interval]) / 1e6\n/ calabi_domain_vcpus{host=~\"$host\"}\n* on(host) group_left() calabi_avg_guest_pool_frequency_mhz{host=~\"$host\"} / 1000",
+          "legendFormat": "{{domain}} ({{tier}})"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 113,
+      "title": "Per-Tier vCPU Delivery Ratio",
+      "description": "Sum of domain CPU usage rate divided by total vCPUs per tier. 1.0 = fully saturated tier; < 0.3 = idle tier with ECC headroom. Requires calabi_domain_cpu_usage_usec (populated after first full collection).",
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 102
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (tier) (\n  rate(calabi_domain_cpu_usage_usec{host=~\"$host\"}[$__rate_interval]) / 1e6\n) / sum by (tier) (calabi_domain_vcpus{host=~\"$host\"})",
           "legendFormat": "{{tier}}"
         }
       ]
     }
-
   ]
 }

@@ -1,5 +1,5 @@
 Name:           cockpit-stakkr-observer
-Version:        1.2.3
+Version:        1.2.4
 Release:        1%{?dist}
 Summary:        Cockpit plugin for Stakkr hypervisor performance domain and memory oversubscription observability
 
@@ -78,6 +78,12 @@ install -m 0644 calabi-observer-prometheus.tmpfiles %{buildroot}%{_tmpfilesdir}/
 %config(noreplace) %{_sysconfdir}/calabi-observer/prometheus.json
 
 %changelog
+* Mon Apr 27 2026 Stakkr Maintainers <maintainers@example.com> - 1.2.4-1
+- Add calabi_avg_guest_pool_frequency_mhz Prometheus metric for guest CPU pool frequency
+- Add tier label to calabi_domain_cpu_* metrics to enable Grafana ECC joins
+- Fix Grafana ECC panels: use calabi_domain_cpu_usage_usec (usec counters, not nonexistent _seconds metrics)
+- Update Grafana ECC Panel 111 to show guest pool frequency instead of all-CPU average
+
 * Mon Apr 27 2026 Stakkr Maintainers <maintainers@example.com> - 1.2.3-1
 - Sync with calabi-observer v1.2.3; package calabi files under stakkr-observer Cockpit plugin
 - Radial arc gauges on key percentage/ratio metrics

@@ -129,16 +129,20 @@ def format_metrics(payload: dict[str, Any]) -> str:
             metric_type = "counter" if key in {"usage_usec", "user_usec", "system_usec", "nr_periods", "nr_throttled", "throttled_usec"} else "gauge"
             emit_sample(seen, lines, f"calabi_tier_cpu_{key}", value, f"cgroup v2 cpu.stat {key} for a Calabi tier.", metric_type, host=hostname, tier=tier)
 
+    domain_tier: dict[str, str | None] = {}
     for domain in payload.get("domains") or []:
         emit_sample(seen, lines, "calabi_domain_memory_bytes", domain.get("memory_bytes"), "Configured libvirt domain memory in bytes.", host=hostname, domain=domain.get("name"), tier=domain.get("tier"))
         emit_sample(seen, lines, "calabi_domain_vcpus", domain.get("vcpus"), "Configured libvirt domain vCPUs.", host=hostname, domain=domain.get("name"), tier=domain.get("tier"))
+        if domain.get("name"):
+            domain_tier[domain["name"]] = domain.get("tier")
 
     for domain, stat in (payload.get("domain_cgroups") or {}).items():
         if not stat:
             continue
+        tier = domain_tier.get(domain)
         for key, value in stat.items():
             metric_type = "counter" if key in {"usage_usec", "user_usec", "system_usec", "nr_periods", "nr_throttled", "throttled_usec"} else "gauge"
-            emit_sample(seen, lines, f"calabi_domain_cpu_{key}", value, f"cgroup v2 cpu.stat {key} for a libvirt domain.", metric_type, host=hostname, domain=domain)
+            emit_sample(seen, lines, f"calabi_domain_cpu_{key}", value, f"cgroup v2 cpu.stat {key} for a libvirt domain.", metric_type, host=hostname, domain=domain, tier=tier)
 
     # Host CPU aggregate
     host_cpu = payload.get("host_cpu") or {}
@@ -156,6 +160,29 @@ def format_metrics(payload: dict[str, Any]) -> str:
     cpu_freq = payload.get("cpu_freq") or {}
     for cpu_id, mhz in cpu_freq.items():
         emit_sample(seen, lines, "calabi_cpu_frequency_mhz", mhz, "Current CPU frequency in MHz from /proc/cpuinfo.", host=hostname, cpu=cpu_id)
+
+    # Average frequency of CPUs assigned to the guest_domain pool (used for ECC approximation)
+    cpu_pool_map = payload.get("cpu_pool_map") or {}
+    if cpu_pool_map and cpu_freq:
+        guest_mhz: list[float] = []
+        for cpu_range, pool_name in cpu_pool_map.items():
+            if pool_name != "guest_domain":
+                continue
+            for part in str(cpu_range).split(","):
+                part = part.strip()
+                if "-" in part:
+                    s, e = part.split("-", 1)
+                    for cid in range(int(s), int(e) + 1):
+                        v = cpu_freq.get(str(cid))
+                        if v is not None:
+                            guest_mhz.append(float(v))
+                else:
+                    v = cpu_freq.get(part.strip())
+                    if v is not None:
+                        guest_mhz.append(float(v))
+        if guest_mhz:
+            emit_sample(seen, lines, "calabi_avg_guest_pool_frequency_mhz", sum(guest_mhz) / len(guest_mhz),
+                        "Average CPU frequency in MHz of CPUs assigned to the guest_domain pool.", host=hostname)
 
     emit_sample(seen, lines, "calabi_host_cpu_count", payload.get("num_cpus"), "Total logical CPU count.", host=hostname)
 
