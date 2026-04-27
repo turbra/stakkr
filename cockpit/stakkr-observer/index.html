@@ -4,7 +4,7 @@
     <title>Calabi Observer</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="stakkr-observer.css" />
+    <link rel="stylesheet" href="calabi-observer.css" />
     <script src="../base1/cockpit.js"></script>
 </head>
 <body class="pf-v6-m-tabular-nums">
@@ -24,7 +24,7 @@
         </nav>
 
         <div class="tab-panel is-active" role="tabpanel" data-tab-panel="cpu">
-            <section id="cpu-overview-panel" class="stakkr-card">
+            <section id="cpu-overview-panel" class="calabi-card">
                 <h3>CPU Overview</h3>
                 <div id="cpu-overview-content" class="panel-placeholder">Waiting for data...</div>
             </section>
@@ -35,24 +35,24 @@
                 <button class="cpu-subtab" type="button" role="tab" aria-selected="false" data-cpu-tab="ecc">Effective Clock</button>
             </nav>
 
-            <section id="cpu-panel" class="stakkr-card cpu-subtab-panel is-active" role="tabpanel" data-cpu-panel="performance">
+            <section id="cpu-panel" class="calabi-card cpu-subtab-panel is-active" role="tabpanel" data-cpu-panel="performance">
                 <h3>CPU Performance Domains</h3>
                 <div id="cpu-content" class="panel-placeholder">Waiting for data...</div>
             </section>
 
-            <section id="cpu-map-panel" class="stakkr-card cpu-subtab-panel" role="tabpanel" data-cpu-panel="topology">
+            <section id="cpu-map-panel" class="calabi-card cpu-subtab-panel" role="tabpanel" data-cpu-panel="topology">
                 <h3>CPU Pool Topology</h3>
                 <div id="cpu-map-content" class="panel-placeholder">Waiting for data...</div>
             </section>
 
-            <section id="ecc-panel" class="stakkr-card cpu-subtab-panel" role="tabpanel" data-cpu-panel="ecc">
+            <section id="ecc-panel" class="calabi-card cpu-subtab-panel" role="tabpanel" data-cpu-panel="ecc">
                 <h3>VM Effective Constrained Clock</h3>
                 <div id="ecc-content" class="panel-placeholder">Waiting for data...</div>
             </section>
         </div>
 
         <div class="tab-panel" role="tabpanel" data-tab-panel="memory">
-            <section id="mem-panel" class="stakkr-card">
+            <section id="mem-panel" class="calabi-card">
                 <h3>Memory Overview</h3>
                 <div id="mem-content" class="panel-placeholder">Waiting for data...</div>
             </section>
@@ -62,28 +62,28 @@
                 <button class="memory-subtab" type="button" role="tab" aria-selected="false" data-memory-tab="zram">zram Cost-Benefit</button>
             </nav>
 
-            <section id="ksm-panel" class="stakkr-card memory-subtab-panel is-active" role="tabpanel" data-memory-panel="ksm">
+            <section id="ksm-panel" class="calabi-card memory-subtab-panel is-active" role="tabpanel" data-memory-panel="ksm">
                 <h3>KSM Cost-Benefit</h3>
                 <div id="ksm-content" class="panel-placeholder">Waiting for data...</div>
             </section>
 
-            <section id="zram-panel" class="stakkr-card memory-subtab-panel" role="tabpanel" data-memory-panel="zram">
+            <section id="zram-panel" class="calabi-card memory-subtab-panel" role="tabpanel" data-memory-panel="zram">
                 <h3>zram Cost-Benefit</h3>
                 <div id="zram-content" class="panel-placeholder">Waiting for data...</div>
             </section>
         </div>
 
         <div class="tab-panel" role="tabpanel" data-tab-panel="configuration">
-            <section id="prometheus-panel" class="stakkr-card">
+            <section id="prometheus-panel" class="calabi-card">
                 <h3>Export Configuration</h3>
                 <div id="prometheus-content" class="panel-placeholder">Waiting for status...</div>
             </section>
         </div>
 
-        <div id="error-banner" class="stakkr-error" hidden></div>
+        <div id="error-banner" class="calabi-error" hidden></div>
     </div>
 
     <script src="sparkline.js"></script>
-    <script src="stakkr-observer.js"></script>
+    <script src="calabi-observer.js"></script>
 </body>
 </html>

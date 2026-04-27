@@ -19,15 +19,15 @@ import tempfile
 from typing import Any
 
 
-EXPORTER_SERVICE = "stakkr-exporter.service"
-LEGACY_COLLECTOR_SERVICE = "stakkr-observer-collector.service"
-LEGACY_NODE_EXPORTER_SERVICE = "stakkr-node-exporter.service"
-LEGACY_TEXTFILE = "/var/lib/node_exporter/textfile_collector/stakkr_observer.prom"
-SNAPSHOT = "/run/stakkr-observer/metrics.json"
-CONFIG_DIR = "/etc/stakkr-observer"
+EXPORTER_SERVICE = "calabi-exporter.service"
+LEGACY_COLLECTOR_SERVICE = "calabi-observer-collector.service"
+LEGACY_NODE_EXPORTER_SERVICE = "calabi-node-exporter.service"
+LEGACY_TEXTFILE = "/var/lib/node_exporter/textfile_collector/calabi_observer.prom"
+SNAPSHOT = "/run/calabi-observer/metrics.json"
+CONFIG_DIR = "/etc/calabi-observer"
 CONFIG_PATH = f"{CONFIG_DIR}/prometheus.json"
 WEB_CONFIG_PATH = f"{CONFIG_DIR}/node_exporter-web.yml"
-STAKKR_EXPORTER = "/usr/share/cockpit/stakkr-observer/stakkr_exporter.py"
+CALABI_EXPORTER = "/usr/share/cockpit/calabi-observer/calabi_exporter.py"
 SAFE_PATH = "/usr/sbin:/usr/bin:/sbin:/bin"
 DEFAULT_CONFIG = {
     "interval_seconds": 5,
@@ -388,7 +388,7 @@ def main() -> int:
             if proc.returncode != 0:
                 return json_error(proc.stderr.strip() or proc.stdout.strip())
         elif args.action == "export-once":
-            proc = run(STAKKR_EXPORTER, "--once")
+            proc = run(CALABI_EXPORTER, "--once")
             if proc.returncode != 0:
                 return json_error(proc.stderr.strip() or proc.stdout.strip())
         result = unit_state()

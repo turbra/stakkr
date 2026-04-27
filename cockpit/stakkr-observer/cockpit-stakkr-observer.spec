@@ -41,48 +41,48 @@ The plugin displays:
 mkdir -p %{buildroot}%{_datadir}/cockpit/stakkr-observer
 mkdir -p %{buildroot}%{_unitdir}
 mkdir -p %{buildroot}%{_tmpfilesdir}
-mkdir -p %{buildroot}%{_sysconfdir}/stakkr-observer
-install -m 0644 manifest.json        %{buildroot}%{_datadir}/cockpit/stakkr-observer/
-install -m 0644 index.html           %{buildroot}%{_datadir}/cockpit/stakkr-observer/
-install -m 0644 stakkr-observer.js   %{buildroot}%{_datadir}/cockpit/stakkr-observer/
-install -m 0644 stakkr-observer.css  %{buildroot}%{_datadir}/cockpit/stakkr-observer/
-install -m 0755 collector.py         %{buildroot}%{_datadir}/cockpit/stakkr-observer/
-install -m 0755 stakkr_exporter.py   %{buildroot}%{_datadir}/cockpit/stakkr-observer/
+mkdir -p %{buildroot}%{_sysconfdir}/calabi-observer
+install -m 0644 manifest.json          %{buildroot}%{_datadir}/cockpit/stakkr-observer/
+install -m 0644 index.html             %{buildroot}%{_datadir}/cockpit/stakkr-observer/
+install -m 0644 calabi-observer.js     %{buildroot}%{_datadir}/cockpit/stakkr-observer/
+install -m 0644 calabi-observer.css    %{buildroot}%{_datadir}/cockpit/stakkr-observer/
+install -m 0755 collector.py           %{buildroot}%{_datadir}/cockpit/stakkr-observer/
+install -m 0755 calabi_exporter.py     %{buildroot}%{_datadir}/cockpit/stakkr-observer/
 install -m 0755 prometheus_exporter.py %{buildroot}%{_datadir}/cockpit/stakkr-observer/
 install -m 0755 prometheus_control.py  %{buildroot}%{_datadir}/cockpit/stakkr-observer/
-install -m 0644 README.md            %{buildroot}%{_datadir}/cockpit/stakkr-observer/
-install -m 0644 INTERPRETING.md      %{buildroot}%{_datadir}/cockpit/stakkr-observer/
+install -m 0644 README.md              %{buildroot}%{_datadir}/cockpit/stakkr-observer/
+install -m 0644 INTERPRETING.md        %{buildroot}%{_datadir}/cockpit/stakkr-observer/
 mkdir -p %{buildroot}%{_datadir}/cockpit/stakkr-observer/images
 cp -a images/. %{buildroot}%{_datadir}/cockpit/stakkr-observer/images/
-install -m 0644 prometheus.json %{buildroot}%{_sysconfdir}/stakkr-observer/prometheus.json
-install -m 0644 stakkr-exporter.service %{buildroot}%{_unitdir}/
-install -m 0644 stakkr-node-exporter.service %{buildroot}%{_unitdir}/
-install -m 0644 stakkr-observer-prometheus.tmpfiles %{buildroot}%{_tmpfilesdir}/stakkr-observer-prometheus.conf
+install -m 0644 prometheus.json %{buildroot}%{_sysconfdir}/calabi-observer/prometheus.json
+install -m 0644 calabi-exporter.service      %{buildroot}%{_unitdir}/
+install -m 0644 calabi-node-exporter.service %{buildroot}%{_unitdir}/
+install -m 0644 calabi-observer-prometheus.tmpfiles %{buildroot}%{_tmpfilesdir}/calabi-observer-prometheus.conf
 
 %post
-/usr/bin/systemd-tmpfiles --create %{_tmpfilesdir}/stakkr-observer-prometheus.conf || :
-%systemd_post stakkr-exporter.service stakkr-node-exporter.service
+/usr/bin/systemd-tmpfiles --create %{_tmpfilesdir}/calabi-observer-prometheus.conf || :
+%systemd_post calabi-exporter.service calabi-node-exporter.service
 
 %preun
-%systemd_preun stakkr-exporter.service stakkr-node-exporter.service
+%systemd_preun calabi-exporter.service calabi-node-exporter.service
 
 %postun
-%systemd_postun_with_restart stakkr-exporter.service stakkr-node-exporter.service
+%systemd_postun_with_restart calabi-exporter.service calabi-node-exporter.service
 
 %files
 %{_datadir}/cockpit/stakkr-observer/
-%{_unitdir}/stakkr-exporter.service
-%{_unitdir}/stakkr-node-exporter.service
-%{_tmpfilesdir}/stakkr-observer-prometheus.conf
-%config(noreplace) %{_sysconfdir}/stakkr-observer/prometheus.json
+%{_unitdir}/calabi-exporter.service
+%{_unitdir}/calabi-node-exporter.service
+%{_tmpfilesdir}/calabi-observer-prometheus.conf
+%config(noreplace) %{_sysconfdir}/calabi-observer/prometheus.json
 
 %changelog
 * Mon Apr 27 2026 turbra <brydenstack@gmail.com> - 1.2.3-1
-- Sync with calabi-observer v1.2.3
+- Sync with calabi-observer v1.2.3; package calabi files under stakkr-observer Cockpit plugin
 - Radial arc gauges on key percentage/ratio metrics
 - Frosted glass aesthetic with light/dark mode support
-- Add persistent stakkr-exporter.service daemon with two-speed collection
-- Add Prometheus metrics export on :9910
+- Add persistent calabi-exporter.service daemon with two-speed collection
+- Add Prometheus metrics export on :9910 (calabi_* metric prefix)
 - Add CPU Pool Topology heatmap with NUMA domain boxing
 - Add ECC (Effective Constrained Clock) sub-tab with per-tier SLO floors
 - Add vCPU oversubscription ratio and host steal time metrics
