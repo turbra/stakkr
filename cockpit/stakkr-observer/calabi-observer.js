@@ -8,7 +8,7 @@
 // Constants
 // ---------------------------------------------------------------------------
 
-var PROMETHEUS_CONTROL_PATH = "/usr/share/cockpit/calabi-observer/prometheus_control.py";
+var PROMETHEUS_CONTROL_PATH = "/usr/share/cockpit/stakkr-observer/prometheus_control.py";
 var METRICS_PATH = "/run/calabi-observer/metrics.json";
 var TIER_COLORS = { gold: "#c9b037", silver: "#a8a9ad", bronze: "#cd7f32" };
 var COLORS = {
