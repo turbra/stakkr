@@ -44,6 +44,7 @@ mkdir -p %{buildroot}%{_tmpfilesdir}
 mkdir -p %{buildroot}%{_sysconfdir}/calabi-observer
 install -m 0644 manifest.json          %{buildroot}%{_datadir}/cockpit/stakkr-observer/
 install -m 0644 index.html             %{buildroot}%{_datadir}/cockpit/stakkr-observer/
+install -m 0644 sparkline.js           %{buildroot}%{_datadir}/cockpit/stakkr-observer/
 install -m 0644 calabi-observer.js     %{buildroot}%{_datadir}/cockpit/stakkr-observer/
 install -m 0644 calabi-observer.css    %{buildroot}%{_datadir}/cockpit/stakkr-observer/
 install -m 0755 collector.py           %{buildroot}%{_datadir}/cockpit/stakkr-observer/
