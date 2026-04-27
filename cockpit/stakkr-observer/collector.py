@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-collector.py — Stakkr Observer metrics collector.
+collector.py — Calabi Observer metrics collector.
 
-Runs as root inside stakkr-exporter.service. It also remains
+Runs as root inside calabi-exporter.service. It also remains
 CLI-callable for diagnostics. Emits a single JSON blob with host memory, KSM,
 zram, cgroup, kernel-thread CPU, and optionally per-domain libvirt data.
 
@@ -30,12 +30,13 @@ import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 
-# Stakkr-specific: legacy VM name → tier mapping for hosts without partition XML.
+# Stakkr-specific: fallback tier mapping for kvm-worker-* domains
 LEGACY_VM_TIERS = {
     "kvm-worker-01": "gold",
     "kvm-worker-02": "silver",
     "kvm-worker-03": "bronze",
 }
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -317,8 +318,8 @@ def parse_zram_policy() -> dict:
         "LastTriggerUSecRealtime",
     ]
     return {
-        "service": systemctl_show("stakkr-zram-writeback-policy.service", props),
-        "timer": systemctl_show("stakkr-zram-writeback-policy.timer", props),
+        "service": systemctl_show("calabi-zram-writeback-policy.service", props),
+        "timer": systemctl_show("calabi-zram-writeback-policy.timer", props),
     }
 
 
@@ -1064,7 +1065,7 @@ def collect(fast: bool = False, cache: CollectorCache | None = None) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Stakkr Observer metrics collector",
+        description="Calabi Observer metrics collector",
     )
     parser.add_argument(
         "--fast", action="store_true",

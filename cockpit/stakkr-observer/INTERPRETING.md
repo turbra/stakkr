@@ -1,4 +1,4 @@
-# Interpreting Stakkr Observer
+# Interpreting Calabi Observer
 
 This document explains what each panel reports, what the numbers mean, and
 how to use them to make tuning decisions.

@@ -1,4 +1,4 @@
-/* stakkr-observer.js — Stakkr Observer Cockpit plugin frontend */
+/* calabi-observer.js — Calabi Observer Cockpit plugin frontend */
 
 "use strict";
 
@@ -8,8 +8,8 @@
 // Constants
 // ---------------------------------------------------------------------------
 
-var PROMETHEUS_CONTROL_PATH = "/usr/share/cockpit/stakkr-observer/prometheus_control.py";
-var METRICS_PATH = "/run/stakkr-observer/metrics.json";
+var PROMETHEUS_CONTROL_PATH = "/usr/share/cockpit/calabi-observer/prometheus_control.py";
+var METRICS_PATH = "/run/calabi-observer/metrics.json";
 var TIER_COLORS = { gold: "#c9b037", silver: "#a8a9ad", bronze: "#cd7f32" };
 var COLORS = {
     good: "#2e7d32", warn: "#b26a00", risk: "#ef6c00", crit: "#c62828",
@@ -234,7 +234,7 @@ function shortDomainName(name) {
 function setActiveTab(tabName) {
     state.activeTab = tabName || "cpu";
     try {
-        window.localStorage.setItem("stakkr-observer-tab", state.activeTab);
+        window.localStorage.setItem("calabi-observer-tab", state.activeTab);
     } catch (_err) {
         // Ignore storage failures in restricted browser contexts.
     }
@@ -263,7 +263,7 @@ function syncCpuSubTabs() {
 function setActiveCpuSubTab(tabName) {
     state.activeCpuSubTab = tabName === "topology" ? "topology" : tabName === "ecc" ? "ecc" : "performance";
     try {
-        window.localStorage.setItem("stakkr-observer-cpu-tab", state.activeCpuSubTab);
+        window.localStorage.setItem("calabi-observer-cpu-tab", state.activeCpuSubTab);
     } catch (_err) {
         // Ignore storage failures in restricted browser contexts.
     }
@@ -285,7 +285,7 @@ function syncMemorySubTabs() {
 function setActiveMemorySubTab(tabName) {
     state.activeMemorySubTab = tabName === "zram" ? "zram" : "ksm";
     try {
-        window.localStorage.setItem("stakkr-observer-memory-tab", state.activeMemorySubTab);
+        window.localStorage.setItem("calabi-observer-memory-tab", state.activeMemorySubTab);
     } catch (_err) {
         // Ignore storage failures in restricted browser contexts.
     }
@@ -296,7 +296,7 @@ function setActiveMemorySubTab(tabName) {
 
 function initTabs() {
     try {
-        state.activeTab = window.localStorage.getItem("stakkr-observer-tab") || state.activeTab;
+        state.activeTab = window.localStorage.getItem("calabi-observer-tab") || state.activeTab;
     } catch (_err) {
         state.activeTab = "cpu";
     }
@@ -310,7 +310,7 @@ function initTabs() {
 
 function initCpuSubTabs() {
     try {
-        state.activeCpuSubTab = window.localStorage.getItem("stakkr-observer-cpu-tab") || state.activeCpuSubTab;
+        state.activeCpuSubTab = window.localStorage.getItem("calabi-observer-cpu-tab") || state.activeCpuSubTab;
     } catch (_err) {
         state.activeCpuSubTab = "performance";
     }
@@ -327,7 +327,7 @@ function initCpuSubTabs() {
 
 function initMemorySubTabs() {
     try {
-        state.activeMemorySubTab = window.localStorage.getItem("stakkr-observer-memory-tab") || state.activeMemorySubTab;
+        state.activeMemorySubTab = window.localStorage.getItem("calabi-observer-memory-tab") || state.activeMemorySubTab;
     } catch (_err) {
         state.activeMemorySubTab = "ksm";
     }
@@ -2245,7 +2245,7 @@ function renderPrometheus() {
         return;
     }
     if (status.error) {
-        container.appendChild(el("div", { className: "stakkr-error", textContent: status.error }));
+        container.appendChild(el("div", { className: "calabi-error", textContent: status.error }));
         return;
     }
 
@@ -2344,7 +2344,7 @@ function renderPrometheus() {
         el("span", { textContent: "Snapshot: " + (snapshot.exists ? "ready" : "absent") }),
         el("span", { textContent: "TLS/basic auth: deferred; keep loopback unless protected externally" }),
         el("span", { textContent: "Firewall: " + (firewall.firewalld_running ? (firewallOpen ? "open" : "closed") : (firewall.message || "not active")) }),
-        el("span", { textContent: "Exporter unit: " + (exporter.unit || "stakkr-exporter.service") }),
+        el("span", { textContent: "Exporter unit: " + (exporter.unit || "calabi-exporter.service") }),
     ]);
     container.appendChild(detail);
 
@@ -2567,7 +2567,7 @@ function processSample(data, isFull) {
     }
 
     if (state.debug) {
-        console.log("[stakkr-observer] sample", data);
+        console.log("[calabi-observer] sample", data);
     }
 
     render();

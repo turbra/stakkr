@@ -1,4 +1,4 @@
-/* stakkr-observer.css — Stakkr Observer Cockpit plugin styles */
+/* calabi-observer.css — Calabi Observer Cockpit plugin styles */
 
 /* ---------------------------------------------------------------------------
    Design Tokens
@@ -294,7 +294,7 @@ body {
    Cards
    --------------------------------------------------------------------------- */
 
-.stakkr-card {
+.calabi-card {
     position: relative;
     overflow: hidden;
     background: var(--co-bg-card-gloss);
@@ -307,7 +307,7 @@ body {
     box-shadow: var(--co-card-shadow);
 }
 
-.stakkr-card::before {
+.calabi-card::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -318,12 +318,12 @@ body {
     pointer-events: none;
 }
 
-.stakkr-card > * {
+.calabi-card > * {
     position: relative;
     z-index: 1;
 }
 
-.stakkr-card h3 {
+.calabi-card h3 {
     margin: 0 0 12px 0;
     font-size: 15px;
     font-weight: 600;
@@ -340,7 +340,7 @@ body {
    Error banner
    --------------------------------------------------------------------------- */
 
-.stakkr-error {
+.calabi-error {
     background: #fde8e8;
     border: 1px solid var(--co-sev-crit);
     border-radius: var(--co-radius-card);
@@ -1776,7 +1776,7 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-    .stakkr-card::before {
+    .calabi-card::before {
         background:
             radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.14), transparent 34%),
             linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 46%);

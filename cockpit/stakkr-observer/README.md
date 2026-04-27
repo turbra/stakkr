@@ -1,4 +1,4 @@
-# Stakkr Observer
+# Calabi Observer
 
 Cockpit plugin that provides real-time observability for Calabi host resource
 management.
@@ -74,8 +74,8 @@ CPU tier model are earning their keep.
 ┌───────────────────────────────────────────────────────┐
 │  Browser (Cockpit web console)                        │
 │  ┌─────────────────────────────────────────────────┐  │
-│  │  stakkr-observer.js                             │  │
-│  │  - watches /run/stakkr-observer/metrics.json    │  │
+│  │  calabi-observer.js                             │  │
+│  │  - watches /run/calabi-observer/metrics.json    │  │
 │  │  - computes deltas between samples              │  │
 │  │  - renders DOM + canvas sparklines              │  │
 │  └──────────────────────┬──────────────────────────┘  │
@@ -84,7 +84,7 @@ CPU tier model are earning their keep.
 ┌─────────────────────────┼─────────────────────────────┐
 │  host (as root)         │                             │
 │  ┌──────────────────────▼──────────────────────────┐  │
-│  │  stakkr-exporter.service                        │  │
+│  │  calabi-exporter.service                        │  │
 │  │  - persistent daemon owns collection cadence     │  │
 │  │  - writes Cockpit JSON snapshot                  │  │
 │  │  - serves cached Prometheus metrics on :9910     │  │
@@ -112,7 +112,7 @@ The direct Calabi exporter uses a **two-speed collection model**:
 
 Prometheus scrapes read cached output from `GET /metrics`; scrapes do not
 trigger collection. Cockpit reads the same latest sample from
-`/run/stakkr-observer/metrics.json`.
+`/run/calabi-observer/metrics.json`.
 
 Delta computation happens in the browser. The collector emits cumulative
 counters (CPU ticks, cgroup `usage_usec`, KSM `full_scans`); the frontend watches
@@ -126,12 +126,12 @@ consecutive samples and divides by elapsed time to produce rates.
 | `manifest.json` | Cockpit sidebar registration and CSP policy |
 | `index.html` | HTML shell with panel structure |
 | `collector.py` | Backend metrics collector used by the persistent exporter |
-| `stakkr_exporter.py` | Direct exporter that writes the Cockpit snapshot and serves cached `/metrics` |
+| `calabi_exporter.py` | Direct exporter that writes the Cockpit snapshot and serves cached `/metrics` |
 | `prometheus_control.py` | Narrow privileged control surface for direct exporter settings |
-| `stakkr-observer.js` | Frontend: snapshot watching, delta computation, DOM rendering |
+| `calabi-observer.js` | Frontend: snapshot watching, delta computation, DOM rendering |
 | `sparkline.js` | Canvas sparkline and stacked bar renderer (~170 lines) |
-| `stakkr-observer.css` | Styling: cards, gauges, bars, tables, heatmap cells |
-| `cockpit-stakkr-observer.spec` | RPM spec file |
+| `calabi-observer.css` | Styling: cards, gauges, bars, tables, heatmap cells |
+| `cockpit-calabi-observer.spec` | RPM spec file |
 | `build-rpm.sh` | RPM build script |
 
 No build step. No React. No bundler. Vanilla JS + PatternFly CSS classes from
@@ -163,15 +163,15 @@ Cockpit's `base1`.
 ### From RPM
 
 ```bash
-scp rpmbuild/RPMS/noarch/cockpit-stakkr-observer-1.2.3-1.el10.noarch.rpm <host>:
-ssh <host> 'sudo dnf install -y ./cockpit-stakkr-observer-1.2.3-1.el10.noarch.rpm'
+scp rpmbuild/RPMS/noarch/cockpit-calabi-observer-1.2.3-1.fc43.noarch.rpm <host>:
+ssh <host> 'sudo dnf install -y ./cockpit-calabi-observer-1.2.3-1.fc43.noarch.rpm'
 ```
 
 ### From source (rsync)
 
 ```bash
-rsync -av /path/to/cockpit/stakkr-observer/ <host>:/opt/cockpit-stakkr-observer/
-ssh <host> 'ln -snf /opt/cockpit-stakkr-observer /usr/share/cockpit/stakkr-observer'
+rsync -av /path/to/cockpit/calabi-observer/ <host>:/opt/cockpit-calabi-observer/
+ssh <host> 'ln -snf /opt/cockpit-calabi-observer /usr/share/cockpit/calabi-observer'
 ```
 
 Cockpit picks up new plugins on page load. No service restart needed.
@@ -184,9 +184,9 @@ Calabi-specific Prometheus metrics now come from the direct exporter:
 http://127.0.0.1:9910/metrics
 ```
 
-The old v1 path exposed Stakkr metrics through node_exporter's textfile
+The old v1 path exposed Calabi metrics through node_exporter's textfile
 collector on port `9100`. This refactor intentionally separates those concerns:
-`stakkr-exporter.service` serves Stakkr metrics on `9910`, while node_exporter
+`calabi-exporter.service` serves Calabi metrics on `9910`, while node_exporter
 may still run on `9100` for generic host metrics. Prometheus jobs that used to
 scrape one combined `:9100` endpoint should add a second scrape target for
 `:9910` or relabel the new Calabi job accordingly.
@@ -195,8 +195,8 @@ scrape one combined `:9100` endpoint should add a second scrape target for
 
 ```bash
 ./build-rpm.sh
-# Output: rpmbuild/RPMS/noarch/cockpit-stakkr-observer-*.noarch.rpm
-#         rpmbuild/SRPMS/cockpit-stakkr-observer-*.src.rpm
+# Output: rpmbuild/RPMS/noarch/cockpit-calabi-observer-*.noarch.rpm
+#         rpmbuild/SRPMS/cockpit-calabi-observer-*.src.rpm
 ```
 
 `rpmbuild/` is generated output and intentionally ignored by git. Do not
@@ -213,7 +213,7 @@ commit built RPMs or generated source tarballs.
 
 ## Usage
 
-Navigate to **Stakkr Observer** in the Cockpit sidebar. The plugin starts
+Navigate to **Calabi Observer** in the Cockpit sidebar. The plugin starts
 watching the daemon snapshot immediately.
 
 Controls:
