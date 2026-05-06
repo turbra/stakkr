@@ -3,9 +3,7 @@
 `stakkr` is an on-prem KVM lab scaffold for OpenShift bring-up, supporting VM
 bootstrap, and host resource management on one libvirt host.
 
-[Docs site](https://turbra.github.io/stakkr/) |
-[Docs source](./website/docs) |
-[GitHub Pages deployment](./website/docs/reference/github-pages.md)
+[Docs site](https://turbra.github.io/stakkr/)
 
 [![License: GPL-3.0](https://img.shields.io/github/license/turbra/stakkr)](LICENSE)
 ![OpenShift 4.20](https://img.shields.io/badge/OpenShift-4.20-red)
