@@ -1,0 +1,89 @@
+---
+title: Examples
+description: Common Stakkr operator command examples.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Examples
+
+## Apply Host Foundation
+
+```sh
+./scripts/host-resource-management.sh host-resource-management-apply
+./scripts/host-resource-management.sh host-memory-oversubscription-apply
+```
+
+## Verify Host Foundation
+
+```sh
+./scripts/host-resource-management.sh host-resource-management-status
+./scripts/host-resource-management.sh host-memory-oversubscription-status
+```
+
+## Apply Shared Execution Pool
+
+```sh
+./scripts/host-resource-management.sh shared-execution-pool-apply --ask-vault-pass
+./scripts/host-resource-management.sh shared-execution-pool-status
+```
+
+## Deploy OpenShift
+
+<Tabs>
+  <TabItem value="sno" label="SNO" default>
+
+```sh
+ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-sno.yml --ask-vault-pass --ask-become-pass
+```
+
+  </TabItem>
+  <TabItem value="compact" label="Compact">
+
+```sh
+ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-compact.yml --ask-vault-pass --ask-become-pass
+```
+
+  </TabItem>
+</Tabs>
+
+## Clean Rebuild OpenShift
+
+<Tabs>
+  <TabItem value="sno" label="SNO" default>
+
+```sh
+ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-sno-redeploy.yml --ask-vault-pass --ask-become-pass
+```
+
+  </TabItem>
+  <TabItem value="compact" label="Compact">
+
+```sh
+ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-compact-redeploy.yml --ask-vault-pass --ask-become-pass
+```
+
+  </TabItem>
+</Tabs>
+
+## Bootstrap RHEL 10 Guests
+
+```sh
+cp vars/guests/rhel10_vms.yml.example vars/guests/my-rhel10-vms.yml
+ansible-playbook -i inventory/hosts.yml playbooks/bootstrap/rhel10-vms.yml -e @vars/guests/my-rhel10-vms.yml --ask-vault-pass --ask-become-pass
+```
+
+## Bootstrap Local IdM
+
+```sh
+ansible-playbook -i inventory/hosts.yml playbooks/bootstrap/idm-local.yml --ask-vault-pass --ask-become-pass
+```
+
+## Roll Back Host Policy
+
+```sh
+./scripts/host-resource-management.sh shared-execution-pool-rollback --ask-vault-pass
+./scripts/host-resource-management.sh host-memory-oversubscription-rollback
+./scripts/host-resource-management.sh host-resource-management-rollback
+```

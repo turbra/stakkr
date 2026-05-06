@@ -3,6 +3,10 @@
 `stakkr` is an on-prem KVM lab scaffold for OpenShift bring-up, supporting VM
 bootstrap, and host resource management on one libvirt host.
 
+[Docs site](https://turbra.github.io/stakkr/) |
+[Docs source](./website/docs) |
+[GitHub Pages deployment](./website/docs/reference/github-pages.md)
+
 [![License: GPL-3.0](https://img.shields.io/github/license/turbra/stakkr)](LICENSE)
 ![OpenShift 4.20](https://img.shields.io/badge/OpenShift-4.20-red)
 ![KVM/libvirt](https://img.shields.io/badge/KVM-libvirt-blue)
@@ -24,22 +28,22 @@ repo targets local consumer hardware rather than AWS.
 ## Start Here
 
 - local OpenShift SNO deployment:
-  [guide](./docs/openshift-sno-cluster.md)
+  [guide](./website/docs/openshift-sno-cluster.md)
 - local OpenShift compact cluster deployment:
-  [guide](./docs/openshift-compact-cluster.md)
+  [guide](./website/docs/openshift-compact-cluster.md)
 - shared execution pool path:
-  [method](./docs/shared-execution-pool-performance-domains.md),
-  [findings](./docs/shared-execution-pool-validation.md)
+  [method](./website/docs/shared-execution-pool-performance-domains.md),
+  [findings](./website/docs/shared-execution-pool-validation.md)
 - local prerequisites:
-  [checklist](./docs/prerequisites.md)
+  [checklist](./website/docs/prerequisites.md)
 - local IdM VM bootstrap:
-  [guide](./docs/idm-local-bootstrap.md)
+  [guide](./website/docs/idm-local-bootstrap.md)
 - generic RHEL 10 VM bootstrap:
-  [guide](./docs/rhel10-vm-bootstrap.md)
+  [guide](./website/docs/rhel10-vm-bootstrap.md)
 - [Cockpit observer](./cockpit/stakkr-observer/README.md)
 - clock-lane path:
-  [method](./docs/clock-frequency-tiering.md),
-  [findings](./docs/clock-frequency-validation.md)
+  [method](./website/docs/clock-frequency-tiering.md),
+  [findings](./website/docs/clock-frequency-validation.md)
 
 > [!NOTE]
 > The local IdM bootstrap currently expects a seeded guest image (`qcow2` or
@@ -48,7 +52,7 @@ repo targets local consumer hardware rather than AWS.
 
 > [!IMPORTANT]
 > The local IdM path depends on the checklist in
-> [prerequisites.md](./docs/prerequisites.md), including:
+> [prerequisites.md](./website/docs/prerequisites.md), including:
 >
 > - `freeipa.ansible_freeipa`
 > - `inventory/group_vars/all/lab_credentials.yml`

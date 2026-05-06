@@ -1,0 +1,228 @@
+:root {
+  --ifm-color-primary: #b40000;
+  --ifm-color-primary-dark: #9f0000;
+  --ifm-color-primary-darker: #8f0000;
+  --ifm-color-primary-darkest: #720000;
+  --ifm-color-primary-light: #d71920;
+  --ifm-color-primary-lighter: #ee0000;
+  --ifm-color-primary-lightest: #f45b5b;
+  --ifm-background-color: #ffffff;
+  --ifm-navbar-background-color: #ffffff;
+  --ifm-footer-background-color: #f7f7f7;
+  --ifm-font-family-base: "Red Hat Text", "Helvetica Neue", Arial, sans-serif;
+  --ifm-heading-font-family: "Red Hat Display", "Red Hat Text", Arial, sans-serif;
+  --ifm-code-font-size: 92%;
+  --ifm-global-radius: 4px;
+  --ifm-table-border-color: #d9d9d9;
+  --ifm-toc-border-color: #d9d9d9;
+}
+
+html[data-theme='dark'] {
+  --ifm-color-primary: #ff6b6b;
+  --ifm-color-primary-dark: #ff4f4f;
+  --ifm-color-primary-darker: #ff3838;
+  --ifm-color-primary-darkest: #ee0000;
+  --ifm-color-primary-light: #ff8585;
+  --ifm-color-primary-lighter: #ff9e9e;
+  --ifm-color-primary-lightest: #ffc0c0;
+  --ifm-background-color: #151515;
+  --ifm-navbar-background-color: #1f1f1f;
+  --ifm-footer-background-color: #1f1f1f;
+}
+
+html {
+  scroll-padding-top: 5rem;
+}
+
+body {
+  letter-spacing: 0;
+}
+
+.navbar {
+  border-top: 4px solid #ee0000;
+  border-bottom: 1px solid var(--ifm-toc-border-color);
+  box-shadow: none;
+}
+
+.navbar__title {
+  font-weight: 700;
+}
+
+.navbar__logo img {
+  width: 24px;
+  height: 24px;
+}
+
+.theme-doc-sidebar-container {
+  border-right: 1px solid var(--ifm-toc-border-color);
+}
+
+.menu {
+  padding-top: 0.75rem;
+  padding-bottom: 1.25rem;
+  font-size: 0.94rem;
+}
+
+.menu__link {
+  border-radius: 4px;
+  line-height: 1.3;
+}
+
+.menu__link--active {
+  font-weight: 700;
+}
+
+.theme-doc-markdown {
+  max-width: 840px;
+}
+
+.theme-doc-markdown header + *,
+.theme-doc-markdown > :first-child {
+  margin-top: 0;
+}
+
+.theme-doc-markdown h1 {
+  margin-bottom: 0.85rem;
+  font-size: 2.35rem;
+  line-height: 1.08;
+}
+
+.theme-doc-markdown h2 {
+  margin-top: 2.2rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid #eeeeee;
+}
+
+.theme-doc-markdown h3 {
+  margin-top: 1.65rem;
+}
+
+.theme-doc-markdown p,
+.theme-doc-markdown li {
+  line-height: 1.62;
+}
+
+.theme-doc-markdown table {
+  display: table;
+  width: 100%;
+  font-size: 0.94rem;
+}
+
+.theme-doc-markdown th {
+  background: #f4f4f4;
+}
+
+html[data-theme='dark'] .theme-doc-markdown th {
+  background: #262626;
+}
+
+.theme-doc-toc-desktop {
+  border-left: 1px solid var(--ifm-toc-border-color);
+}
+
+.table-of-contents {
+  font-size: 0.88rem;
+}
+
+.stakkr-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  margin: 0 0 1.25rem;
+}
+
+.stakkr-badge-row img {
+  display: block;
+  height: 20px;
+}
+
+.stakkr-hero {
+  margin-bottom: 1.5rem;
+}
+
+.stakkr-hero__lead {
+  max-width: 74ch;
+  margin: 0 0 1rem;
+  color: var(--ifm-font-color-base);
+  font-size: 1.08rem;
+  line-height: 1.6;
+}
+
+.stakkr-link-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.stakkr-link-card {
+  display: flex;
+  min-height: 8rem;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 1rem;
+  color: var(--ifm-font-color-base);
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.stakkr-link-card:hover,
+.stakkr-link-card:focus {
+  color: var(--ifm-font-color-base);
+  border-color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.stakkr-link-card strong {
+  font-size: 1rem;
+}
+
+.stakkr-link-card span {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+kbd,
+.theme-doc-markdown a kbd {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.9rem;
+  padding: 0.2rem 0.55rem;
+  color: var(--ifm-font-color-base);
+  background: var(--ifm-background-color);
+  border: 1px solid #8a8a8a;
+  border-radius: 3px;
+  box-shadow: none;
+  font-family: var(--ifm-font-family-base);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.theme-doc-markdown a kbd:hover,
+.theme-doc-markdown a kbd:focus {
+  color: #ffffff;
+  background: #b40000;
+  border-color: #b40000;
+}
+
+.theme-admonition {
+  border-radius: 4px;
+}
+
+@media (max-width: 996px) {
+  .theme-doc-markdown {
+    max-width: none;
+  }
+
+  .theme-doc-markdown h1 {
+    font-size: 2rem;
+  }
+
+  .stakkr-link-grid {
+    grid-template-columns: 1fr;
+  }
+}

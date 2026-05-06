@@ -7,3 +7,6 @@ cockpit/*/rpmbuild/
 inventory/group_vars/all/lab_credentials.yml
 secrets/*
 !secrets/.gitkeep
+website/.docusaurus/
+website/build/
+website/node_modules/

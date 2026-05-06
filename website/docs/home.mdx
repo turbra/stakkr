@@ -1,0 +1,118 @@
+---
+id: home
+slug: /
+title: Stakkr
+description: Local OpenShift, RHEL bootstrap, and host resource policy workflows on one libvirt host.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import Link from '@docusaurus/Link';
+
+<div className="stakkr-hero">
+  <p className="stakkr-hero__lead">
+    Stakkr is an Ansible-driven KVM lab scaffold for local OpenShift bring-up,
+    supporting RHEL guests, and host resource policy experiments on one libvirt
+    host.
+  </p>
+  <div className="stakkr-badge-row">
+    <a href="https://github.com/turbra/stakkr/blob/main/LICENSE"><img alt="License: GPL-3.0" src="https://img.shields.io/github/license/turbra/stakkr" /></a>
+    <img alt="OpenShift 4.20" src="https://img.shields.io/badge/OpenShift-4.20-red" />
+    <img alt="KVM and libvirt" src="https://img.shields.io/badge/KVM-libvirt-blue" />
+    <img alt="Ansible driven" src="https://img.shields.io/badge/Ansible-driven-blue" />
+    <img alt="RHEL 10" src="https://img.shields.io/badge/RHEL-10-red" />
+  </div>
+</div>
+
+## Quick Start
+
+<Tabs>
+  <TabItem value="host" label="Host policy" default>
+
+```sh
+./scripts/host-resource-management.sh host-resource-management-apply
+./scripts/host-resource-management.sh host-memory-oversubscription-apply
+./scripts/host-resource-management.sh host-resource-management-status
+./scripts/host-resource-management.sh host-memory-oversubscription-status
+```
+
+  </TabItem>
+  <TabItem value="sno" label="OpenShift SNO">
+
+```sh
+cp vars/cluster/openshift_install_cluster.yml.example vars/cluster/openshift_install_cluster.yml
+cp vars/guests/openshift_cluster_vm.yml.example vars/guests/openshift_cluster_vm.yml
+
+ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-sno.yml --ask-vault-pass --ask-become-pass
+```
+
+  </TabItem>
+  <TabItem value="compact" label="OpenShift compact">
+
+```sh
+cp vars/cluster/openshift_install_cluster.compact.yml.example vars/cluster/openshift_install_cluster.yml
+cp vars/guests/openshift_cluster_vm.compact.yml.example vars/guests/openshift_cluster_vm.yml
+
+ansible-playbook -i inventory/hosts.yml playbooks/site-openshift-compact.yml --ask-vault-pass --ask-become-pass
+```
+
+  </TabItem>
+  <TabItem value="observer" label="Observer">
+
+```sh
+sudo dnf install -y ./cockpit/stakkr-observer/rpmbuild/RPMS/noarch/cockpit-stakkr-observer-1.0.0-1.el10.noarch.rpm
+```
+
+Then open Cockpit and navigate to `Stakkr Observer`.
+
+  </TabItem>
+</Tabs>
+
+Start with [Prerequisites](/prerequisites/) before running deploy playbooks.
+The quick-start commands assume local inventory, secrets, DNS, images, and
+OpenShift inputs are already in place.
+
+## Install And Setup
+
+Stakkr is run from the repository checkout with Ansible and local libvirt
+tooling. There is no separate binary to install.
+
+```sh
+git clone https://github.com/turbra/stakkr.git
+cd stakkr
+ansible-galaxy collection install -r requirements.yml
+ansible-inventory -i inventory/hosts.yml --graph
+```
+
+## Explore
+
+<div className="stakkr-link-grid">
+  <Link className="stakkr-link-card" to="/getting-started/first-host-policy/">
+    <strong>Getting Started</strong>
+    <span>Prepare local inputs, apply the host foundation, and run the first validation checks.</span>
+  </Link>
+  <Link className="stakkr-link-card" to="/concepts/overview/">
+    <strong>Concepts</strong>
+    <span>Understand the operating model, performance domains, host policy layers, and local state.</span>
+  </Link>
+  <Link className="stakkr-link-card" to="/reference/host-resource-management/">
+    <strong>Reference</strong>
+    <span>Script actions, playbooks, configuration files, generated state, and GitHub Pages deployment.</span>
+  </Link>
+</div>
+
+## Main Paths
+
+| Task | Start here |
+| --- | --- |
+| Deploy local OpenShift SNO | [First SNO Deploy](/getting-started/first-sno/) |
+| Deploy local OpenShift compact | [Compact OpenShift Cluster Scaffold](/openshift-compact-cluster/) |
+| Apply live VM contention policy | [Shared Execution Pool With Weighted Performance Domains](/shared-execution-pool-performance-domains/) |
+| Bootstrap generic RHEL 10 guests | [Generic RHEL 10 VM Bootstrap](/rhel10-vm-bootstrap/) |
+| Bootstrap local IdM | [Local IdM Bootstrap](/idm-local-bootstrap/) |
+| Inspect host policy in Cockpit | [First Observer Check](/getting-started/first-observer-check/) |
+
+## Related
+
+Stakkr borrows ideas from [Calabi](https://github.com/gprocunier/calabi), but
+targets local consumer hardware rather than AWS.
