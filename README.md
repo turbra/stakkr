@@ -1,9 +1,17 @@
-# Stakkr
+<h1 align="center">Stakkr</h1>
 
-`stakkr` is an on-prem KVM lab scaffold for OpenShift bring-up, supporting VM
-bootstrap, and host resource management on one libvirt host.
+<p align="center">
+  <strong>Local OpenShift, RHEL bootstrap, and host resource policy workflows on one libvirt host.</strong>
+</p>
 
-[Docs site](https://turbra.github.io/stakkr/)
+<p align="center">
+  <a href="https://turbra.github.io/stakkr/">Stakkr</a> •
+  <a href="https://turbra.github.io/stakkr/getting-started/first-host-policy/">Getting Started</a> •
+  <a href="https://turbra.github.io/stakkr/shared-execution-pool-performance-domains/">Host Policy</a> •
+  <a href="https://turbra.github.io/stakkr/openshift-sno-cluster/">Workflows</a> •
+  <a href="https://turbra.github.io/stakkr/examples/">Examples</a> •
+  <a href="https://turbra.github.io/stakkr/reference/host-resource-management/">Reference</a>
+</p>
 
 [![License: GPL-3.0](https://img.shields.io/github/license/turbra/stakkr)](LICENSE)
 ![OpenShift 4.20](https://img.shields.io/badge/OpenShift-4.20-red)
