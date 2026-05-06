@@ -13,11 +13,13 @@
   <a href="https://turbra.github.io/stakkr/reference/host-resource-management/">Reference</a>
 </p>
 
-[![License: GPL-3.0](https://img.shields.io/github/license/turbra/stakkr)](LICENSE)
-![OpenShift 4.20](https://img.shields.io/badge/OpenShift-4.20-red)
-![KVM/libvirt](https://img.shields.io/badge/KVM-libvirt-blue)
-![Ansible](https://img.shields.io/badge/Ansible-driven-blue)
-![RHEL 10](https://img.shields.io/badge/RHEL-10-red)
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/turbra/stakkr" alt="License: GPL-3.0"></a>
+  <img src="https://img.shields.io/badge/OpenShift-4.20-red" alt="OpenShift 4.20">
+  <img src="https://img.shields.io/badge/KVM-libvirt-blue" alt="KVM/libvirt">
+  <img src="https://img.shields.io/badge/Ansible-driven-blue" alt="Ansible driven">
+  <img src="https://img.shields.io/badge/RHEL-10-red" alt="RHEL 10">
+</p>
 
 - shared execution-pool performance domains
 - KSM memory oversubscription
