@@ -28,22 +28,22 @@ repo targets local consumer hardware rather than AWS.
 ## Start Here
 
 - local OpenShift SNO deployment:
-  [guide](./website/docs/openshift-sno-cluster.md)
+  [guide](https://turbra.github.io/stakkr/openshift-sno-cluster/)
 - local OpenShift compact cluster deployment:
-  [guide](./website/docs/openshift-compact-cluster.md)
+  [guide](https://turbra.github.io/stakkr/openshift-compact-cluster/)
 - shared execution pool path:
-  [method](./website/docs/shared-execution-pool-performance-domains.md),
-  [findings](./website/docs/shared-execution-pool-validation.md)
+  [method](https://turbra.github.io/stakkr/shared-execution-pool-performance-domains/),
+  [findings](https://turbra.github.io/stakkr/shared-execution-pool-validation/)
 - local prerequisites:
-  [checklist](./website/docs/prerequisites.md)
+  [checklist](https://turbra.github.io/stakkr/prerequisites/)
 - local IdM VM bootstrap:
-  [guide](./website/docs/idm-local-bootstrap.md)
+  [guide](https://turbra.github.io/stakkr/idm-local-bootstrap/)
 - generic RHEL 10 VM bootstrap:
-  [guide](./website/docs/rhel10-vm-bootstrap.md)
+  [guide](https://turbra.github.io/stakkr/rhel10-vm-bootstrap/)
 - [Cockpit observer](./cockpit/stakkr-observer/README.md)
 - clock-lane path:
-  [method](./website/docs/clock-frequency-tiering.md),
-  [findings](./website/docs/clock-frequency-validation.md)
+  [method](https://turbra.github.io/stakkr/clock-frequency-tiering/),
+  [findings](https://turbra.github.io/stakkr/clock-frequency-validation/)
 
 > [!NOTE]
 > The local IdM bootstrap currently expects a seeded guest image (`qcow2` or
@@ -52,7 +52,7 @@ repo targets local consumer hardware rather than AWS.
 
 > [!IMPORTANT]
 > The local IdM path depends on the checklist in
-> [prerequisites.md](./website/docs/prerequisites.md), including:
+> [prerequisites.md](https://turbra.github.io/stakkr/prerequisites/), including:
 >
 > - `freeipa.ansible_freeipa`
 > - `inventory/group_vars/all/lab_credentials.yml`
