@@ -55,7 +55,7 @@ const config = {
         title: 'Stakkr',
         logo: {
           alt: 'Stakkr',
-          src: 'img/stakkr-favicon.svg',
+          src: 'img/logo.svg',
         },
         items: [
           {to: '/', label: 'Docs', position: 'left'},
