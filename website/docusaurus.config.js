@@ -8,7 +8,7 @@ const config = {
   title: 'Stakkr',
   tagline:
     'On-prem KVM lab scaffold for OpenShift bring-up, VM bootstrap, and host resource management on one libvirt host.',
-  favicon: 'img/stakkr-favicon.svg',
+  favicon: 'img/logo.svg',
 
   url: 'https://turbra.github.io',
   baseUrl: '/stakkr/',
@@ -50,7 +50,7 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      image: 'img/stakkr-favicon.svg',
+      image: 'img/logo.svg',
       navbar: {
         title: 'Stakkr',
         logo: {
